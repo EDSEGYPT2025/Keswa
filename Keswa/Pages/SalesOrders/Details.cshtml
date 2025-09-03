@@ -1,0 +1,89 @@
+﻿@page "{id:int?}"
+@model Keswa.Pages.SalesOrders.DetailsModel
+@{
+    ViewData["Title"] = $"تفاصيل الطلبية رقم {Model.SalesOrder.Id}";
+}
+
+<!-- Page Header -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="h2 fw-bold">@ViewData["Title"]</h1>
+        <p class="text-muted">عرض وتتبع تفاصيل الطلبية وحالتها.</p>
+    </div>
+    <div>
+        <a asp-page="./Index" class="btn btn-outline-secondary">العودة إلى قائمة الطلبيات</a>
+    </div>
+</div>
+
+<!-- Main Sales Order Info -->
+<div class="card shadow-sm border-0 mb-4">
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-3">
+                <h6 class="text-muted">العميل</h6>
+                <p class="fw-bold">@Model.SalesOrder.Customer.Name</p>
+            </div>
+            <div class="col-md-3">
+                <h6 class="text-muted">تاريخ الطلب</h6>
+                <p class="fw-bold">@Model.SalesOrder.OrderDate.ToShortDateString()</p>
+            </div>
+            <div class="col-md-3">
+                <h6 class="text-muted">تاريخ التسليم المتوقع</h6>
+                <p class="fw-bold">@Model.SalesOrder.ExpectedDeliveryDate.ToShortDateString()</p>
+            </div>
+            <div class="col-md-3">
+                <h6 class="text-muted">حالة الطلبية</h6>
+                <p class="fw-bold">@Html.DisplayFor(model => model.SalesOrder.Status)</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- Order Details Table -->
+<div class="card shadow-sm border-0">
+    <div class="card-header bg-transparent">
+        <h5 class="fw-bold mb-0">تفاصيل الموديلات</h5>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>الموديل</th>
+                        <th>الكمية المطلوبة</th>
+                        <th>حالة البند</th>
+                        <th class="text-center">إجراء</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model.SalesOrder.Details)
+                    {
+                        <tr>
+                            <td><strong>@Html.DisplayFor(modelItem => item.Product.Name)</strong></td>
+                            <td>@Html.DisplayFor(modelItem => item.Quantity)</td>
+                            <td>@Html.DisplayFor(modelItem => item.Status)</td>
+                            <td class="text-center">
+                                @if (item.Status == Keswa.Enums.SalesOrderDetailStatus.PendingConversion)
+                                {
+                                    <form method="post">
+                                        <input type="hidden" name="salesOrderDetailId" value="@item.Id" />
+                                        <button type="submit" class="btn btn-sm btn-success" asp-page-handler="ConvertToWorkOrder">
+                                            <i class="bi bi-arrow-repeat me-1"></i> تحويل إلى أمر شغل
+                                        </button>
+                                    </form>
+                                }
+                                else
+                                {
+                                    <a asp-page="/WorkOrders/Details" asp-route-id="@item.WorkOrderId" class="btn btn-sm btn-outline-secondary disabled" aria-disabled="true">
+                                        تم التحويل (أمر شغل رقم @item.WorkOrderId)
+                                    </a>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

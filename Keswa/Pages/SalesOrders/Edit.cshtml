@@ -1,0 +1,202 @@
+﻿@page
+@model Keswa.Pages.SalesOrders.EditModel
+@{
+    ViewData["Title"] = "تعديل الطلبية";
+}
+
+<!-- Page Header -->
+<div class="mb-4">
+    <h1 class="h2 fw-bold">@ViewData["Title"]</h1>
+    <p class="text-muted">تعديل بيانات الطلبية رقم: @Model.SalesOrder.Id</p>
+</div>
+
+@if (!Model.IsEditable)
+{
+    <div class="alert alert-warning" role="alert">
+        <h4 class="alert-heading">تنبيه!</h4>
+        <p>@Model.StatusMessage</p>
+        <hr>
+        <a asp-page="./Index" class="btn btn-secondary">العودة إلى قائمة الطلبيات</a>
+    </div>
+}
+else
+{
+    <form method="post">
+        <input type="hidden" asp-for="SalesOrder.Id" />
+        <input type="hidden" asp-for="SalesOrder.Status" />
+
+        <!-- Main Document Info -->
+        <div class="card shadow-sm border-0 mb-4">
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label asp-for="SalesOrder.CustomerId" class="form-label"></label>
+                        <select asp-for="SalesOrder.CustomerId" class="form-select searchable-select" asp-items="Model.CustomerList"></select>
+                        <span asp-validation-for="SalesOrder.CustomerId" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-4">
+                        <label asp-for="SalesOrder.OrderDate" class="form-label"></label>
+                        <input asp-for="SalesOrder.OrderDate" class="form-control" />
+                        <span asp-validation-for="SalesOrder.OrderDate" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-4">
+                        <label asp-for="SalesOrder.ExpectedDeliveryDate" class="form-label"></label>
+                        <input asp-for="SalesOrder.ExpectedDeliveryDate" class="form-control" />
+                        <span asp-validation-for="SalesOrder.ExpectedDeliveryDate" class="text-danger"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Document Details -->
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-transparent d-flex justify-content-between align-items-center">
+                <h5 class="fw-bold mb-0">تفاصيل الموديلات</h5>
+                <button type="button" id="add-item-btn" class="btn btn-sm btn-outline-success"><i class="bi bi-plus-circle me-2"></i>إضافة موديل</button>
+            </div>
+            <div class="card-body">
+                @if (ViewData.ModelState.ContainsKey("SalesOrder.Details"))
+                {
+                    <div class="alert alert-danger">
+                        @Html.ValidationMessage("SalesOrder.Details")
+                    </div>
+                }
+                <table class="table">
+                    <thead class="table-light">
+                        <tr>
+                            <th style="width: 70%;">الموديل</th>
+                            <th style="width: 20%;">الكمية</th>
+                            <th style="width: 10%;"></th>
+                        </tr>
+                    </thead>
+                    <tbody id="items-container">
+                        @if (Model.SalesOrder.Details != null)
+                        {
+                            @for (var i = 0; i < Model.SalesOrder.Details.Count; i++)
+                            {
+                                var detail = Model.SalesOrder.Details[i];
+                                var isConverted = detail.Status == Keswa.Enums.SalesOrderDetailStatus.ConvertedToWorkOrder;
+
+                                <tr>
+                                    <td>
+                                        <input type="hidden" asp-for="SalesOrder.Details[i].Id" />
+                                        <input type="hidden" asp-for="SalesOrder.Details[i].SalesOrderId" />
+                                        <input type="hidden" asp-for="SalesOrder.Details[i].Status" />
+
+                                        @if (isConverted)
+                                        {
+                                            <input type="hidden" asp-for="SalesOrder.Details[i].ProductId" />
+                                            <input type="text" class="form-control" value="@detail.Product?.Name" disabled readonly />
+                                        }
+                                        else
+                                        {
+                                            <select asp-for="SalesOrder.Details[i].ProductId" class="form-select item-product searchable-select" asp-items="Model.ProductList"></select>
+                                        }
+                                    </td>
+                                    <td>
+                                        <input asp-for="SalesOrder.Details[i].Quantity" class="form-control item-quantity" disabled="@isConverted" />
+                                    </td>
+                                    <td>
+                                        @if (!isConverted)
+                                        {
+                                            <button type="button" class="btn btn-sm btn-outline-danger remove-item-btn"><i class="bi bi-trash"></i></button>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <hr class="my-4" />
+        <div class="d-flex justify-content-end">
+            <a asp-page="Index" class="btn btn-outline-secondary me-2">إلغاء</a>
+            <button type="submit" class="btn btn-primary">حفظ التعديلات</button>
+        </div>
+    </form>
+}
+
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        $(document).ready(function () {
+
+            function initializeSelect2(element) {
+                $(element).select2({
+                    theme: "bootstrap-5",
+                    dir: "rtl",
+                    placeholder: '-- اختر --',
+                    width: '100%'
+                });
+            }
+
+            initializeSelect2('.searchable-select');
+
+            const productOptions = @Html.Raw(Json.Serialize(Model.ProductList.Select(p => new { value = p.Value, text = p.Text })));
+
+            let itemIndex = @(Model.SalesOrder.Details?.Count ?? 0);
+
+            function reindexRows() {
+                $('#items-container tr').each(function(index) {
+                    $(this).find('input, select').each(function() {
+                        if (this.name) {
+                            this.name = this.name.replace(/\[\d+\]/, '[' + index + ']');
+                        }
+                    });
+                });
+                itemIndex = $('#items-container tr').length;
+            }
+
+            $('#add-item-btn').click(function() {
+                const newRow = $('<tr>');
+                const cell1 = $('<td>');
+                const cell2 = $('<td>');
+                const cell3 = $('<td>');
+
+                const select = $('<select>').attr({
+                    name: `SalesOrder.Details[${itemIndex}].ProductId`,
+                    class: 'form-select item-product searchable-select'
+                });
+
+                select.append($('<option>', { value: '', text: '-- اختر الموديل --' }));
+                productOptions.forEach(function(option){
+                    select.append($('<option>', { value: option.value, text: option.text }));
+                });
+
+                const quantityInput = $('<input>').attr({
+                    type: 'number',
+                    name: `SalesOrder.Details[${itemIndex}].Quantity`,
+                    class: 'form-control item-quantity',
+                    value: '1',
+                    min: '1'
+                });
+
+                const removeBtn = $('<button>').attr({
+                    type: 'button',
+                    class: 'btn btn-sm btn-outline-danger remove-item-btn'
+                }).html('<i class="bi bi-trash"></i>');
+
+                cell1.append(select);
+                cell2.append(quantityInput);
+                cell3.append(removeBtn);
+
+                newRow.append(cell1, cell2, cell3);
+                $('#items-container').append(newRow);
+
+                initializeSelect2(newRow.find('.searchable-select'));
+                reindexRows();
+            });
+
+            $('#items-container').on('click', '.remove-item-btn', function () {
+                $(this).closest('tr').find('.searchable-select').select2('destroy');
+                $(this).closest('tr').remove();
+                reindexRows();
+            });
+
+        });
+    </script>
+}
+

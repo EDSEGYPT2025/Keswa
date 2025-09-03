@@ -1,0 +1,55 @@
+﻿@page
+@model Keswa.Pages.Workers.CreateModel
+@{
+    ViewData["Title"] = "إضافة عامل جديد";
+}
+
+<!-- Page Header -->
+<div class="mb-4">
+    <h1 class="h2 fw-bold">@ViewData["Title"]</h1>
+    <p class="text-muted">أدخل بيانات العامل لإضافته إلى قائمة العمال في النظام.</p>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card shadow-sm border-0">
+            <div class="card-body">
+                <form method="post">
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3" role="alert"></div>
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label asp-for="Worker.WorkerCode" class="form-label"></label>
+                            <input asp-for="Worker.WorkerCode" class="form-control" />
+                            <span asp-validation-for="Worker.WorkerCode" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="Worker.Name" class="form-label"></label>
+                            <input asp-for="Worker.Name" class="form-control" />
+                            <span asp-validation-for="Worker.Name" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="Worker.Department" class="form-label"></label>
+                            <select asp-for="Worker.Department" class="form-select" asp-items="Html.GetEnumSelectList<Keswa.Enums.Department>()">
+                                <option value="">-- اختر القسم --</option>
+                            </select>
+                            <span asp-validation-for="Worker.Department" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="Worker.HireDate" class="form-label"></label>
+                            <input asp-for="Worker.HireDate" class="form-control" />
+                            <span asp-validation-for="Worker.HireDate" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <hr class="my-4" />
+
+                    <div class="d-flex justify-content-end">
+                        <a asp-page="./Index" class="btn btn-outline-secondary me-2">إلغاء</a>
+                        <button type="submit" class="btn btn-primary">حفظ العامل</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

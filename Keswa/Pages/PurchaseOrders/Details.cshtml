@@ -1,0 +1,72 @@
+﻿@page "{id:int}"
+@model Keswa.Pages.PurchaseOrders.DetailsModel
+@{
+    ViewData["Title"] = $"تفاصيل أمر شراء - {Model.PurchaseOrder.OrderNumber}";
+}
+
+<!-- Page Header -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="h2 fw-bold">تفاصيل أمر شراء</h1>
+        <p class="text-muted">عرض جميع تفاصيل أمر الشراء رقم: @Model.PurchaseOrder.OrderNumber</p>
+    </div>
+    <div>
+        <a asp-page="./Index" class="btn btn-outline-secondary"><i class="bi bi-arrow-right me-2"></i>العودة لأوامر الشراء</a>
+        @* *** تم التعديل هنا *** *@
+        <a asp-page="./Print" asp-route-id="@Model.PurchaseOrder.Id" target="_blank" class="btn btn-secondary"><i class="bi bi-printer me-2"></i>طباعة</a>
+    </div>
+</div>
+
+<!-- Main Purchase Order Info -->
+<div class="card shadow-sm border-0 mb-4">
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-3 mb-3">
+                <h6 class="text-muted">رقم أمر الشراء</h6>
+                <p class="fw-bold">@Model.PurchaseOrder.OrderNumber</p>
+            </div>
+            <div class="col-md-3 mb-3">
+                <h6 class="text-muted">تاريخ الطلب</h6>
+                <p class="fw-bold">@Model.PurchaseOrder.OrderDate.ToShortDateString()</p>
+            </div>
+            <div class="col-md-3 mb-3">
+                <h6 class="text-muted">الحالة</h6>
+                <p class="fw-bold">@Html.DisplayFor(model => model.PurchaseOrder.Status)</p>
+            </div>
+            <div class="col-md-3 mb-3">
+                <h6 class="text-muted">مرتبط بأمر الشغل</h6>
+                <p class="fw-bold">@(Model.PurchaseOrder.WorkOrder?.WorkOrderNumber ?? "لا يوجد")</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Purchase Order Details Table -->
+<div class="card shadow-sm border-0">
+    <div class="card-header bg-transparent">
+        <h5 class="fw-bold mb-0">المواد الخام المطلوبة</h5>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>المادة الخام</th>
+                        <th class="text-center">الكمية المطلوبة</th>
+                        <th class="text-center">وحدة القياس</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model.PurchaseOrder.Details)
+                    {
+                        <tr>
+                            <td><strong>@item.Material.Name</strong></td>
+                            <td class="text-center">@item.Quantity</td>
+                            <td class="text-center">@Html.DisplayFor(modelItem => item.Material.Unit)</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,44 @@
+﻿@page
+@model Keswa.Pages.Costs.IndexModel
+@{
+    ViewData["Title"] = "إدارة تكاليف الأقسام";
+}
+
+<!-- Page Header -->
+<div class="mb-4">
+    <h1 class="h2 fw-bold">@ViewData["Title"]</h1>
+    <p class="text-muted">أدخل تكلفة إنتاج القطعة الواحدة في كل قسم من أقسام المصنع.</p>
+</div>
+
+<form method="post">
+    <div class="card shadow-sm border-0">
+        <div class="card-body">
+            @for (var i = 0; i < Model.DepartmentCosts.Count; i++)
+            {
+                <input type="hidden" asp-for="DepartmentCosts[i].Id" />
+                <input type="hidden" asp-for="DepartmentCosts[i].Department" />
+
+                <div class="row align-items-center mb-3">
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold">@Html.DisplayFor(m => m.DepartmentCosts[i].Department)</label>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="input-group">
+                            <input asp-for="DepartmentCosts[i].CostPerUnit" class="form-control" type="number" step="0.01" min="0" />
+                            <span class="input-group-text">جنيه</span>
+                        </div>
+                        <span asp-validation-for="DepartmentCosts[i].CostPerUnit" class="text-danger"></span>
+                    </div>
+                </div>
+
+                @if (i < Model.DepartmentCosts.Count - 1)
+                {
+                    <hr />
+                }
+            }
+        </div>
+        <div class="card-footer bg-transparent text-end">
+            <button type="submit" class="btn btn-primary">حفظ التغييرات</button>
+        </div>
+    </div>
+</form>

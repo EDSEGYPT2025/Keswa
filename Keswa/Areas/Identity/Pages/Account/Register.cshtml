@@ -1,0 +1,62 @@
+﻿@* --- FILENAME: Areas/Identity/Pages/Account/Register.cshtml --- *@
+
+@page
+@model RegisterModel
+@{
+    ViewData["Title"] = "إنشاء حساب جديد";
+}
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-6 col-md-8">
+            <div class="card shadow-sm border-0 rounded-lg mt-5">
+                <div class="card-body p-5">
+                    <div class="text-center mb-4">
+                        <h1 class="h3 fw-bold">@ViewData["Title"]</h1>
+                        <p class="text-muted">انضم إلينا وابدأ في إدارة مصنعك بكفاءة</p>
+                    </div>
+                    <form id="registerForm" asp-route-returnUrl="@Model.ReturnUrl" method="post">
+                        <div asp-validation-summary="ModelOnly" class="text-danger mb-3" role="alert"></div>
+
+                        <div class="form-floating mb-3">
+                            <input asp-for="Input.FullName" class="form-control" autocomplete="name" aria-required="true" placeholder="الاسم بالكامل" />
+                            <label asp-for="Input.FullName">الاسم بالكامل</label>
+                            <span asp-validation-for="Input.FullName" class="text-danger"></span>
+                        </div>
+
+                        <div class="form-floating mb-3">
+                            <input asp-for="Input.Email" class="form-control" autocomplete="username" aria-required="true" placeholder="البريد الإلكتروني" />
+                            <label asp-for="Input.Email">البريد الإلكتروني</label>
+                            <span asp-validation-for="Input.Email" class="text-danger"></span>
+                        </div>
+
+                        <div class="form-floating mb-3">
+                            <input asp-for="Input.Password" class="form-control" autocomplete="new-password" aria-required="true" placeholder="كلمة المرور" />
+                            <label asp-for="Input.Password">كلمة المرور</label>
+                            <span asp-validation-for="Input.Password" class="text-danger"></span>
+                        </div>
+
+                        <div class="form-floating mb-3">
+                            <input asp-for="Input.ConfirmPassword" class="form-control" autocomplete="new-password" aria-required="true" placeholder="تأكيد كلمة المرور" />
+                            <label asp-for="Input.ConfirmPassword">تأكيد كلمة المرور</label>
+                            <span asp-validation-for="Input.ConfirmPassword" class="text-danger"></span>
+                        </div>
+
+                        <div class="d-grid mt-4">
+                            <button id="registerSubmit" type="submit" class="btn btn-primary btn-lg">إنشاء الحساب</button>
+                        </div>
+                    </form>
+                    <hr class="my-4">
+                    <div class="text-center">
+                        <a class="small" asp-page="./Login" asp-route-returnUrl="@Model.ReturnUrl">لديك حساب بالفعل؟ تسجيل الدخول</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

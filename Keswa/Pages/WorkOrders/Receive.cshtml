@@ -1,0 +1,97 @@
+﻿@page "{id:int}"
+@model Keswa.Pages.WorkOrders.ReceiveModel
+@{
+    ViewData["Title"] = "استلام منتج نهائي";
+    var egyptianCulture = new System.Globalization.CultureInfo("ar-EG");
+}
+
+<!-- Page Header -->
+<div class="mb-4">
+    <h1 class="h2 fw-bold">@ViewData["Title"]</h1>
+    <p class="text-muted">توزيع الكميات المستلمة وإغلاق أمر الشغل رقم: @Model.WorkOrder.WorkOrderNumber</p>
+</div>
+
+<div class="row">
+    <div class="col-md-10">
+        <form method="post">
+            <input type="hidden" asp-for="Input.WorkOrderId" />
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-3" role="alert"></div>
+
+            <!-- Costing Section -->
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-header bg-info bg-opacity-10 text-info fw-bold">
+                    <i class="bi bi-calculator-fill me-2"></i>حساب التكلفة
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">التكلفة المحسوبة للقطعة</label>
+                            <input type="text" class="form-control" value="@Model.CalculatedUnitCost.ToString("C", egyptianCulture)" disabled readonly />
+                            <div class="form-text">هذه هي التكلفة المباشرة المحسوبة تلقائياً (مواد خام + أجور).</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="Input.FinalUnitCost" class="form-label"></label>
+                            <input asp-for="Input.FinalUnitCost" class="form-control" type="number" step="0.01" min="0" />
+                            <span asp-validation-for="Input.FinalUnitCost" class="text-danger"></span>
+                            <div class="form-text">يمكنك تعديل التكلفة النهائية يدوياً هنا إذا لزم الأمر.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- First Grade Section -->
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-header bg-success bg-opacity-10 text-success fw-bold">
+                    <i class="bi bi-patch-check-fill me-2"></i>منتجات درجة أولى (سليمة)
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label asp-for="Input.FirstGradeQuantity" class="form-label"></label>
+                            <input asp-for="Input.FirstGradeQuantity" class="form-control" type="number" min="0" />
+                            <span asp-validation-for="Input.FirstGradeQuantity" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="Input.FirstGradeWarehouseId" class="form-label"></label>
+                            <select asp-for="Input.FirstGradeWarehouseId" class="form-select searchable-select" asp-items="Model.FinishedGoodsWarehouseList">
+                                <option value="">-- اختر المخزن --</option>
+                            </select>
+                            <span asp-validation-for="Input.FirstGradeWarehouseId" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Second Grade Section -->
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-warning bg-opacity-10 text-warning fw-bold">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>منتجات درجة ثانية (معيبة)
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label asp-for="Input.SecondGradeQuantity" class="form-label"></label>
+                            <input asp-for="Input.SecondGradeQuantity" class="form-control" type="number" min="0" />
+                            <span asp-validation-for="Input.SecondGradeQuantity" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="Input.SecondGradeWarehouseId" class="form-label"></label>
+                            <select asp-for="Input.SecondGradeWarehouseId" class="form-select searchable-select" asp-items="Model.FinishedGoodsWarehouseList">
+                                <option value="">-- اختر المخزن --</option>
+                            </select>
+                            <span asp-validation-for="Input.SecondGradeWarehouseId" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+            <hr class="my-4" />
+
+            <div class="d-flex justify-content-end">
+                <a asp-page="./Details" asp-route-id="@Model.WorkOrder.Id" class="btn btn-outline-secondary me-2">إلغاء</a>
+                <button type="submit" class="btn btn-success">تأكيد الاستلام وإغلاق الأمر</button>
+            </div>
+        </form>
+    </div>
+</div>

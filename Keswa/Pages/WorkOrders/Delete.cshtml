@@ -1,0 +1,47 @@
+﻿@page
+@model Keswa.Pages.WorkOrders.DeleteModel
+@{
+    ViewData["Title"] = "حذف أمر الشغل";
+}
+
+<!-- Page Header -->
+<div class="mb-4">
+    <h1 class="h2 fw-bold">@ViewData["Title"]</h1>
+    <p class="text-muted">تأكيد حذف أمر الشغل رقم: @Model.WorkOrder.WorkOrderNumber</p>
+</div>
+
+@if (!Model.IsDeletable)
+{
+    <div class="alert alert-danger" role="alert">
+        <h4 class="alert-heading">عملية غير مسموح بها!</h4>
+        <p>@Model.StatusMessage</p>
+        <hr>
+        <a asp-page="./Index" class="btn btn-secondary">العودة إلى قائمة أوامر الشغل</a>
+    </div>
+}
+else
+{
+    <div class="card shadow-sm border-0">
+        <div class="card-body">
+            <h5 class="card-title">هل أنت متأكد أنك تريد حذف أمر الشغل هذا نهائياً؟</h5>
+            <dl class="row mt-4">
+                <dt class="col-sm-3">رقم أمر الشغل</dt>
+                <dd class="col-sm-9">@Model.WorkOrder.WorkOrderNumber</dd>
+
+                <dt class="col-sm-3">الموديل</dt>
+                <dd class="col-sm-9">@Html.DisplayFor(model => model.WorkOrder.Product.Name)</dd>
+
+                <dt class="col-sm-3">الكمية المطلوبة</dt>
+                <dd class="col-sm-9">@Html.DisplayFor(model => model.WorkOrder.QuantityToProduce)</dd>
+            </dl>
+            <form method="post">
+                <input type="hidden" asp-for="WorkOrder.Id" />
+                <hr class="my-4" />
+                <div class="d-flex justify-content-end">
+                    <a asp-page="./Index" class="btn btn-outline-secondary me-2">إلغاء</a>
+                    <button type="submit" class="btn btn-danger">تأكيد الحذف</button>
+                </div>
+            </form>
+        </div>
+    </div>
+}

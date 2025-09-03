@@ -1,0 +1,66 @@
+﻿@page "{id:int}"
+@model Keswa.Pages.Products.DetailsModel
+@{
+    ViewData["Title"] = $"تفاصيل موديل - {Model.Product.Name}";
+}
+
+<!-- Page Header -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="h2 fw-bold">تفاصيل موديل</h1>
+        <p class="text-muted">عرض جميع تفاصيل الموديل: @Model.Product.Name (@Model.Product.Code)</p>
+    </div>
+    <div>
+        <a asp-page="./Index" class="btn btn-outline-secondary"><i class="bi bi-arrow-right me-2"></i>العودة للموديلات</a>
+    </div>
+</div>
+
+<!-- Main Product Info -->
+<div class="card shadow-sm border-0 mb-4">
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-4 mb-3">
+                <h6 class="text-muted">كود الموديل</h6>
+                <p class="fw-bold">@Model.Product.Code</p>
+            </div>
+            <div class="col-md-8 mb-3">
+                <h6 class="text-muted">اسم الموديل</h6>
+                <p class="fw-bold">@Model.Product.Name</p>
+            </div>
+            <div class="col-md-12">
+                <h6 class="text-muted">الوصف</h6>
+                <p class="fw-bold">@(Model.Product.Description ?? "لا يوجد")</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bill of Materials (BOM) Table -->
+<div class="card shadow-sm border-0">
+    <div class="card-header bg-transparent">
+        <h5 class="fw-bold mb-0">قائمة المواد (BOM)</h5>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>المادة الخام</th>
+                        <th class="text-center">الكمية المطلوبة</th>
+                        <th class="text-center">وحدة القياس</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model.Product.BillOfMaterialItems)
+                    {
+                        <tr>
+                            <td><strong>@item.Material.Name</strong></td>
+                            <td class="text-center">@item.Quantity</td>
+                            <td class="text-center">@Html.DisplayFor(modelItem => item.Material.Unit)</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

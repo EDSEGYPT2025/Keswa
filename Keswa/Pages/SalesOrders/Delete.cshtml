@@ -1,0 +1,47 @@
+﻿@page
+@model Keswa.Pages.SalesOrders.DeleteModel
+@{
+    ViewData["Title"] = "حذف الطلبية";
+}
+
+<!-- Page Header -->
+<div class="mb-4">
+    <h1 class="h2 fw-bold">@ViewData["Title"]</h1>
+    <p class="text-muted">تأكيد حذف الطلبية رقم: @Model.SalesOrder.Id</p>
+</div>
+
+@if (!Model.IsDeletable)
+{
+    <div class="alert alert-danger" role="alert">
+        <h4 class="alert-heading">عملية غير مسموح بها!</h4>
+        <p>@Model.StatusMessage</p>
+        <hr>
+        <a asp-page="./Index" class="btn btn-secondary">العودة إلى قائمة الطلبيات</a>
+    </div>
+}
+else
+{
+    <div class="card shadow-sm border-0">
+        <div class="card-body">
+            <h5 class="card-title">هل أنت متأكد أنك تريد حذف هذه الطلبية نهائياً؟</h5>
+            <dl class="row mt-4">
+                <dt class="col-sm-3">رقم الطلبية</dt>
+                <dd class="col-sm-9">@Model.SalesOrder.Id</dd>
+
+                <dt class="col-sm-3">العميل</dt>
+                <dd class="col-sm-9">@Html.DisplayFor(model => model.SalesOrder.Customer.Name)</dd>
+
+                <dt class="col-sm-3">تاريخ الطلب</dt>
+                <dd class="col-sm-9">@Model.SalesOrder.OrderDate.ToShortDateString()</dd>
+            </dl>
+            <form method="post">
+                <input type="hidden" asp-for="SalesOrder.Id" />
+                <hr class="my-4" />
+                <div class="d-flex justify-content-end">
+                    <a asp-page="./Index" class="btn btn-outline-secondary me-2">إلغاء</a>
+                    <button type="submit" class="btn btn-danger">تأكيد الحذف</button>
+                </div>
+            </form>
+        </div>
+    </div>
+}

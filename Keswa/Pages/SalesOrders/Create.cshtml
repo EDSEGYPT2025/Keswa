@@ -1,0 +1,146 @@
+﻿@page
+@model Keswa.Pages.SalesOrders.CreateModel
+@{
+    ViewData["Title"] = "إنشاء طلبية جديدة";
+}
+
+<!-- Page Header -->
+<div class="mb-4">
+    <h1 class="h2 fw-bold">@ViewData["Title"]</h1>
+    <p class="text-muted">أدخل بيانات الطلبية والموديلات المطلوبة.</p>
+</div>
+
+<form method="post">
+    <!-- Main Document Info -->
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-body">
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-3" role="alert"></div>
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label asp-for="SalesOrder.CustomerId" class="form-label"></label>
+                    <select asp-for="SalesOrder.CustomerId" class="form-select searchable-select" asp-items="Model.CustomerList">
+                        <option value="">-- اختر العميل --</option>
+                    </select>
+                    <span asp-validation-for="SalesOrder.CustomerId" class="text-danger"></span>
+                </div>
+                <div class="col-md-4">
+                    <label asp-for="SalesOrder.OrderDate" class="form-label"></label>
+                    <input asp-for="SalesOrder.OrderDate" class="form-control" />
+                    <span asp-validation-for="SalesOrder.OrderDate" class="text-danger"></span>
+                </div>
+                <div class="col-md-4">
+                    <label asp-for="SalesOrder.ExpectedDeliveryDate" class="form-label"></label>
+                    <input asp-for="SalesOrder.ExpectedDeliveryDate" class="form-control" />
+                    <span asp-validation-for="SalesOrder.ExpectedDeliveryDate" class="text-danger"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Document Details -->
+    <div class="card shadow-sm border-0">
+        <div class="card-header bg-transparent d-flex justify-content-between align-items-center">
+            <h5 class="fw-bold mb-0">تفاصيل الموديلات</h5>
+            <button type="button" id="add-item-btn" class="btn btn-sm btn-outline-success"><i class="bi bi-plus-circle me-2"></i>إضافة موديل</button>
+        </div>
+        <div class="card-body">
+            <span asp-validation-for="SalesOrder.Details" class="text-danger d-block mb-2"></span>
+            <table class="table">
+                <thead class="table-light">
+                    <tr>
+                        <th style="width: 60%;">الموديل</th>
+                        <th style="width: 30%;">الكمية المطلوبة</th>
+                        <th style="width: 10%;"></th>
+                    </tr>
+                </thead>
+                <tbody id="items-container">
+                    <!-- الصفوف الديناميكية ستضاف هنا -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <hr class="my-4" />
+    <div class="d-flex justify-content-end">
+        <a asp-page="Index" class="btn btn-outline-secondary me-2">إلغاء</a>
+        <button type="submit" class="btn btn-primary">حفظ الطلبية</button>
+    </div>
+</form>
+
+<!-- Template for new item row (hidden) -->
+<table style="display: none;">
+    <tbody id="item-template">
+        <tr>
+            <td>
+                <select name="SalesOrder.Details[0].ProductId" class="form-select item-product searchable-select" asp-items="Model.ProductList">
+                    <option value="">-- اختر الموديل --</option>
+                </select>
+            </td>
+            <td>
+                <input type="number" name="SalesOrder.Details[0].Quantity" class="form-control item-quantity" value="1" min="1" step="1" />
+            </td>
+            <td>
+                <button type="button" class="btn btn-sm btn-outline-danger remove-item-btn"><i class="bi bi-trash"></i></button>
+            </td>
+        </tr>
+    </tbody>
+</table>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        $(document).ready(function () {
+            // تفعيل البحث للقوائم الثابتة في الصفحة
+            $('.searchable-select').select2({
+                theme: "bootstrap-5",
+                dir: "rtl",
+                placeholder: '-- اختر --',
+                width: '100%'
+            });
+
+            // الحصول على الصف الأصلي كقالب
+            const templateRow = $('#item-template tr').first();
+
+            // *** تم التعديل هنا: وظيفة إعادة ترتيب الفهرس لضمان تسلسل صحيح ***
+            function reindexItems() {
+                let currentIndex = 0;
+                $('#items-container tr').each(function () {
+                    $(this).find('select, input').each(function () {
+                        // استخدام regex أكثر دقة لضمان استبدال الفهرس فقط
+                        this.name = this.name.replace(/Details\[\d+\]/g, 'Details[' + currentIndex + ']');
+                    });
+                    currentIndex++;
+                });
+            }
+
+            function addItemRow() {
+                // استنساخ القالب لإنشاء صف جديد
+                let newRow = templateRow.clone();
+                $('#items-container').append(newRow);
+
+                // تفعيل مكتبة البحث على القائمة المنسدلة في الصف الجديد فقط
+                newRow.find('.searchable-select').select2({
+                    theme: "bootstrap-5",
+                    dir: "rtl",
+                    placeholder: '-- اختر --',
+                    width: '100%'
+                });
+
+                // إعادة ترتيب جميع الصفوف لضمان تسلسل الفهرس
+                reindexItems();
+            }
+
+            $('#add-item-btn').click(addItemRow);
+
+            $('#items-container').on('click', '.remove-item-btn', function () {
+                // تدمير نسخة Select2 قبل حذف الصف لتجنب المشاكل
+                $(this).closest('tr').find('.searchable-select').select2('destroy');
+                $(this).closest('tr').remove();
+
+                // إعادة ترتيب جميع الصفوف بعد الحذف
+                reindexItems();
+            });
+        });
+    </script>
+}
+

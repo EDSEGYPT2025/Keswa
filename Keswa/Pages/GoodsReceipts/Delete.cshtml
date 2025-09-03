@@ -1,0 +1,45 @@
+﻿@page "{id:int}"
+@model Keswa.Pages.GoodsReceipts.DeleteModel
+@{
+    ViewData["Title"] = "حذف سند استلام";
+}
+
+<!-- Page Header -->
+<div class="mb-4">
+    <h1 class="h2 fw-bold">@ViewData["Title"]</h1>
+    <p class="text-danger">هل أنت متأكد أنك تريد حذف هذا السند بشكل نهائي؟ سيتم التراجع عن الكميات المضافة للمخزن.</p>
+</div>
+
+<!-- Main Document Info -->
+<div class="card shadow-sm border-0 mb-4">
+    <div class="card-body">
+        <h5 class="card-title">بيانات السند</h5>
+        <hr />
+        <div class="row">
+            <div class="col-md-3 mb-3">
+                <h6 class="text-muted">رقم السند</h6>
+                <p class="fw-bold">@Model.GoodsReceiptNote.Id</p>
+            </div>
+            <div class="col-md-3 mb-3">
+                <h6 class="text-muted">رقم السند الورقي</h6>
+                <p class="fw-bold">@(Model.GoodsReceiptNote.DocumentNumber ?? "لا يوجد")</p>
+            </div>
+            <div class="col-md-3 mb-3">
+                <h6 class="text-muted">المخزن المستلم</h6>
+                <p class="fw-bold">@Model.GoodsReceiptNote.Warehouse.Name</p>
+            </div>
+            <div class="col-md-3 mb-3">
+                <h6 class="text-muted">تاريخ الاستلام</h6>
+                <p class="fw-bold">@Model.GoodsReceiptNote.ReceiptDate.ToShortDateString()</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<form method="post">
+    <input type="hidden" asp-for="GoodsReceiptNote.Id" />
+    <div class="d-flex justify-content-start">
+        <button type="submit" class="btn btn-danger"><i class="bi bi-trash me-2"></i>تأكيد الحذف</button>
+        <a asp-page="./Index" class="btn btn-outline-secondary me-2">إلغاء</a>
+    </div>
+</form>

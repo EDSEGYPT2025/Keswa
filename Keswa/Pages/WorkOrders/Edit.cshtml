@@ -1,0 +1,70 @@
+﻿@page "{id:int}"
+@model Keswa.Pages.WorkOrders.EditModel
+@{
+    ViewData["Title"] = "تعديل أمر شغل";
+}
+
+<!-- Page Header -->
+<div class="mb-4">
+    <h1 class="h2 fw-bold">@ViewData["Title"]</h1>
+    <p class="text-muted">تعديل بيانات أمر الشغل رقم: @Model.WorkOrder.WorkOrderNumber</p>
+</div>
+
+<div class="row">
+    <div class="col-md-10">
+        <div class="card shadow-sm border-0">
+            <div class="card-body">
+                <form method="post">
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3" role="alert"></div>
+                    <input type="hidden" asp-for="WorkOrder.Id" />
+                    <input type="hidden" asp-for="WorkOrder.WorkOrderNumber" />
+                    <input type="hidden" asp-for="WorkOrder.CreationDate" />
+
+                    <div class="row g-3">
+                        <div class="col-md-8">
+                            <label asp-for="WorkOrder.ProductId" class="form-label"></label>
+                            <select asp-for="WorkOrder.ProductId" class="form-select searchable-select" asp-items="Model.ProductList"></select>
+                            <span asp-validation-for="WorkOrder.ProductId" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-4">
+                            <label asp-for="WorkOrder.QuantityToProduce" class="form-label"></label>
+                            <input asp-for="WorkOrder.QuantityToProduce" class="form-control" />
+                            <span asp-validation-for="WorkOrder.QuantityToProduce" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="WorkOrder.PlannedStartDate" class="form-label"></label>
+                            <input asp-for="WorkOrder.PlannedStartDate" class="form-control" />
+                            <span asp-validation-for="WorkOrder.PlannedStartDate" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="WorkOrder.PlannedCompletionDate" class="form-label"></label>
+                            <input asp-for="WorkOrder.PlannedCompletionDate" class="form-control" />
+                            <span asp-validation-for="WorkOrder.PlannedCompletionDate" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-12">
+                            <label asp-for="WorkOrder.Status" class="form-label"></label>
+                            <select asp-for="WorkOrder.Status" class="form-select" asp-items="Html.GetEnumSelectList<Keswa.Enums.WorkOrderStatus>()"></select>
+                            <span asp-validation-for="WorkOrder.Status" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-12">
+                            <label asp-for="WorkOrder.Notes" class="form-label"></label>
+                            <textarea asp-for="WorkOrder.Notes" class="form-control" rows="3"></textarea>
+                            <span asp-validation-for="WorkOrder.Notes" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <hr class="my-4" />
+
+                    <div class="d-flex justify-content-end">
+                        <a asp-page="./Index" class="btn btn-outline-secondary me-2">إلغاء</a>
+                        <button type="submit" class="btn btn-primary">حفظ التعديلات</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

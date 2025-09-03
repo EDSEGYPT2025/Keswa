@@ -1,0 +1,207 @@
+﻿@page "{id:int}"
+@model Keswa.Pages.WorkOrders.DetailsModel
+@{
+    ViewData["Title"] = "متابعة أمر الشغل";
+}
+
+<!-- Page Header -->
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap">
+    <div>
+        <h1 class="h2 fw-bold">@ViewData["Title"]</h1>
+        <p class="text-muted">متابعة حية لمراحل الإنتاج لأمر الشغل رقم: @Model.WorkOrder.WorkOrderNumber</p>
+    </div>
+    <div>
+        @if (Model.WorkOrder.Status == Keswa.Enums.WorkOrderStatus.Completed)
+        {
+            <a asp-page="./PrintLabels" asp-route-id="@Model.WorkOrder.Id" class="btn btn-info" target="_blank"><i class="bi bi-qr-code me-2"></i>طباعة ملصقات QR</a>
+        }
+        else
+        {
+            <a asp-page="./Receive" asp-route-id="@Model.WorkOrder.Id" class="btn btn-success"><i class="bi bi-check2-circle me-2"></i>إكمال واستلام المنتج</a>
+        }
+        <a asp-page="./Index" class="btn btn-outline-secondary"><i class="bi bi-arrow-right me-2"></i>العودة للقائمة</a>
+    </div>
+</div>
+
+<!-- Main Work Order Info & Progress -->
+<div class="card shadow-sm border-0 mb-4">
+    <div class="card-body">
+        <dl class="row mb-3">
+            <dt class="col-sm-3">رقم أمر الشغل</dt>
+            <dd class="col-sm-9"><strong>@Model.WorkOrder.WorkOrderNumber</strong></dd>
+
+            <dt class="col-sm-3">الموديل</dt>
+            <dd class="col-sm-9">@Html.DisplayFor(model => model.WorkOrder.Product.Name)</dd>
+
+            <dt class="col-sm-3">الكمية الإجمالية المطلوبة</dt>
+            <dd class="col-sm-9">@Html.DisplayFor(model => model.WorkOrder.QuantityToProduce) قطعة</dd>
+        </dl>
+
+        <h6 class="fw-bold">متابعة تقدم الإنتاج</h6>
+        <div class="progress" style="height: 25px;">
+            @{
+                var finalStage = Model.RoutingStages.FirstOrDefault(s => s.Department == Keswa.Enums.Department.Packaging);
+                var quantityCompleted = finalStage?.QuantityOut ?? 0;
+                var progressPercentage = (Model.WorkOrder.QuantityToProduce > 0)
+                    ? (int)Math.Round((double)quantityCompleted * 100 / Model.WorkOrder.QuantityToProduce)
+                    : 0;
+            }
+            <div class="progress-bar progress-bar-striped progress-bar-animated bg-success" role="progressbar" style="width: @progressPercentage%;" aria-valuenow="@progressPercentage" aria-valuemin="0" aria-valuemax="100">@progressPercentage% مكتمل</div>
+        </div>
+    </div>
+</div>
+
+<!-- Production Routing / Workflow -->
+<div class="card shadow-sm border-0 mb-4">
+    <div class="card-header bg-transparent border-0 pt-3">
+        <h5 class="fw-bold">مسار الإنتاج</h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            @foreach (var stage in Model.RoutingStages)
+            {
+                <div class="col-md-4 mb-4">
+                    <div class="card h-100">
+                        <div class="card-header text-center">
+                            <h6 class="fw-bold mb-0">@Html.DisplayFor(modelItem => stage.Department)</h6>
+                        </div>
+                        <div class="card-body text-center">
+                            <p class="text-muted mb-1">الكمية المستلمة</p>
+                            <h4 class="fw-bold">@stage.QuantityIn</h4>
+
+                            <p class="text-muted mb-1 mt-3">الكمية المنجزة</p>
+                            <h4 class="fw-bold text-success">@stage.QuantityOut</h4>
+
+                            <div class="progress mt-3" style="height: 20px;">
+                                <div class="progress-bar" role="progressbar" style="width: @stage.ProgressPercentage%;" aria-valuenow="@stage.ProgressPercentage" aria-valuemin="0" aria-valuemax="100">@stage.ProgressPercentage%</div>
+                            </div>
+                        </div>
+                        <div class="card-footer text-center">
+                            <small class="text-muted">قيد العمل: @stage.WorkInProgress</small>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<!-- Material Issuance Notes -->
+<div class="card shadow-sm border-0 mb-4">
+    <div class="card-header bg-transparent border-0 pt-3 d-flex justify-content-between align-items-center">
+        <h5 class="fw-bold mb-0">أذونات صرف المواد الخام</h5>
+        <a asp-page="/MaterialIssuances/Create" asp-route-workOrderId="@Model.WorkOrder.Id" class="btn btn-success btn-sm">
+            <i class="bi bi-plus-circle me-2"></i>إنشاء إذن صرف جديد
+        </a>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead class="table-light">
+                    <tr>
+                        <th>رقم الإذن</th>
+                        <th>المخزن</th>
+                        <th>تاريخ الصرف</th>
+                        <th>ملاحظات</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (!Model.MaterialIssuanceNotes.Any())
+                    {
+                        <tr>
+                            <td colspan="5" class="text-center text-muted">لم يتم إنشاء أي أذونات صرف لهذا الأمر.</td>
+                        </tr>
+                    }
+                    @foreach (var note in Model.MaterialIssuanceNotes)
+                    {
+                        <tr>
+                            <td><strong>@note.IssuanceNumber</strong></td>
+                            <td>@note.Warehouse.Name</td>
+                            <td>@note.IssuanceDate.ToShortDateString()</td>
+                            <td>@note.Notes</td>
+                            <td>
+                                <a asp-page="/MaterialIssuances/Details" asp-route-id="@note.Id" class="btn btn-sm btn-outline-secondary"><i class="bi bi-eye"></i></a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+
+<!-- Task Assignment Form -->
+<div class="card shadow-sm border-0 mb-4">
+    <div class="card-header bg-transparent border-0 pt-3">
+        <h5 class="fw-bold">تسجيل الإنتاج وإسناد المهام</h5>
+    </div>
+    <div class="card-body">
+        <form method="post" asp-page-handler="AddProductionLog">
+            <input type="hidden" name="workOrderId" value="@Model.WorkOrder.Id" />
+            <div asp-validation-summary="All" class="text-danger"></div>
+
+            <div class="row g-3 align-items-end">
+                <div class="col-md-4">
+                    <label asp-for="NewProductionLog.WorkerId" class="form-label"></label>
+                    <select asp-for="NewProductionLog.WorkerId" class="form-select searchable-select" asp-items="Model.WorkerList">
+                        <option value="">-- اختر العامل --</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label asp-for="NewProductionLog.Department" class="form-label"></label>
+                    <select asp-for="NewProductionLog.Department" class="form-select" asp-items="Html.GetEnumSelectList<Keswa.Enums.Department>()">
+                        <option value="">-- اختر القسم --</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label asp-for="NewProductionLog.QuantityProduced" class="form-label"></label>
+                    <input asp-for="NewProductionLog.QuantityProduced" class="form-control" type="number" min="1" />
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-success w-100">تسجيل</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Production Logs Table -->
+<div class="card shadow-sm border-0">
+    <div class="card-header bg-transparent border-0 pt-3">
+        <h5 class="fw-bold">السجلات التفصيلية للإنتاج</h5>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead class="table-light">
+                    <tr>
+                        <th>العامل</th>
+                        <th>القسم</th>
+                        <th>الكمية المنتجة</th>
+                        <th>تاريخ ووقت التسجيل</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (!Model.ProductionLogs.Any())
+                    {
+                        <tr>
+                            <td colspan="4" class="text-center text-muted">لم يتم تسجيل أي نشاط بعد.</td>
+                        </tr>
+                    }
+                    @foreach (var log in Model.ProductionLogs)
+                    {
+                        <tr>
+                            <td>@log.Worker.Name</td>
+                            <td>@Html.DisplayFor(modelItem => log.Department)</td>
+                            <td>@log.QuantityProduced</td>
+                            <td>@log.LogDate.ToString("g")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+

@@ -1,0 +1,69 @@
+﻿@page "{id:int}"
+@model Keswa.Pages.MaterialIssuances.DetailsModel
+@{
+    ViewData["Title"] = "تفاصيل إذن الصرف";
+}
+
+<!-- Page Header -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="h2 fw-bold">@ViewData["Title"]</h1>
+        <p class="text-muted">عرض تفاصيل إذن الصرف رقم: @Model.MaterialIssuanceNote.IssuanceNumber</p>
+    </div>
+    <div>
+        <a asp-page="/WorkOrders/Details" asp-route-id="@Model.MaterialIssuanceNote.WorkOrderId" class="btn btn-outline-secondary"><i class="bi bi-arrow-right me-2"></i>العودة لأمر الشغل</a>
+    </div>
+</div>
+
+<!-- Main Issuance Note Info -->
+<div class="card shadow-sm border-0 mb-4">
+    <div class="card-body">
+        <dl class="row mb-0">
+            <dt class="col-sm-3">رقم الإذن</dt>
+            <dd class="col-sm-9"><strong>@Model.MaterialIssuanceNote.IssuanceNumber</strong></dd>
+
+            <dt class="col-sm-3">أمر الشغل</dt>
+            <dd class="col-sm-9">@Model.MaterialIssuanceNote.WorkOrder.WorkOrderNumber</dd>
+
+            <dt class="col-sm-3">المخزن</dt>
+            <dd class="col-sm-9">@Model.MaterialIssuanceNote.Warehouse.Name</dd>
+
+            <dt class="col-sm-3">تاريخ الصرف</dt>
+            <dd class="col-sm-9">@Model.MaterialIssuanceNote.IssuanceDate.ToShortDateString()</dd>
+
+            <dt class="col-sm-3">ملاحظات</dt>
+            <dd class="col-sm-9">@(Model.MaterialIssuanceNote.Notes ?? "لا يوجد")</dd>
+        </dl>
+    </div>
+</div>
+
+
+<!-- Issued Materials Table -->
+<div class="card shadow-sm border-0">
+    <div class="card-header bg-transparent">
+        <h5 class="fw-bold mb-0">المواد المصروفة</h5>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>المادة الخام</th>
+                        <th class="text-center">الكمية المصروفة</th>
+                        <th class="text-center">وحدة القياس</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model.MaterialIssuanceNote.Details)
+                    {
+                        <tr>
+                            <td><strong>@item.Material.Name</strong></td>
+                            <td class="text-center">@item.Quantity</td>
+                            <td class="text-center">@Html.DisplayFor(modelItem => item.Material.Unit)</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

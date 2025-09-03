@@ -1,0 +1,45 @@
+﻿@page
+@model Keswa.Pages.Materials.CreateModel
+@{
+    ViewData["Title"] = "إضافة مادة خام جديدة";
+}
+
+<!-- Page Header -->
+<div class="mb-4">
+    <h1 class="h2 fw-bold">@ViewData["Title"]</h1>
+    <p class="text-muted">أدخل بيانات المادة الخام لإضافتها إلى قائمة المواد الرئيسية في النظام.</p>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card shadow-sm border-0">
+            <div class="card-body">
+                <form method="post">
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3" role="alert"></div>
+
+                    <div class="mb-3">
+                        <label asp-for="Material.Name" class="form-label"></label>
+                        <input asp-for="Material.Name" class="form-control" />
+                        <span asp-validation-for="Material.Name" class="text-danger"></span>
+                    </div>
+
+                    @* *** تم التعديل هنا *** *@
+                    <div class="mb-3">
+                        <label asp-for="Material.Unit" class="form-label"></label>
+                        <select asp-for="Material.Unit" class="form-select searchable-select" asp-items="Html.GetEnumSelectList<Keswa.Enums.UnitOfMeasure>()">
+                            <option value="">-- اختر وحدة القياس --</option>
+                        </select>
+                        <span asp-validation-for="Material.Unit" class="text-danger"></span>
+                    </div>
+
+                    <hr class="my-4" />
+
+                    <div class="d-flex justify-content-end">
+                        <a asp-page="./Index" class="btn btn-outline-secondary me-2">إلغاء</a>
+                        <button type="submit" class="btn btn-primary">حفظ المادة</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

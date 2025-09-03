@@ -1,0 +1,184 @@
+﻿@page
+@model Keswa.Pages.MaterialIssuances.CreateModel
+@{
+    ViewData["Title"] = "إنشاء إذن صرف مواد خام";
+}
+
+<!-- Page Header -->
+<div class="mb-4">
+    <h1 class="h2 fw-bold">@ViewData["Title"]</h1>
+    <p class="text-muted">صرف مواد خام من المخزن لصالح أمر الشغل رقم: @Model.CurrentWorkOrder.WorkOrderNumber</p>
+</div>
+
+<!-- *** تم إضافة هذا القسم الجديد *** -->
+<!-- Required Materials Guide -->
+<div class="card shadow-sm border-0 mb-4">
+    <div class="card-header bg-transparent">
+        <h5 class="fw-bold mb-0">دليل الكميات المطلوبة (لأمر الشغل كاملاً)</h5>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-sm table-striped mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>المادة الخام</th>
+                        <th class="text-center">الكمية الإجمالية المطلوبة</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model.RequiredMaterials)
+                    {
+                        <tr>
+                            <td>@item.MaterialName</td>
+                            <td class="text-center">@item.TotalRequiredQuantity.ToString("0.##") @item.Unit</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+
+<form method="post">
+    <input type="hidden" asp-for="MaterialIssuanceNote.WorkOrderId" />
+
+    <!-- Main Document Info -->
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label asp-for="MaterialIssuanceNote.WarehouseId" class="form-label"></label>
+                    <select asp-for="MaterialIssuanceNote.WarehouseId" class="form-select searchable-select" asp-items="Model.WarehouseList">
+                        <option value="">-- اختر المخزن --</option>
+                    </select>
+                    <span asp-validation-for="MaterialIssuanceNote.WarehouseId" class="text-danger"></span>
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="MaterialIssuanceNote.IssuanceDate" class="form-label"></label>
+                    <input asp-for="MaterialIssuanceNote.IssuanceDate" class="form-control" />
+                    <span asp-validation-for="MaterialIssuanceNote.IssuanceDate" class="text-danger"></span>
+                </div>
+                <div class="col-12">
+                    <label asp-for="MaterialIssuanceNote.Notes" class="form-label"></label>
+                    <textarea asp-for="MaterialIssuanceNote.Notes" class="form-control" rows="2"></textarea>
+                    <span asp-validation-for="MaterialIssuanceNote.Notes" class="text-danger"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Document Details -->
+    <div class="card shadow-sm border-0">
+        <div class="card-header bg-transparent d-flex justify-content-between align-items-center">
+            <h5 class="fw-bold mb-0">تفاصيل المواد المصروفة</h5>
+            <button type="button" id="add-item-btn" class="btn btn-sm btn-outline-success"><i class="bi bi-plus-circle me-2"></i>إضافة مادة</button>
+        </div>
+        <div class="card-body">
+            @if (ViewData.ModelState.ContainsKey("MaterialIssuanceNote.Details") || !ViewData.ModelState.IsValid)
+            {
+                <div class="alert alert-danger">
+                    @Html.ValidationMessage("MaterialIssuanceNote.Details")
+                    <div asp-validation-summary="ModelOnly"></div>
+                </div>
+            }
+            <table class="table">
+                <thead class="table-light">
+                    <tr>
+                        <th style="width: 60%;">المادة الخام</th>
+                        <th style="width: 30%;">الكمية المصروفة</th>
+                        <th style="width: 10%;"></th>
+                    </tr>
+                </thead>
+                <tbody id="items-container">
+                    <!-- الصفوف الديناميكية ستضاف هنا -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <hr class="my-4" />
+    <div class="d-flex justify-content-end">
+        <a asp-page="/WorkOrders/Details" asp-route-id="@Model.MaterialIssuanceNote.WorkOrderId" class="btn btn-outline-secondary me-2">إلغاء</a>
+        <button type="submit" class="btn btn-primary">حفظ إذن الصرف</button>
+    </div>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+       $(document).ready(function () {
+
+            const productOptions = @Html.Raw(Json.Serialize(Model.MaterialList.Select(p => new { value = p.Value, text = p.Text })));
+
+            let itemIndex = 0;
+
+            function reindexRows() {
+                $('#items-container tr').each(function(index) {
+                    $(this).find('input, select').each(function() {
+                        if (this.name) {
+                            this.name = this.name.replace(/\[\d+\]/, '[' + index + ']');
+                        }
+                    });
+                });
+                itemIndex = $('#items-container tr').length;
+            }
+
+            function initializeSelect2(element) {
+                $(element).select2({
+                    theme: "bootstrap-5",
+                    dir: "rtl",
+                    placeholder: '-- اختر --',
+                    width: '100%'
+                });
+            }
+
+            $('#add-item-btn').click(function() {
+                const newRow = $('<tr>');
+
+                const cell1 = $('<td>');
+                const select = $('<select>').attr({
+                    name: `MaterialIssuanceNote.Details[${itemIndex}].MaterialId`,
+                    class: 'form-select item-material searchable-select'
+                });
+                select.append($('<option>', { value: '', text: '-- اختر المادة --' }));
+                productOptions.forEach(function(option){
+                    select.append($('<option>', { value: option.value, text: option.text }));
+                });
+                cell1.append(select);
+
+                const cell2 = $('<td>');
+                const quantityInput = $('<input>').attr({
+                    type: 'number',
+                    name: `MaterialIssuanceNote.Details[${itemIndex}].Quantity`,
+                    class: 'form-control item-quantity',
+                    value: '1',
+                    min: '0.01',
+                    step: 'any'
+                });
+                cell2.append(quantityInput);
+
+                const cell3 = $('<td>');
+                const removeBtn = $('<button>').attr({
+                    type: 'button',
+                    class: 'btn btn-sm btn-outline-danger remove-item-btn'
+                }).html('<i class="bi bi-trash"></i>');
+                cell3.append(removeBtn);
+
+                newRow.append(cell1, cell2, cell3);
+                $('#items-container').append(newRow);
+
+                initializeSelect2(newRow.find('.searchable-select'));
+                reindexRows();
+
+            });
+
+            $('#items-container').on('click', '.remove-item-btn', function () {
+                $(this).closest('tr').find('.searchable-select').select2('destroy');
+                $(this).closest('tr').remove();
+                reindexRows();
+            });
+
+        });
+    </script>
+}

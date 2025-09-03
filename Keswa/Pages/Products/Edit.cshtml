@@ -1,0 +1,141 @@
+﻿@page "{id:int}"
+@model Keswa.Pages.Products.EditModel
+@{
+    ViewData["Title"] = "تعديل موديل";
+}
+
+<!-- Page Header -->
+<div class="mb-4">
+    <h1 class="h2 fw-bold">@ViewData["Title"]</h1>
+    <p class="text-muted">تعديل بيانات الموديل وقائمة المواد الخام المكونة له (BOM).</p>
+</div>
+
+<form method="post">
+    <input type="hidden" asp-for="Product.Id" />
+    <!-- Main Product Info -->
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label asp-for="Product.Code" class="form-label"></label>
+                    <input asp-for="Product.Code" class="form-control" />
+                    <span asp-validation-for="Product.Code" class="text-danger"></span>
+                </div>
+                <div class="col-md-8">
+                    <label asp-for="Product.Name" class="form-label"></label>
+                    <input asp-for="Product.Name" class="form-control" />
+                    <span asp-validation-for="Product.Name" class="text-danger"></span>
+                </div>
+                <div class="col-md-12">
+                    <label asp-for="Product.Description" class="form-label"></label>
+                    <textarea asp-for="Product.Description" class="form-control" rows="3"></textarea>
+                    <span asp-validation-for="Product.Description" class="text-danger"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bill of Materials (BOM) -->
+    <div class="card shadow-sm border-0">
+        <div class="card-header bg-transparent d-flex justify-content-between align-items-center">
+            <h5 class="fw-bold mb-0">قائمة المواد (BOM)</h5>
+            <button type="button" id="add-item-btn" class="btn btn-sm btn-outline-success"><i class="bi bi-plus-circle me-2"></i>إضافة مادة</button>
+        </div>
+        <div class="card-body">
+            <table class="table">
+                <thead class="table-light">
+                    <tr>
+                        <th style="width: 60%;">المادة الخام</th>
+                        <th style="width: 30%;">الكمية المطلوبة</th>
+                        <th style="width: 10%;"></th>
+                    </tr>
+                </thead>
+                <tbody id="items-container">
+                    @foreach (var item in Model.Product.BillOfMaterialItems)
+                    {
+                        <tr>
+                            <td>
+                                <select name="Product.BillOfMaterialItems[@(Model.Product.BillOfMaterialItems.ToList().IndexOf(item))].MaterialId" class="form-select item-material searchable-select" asp-items="Model.MaterialList" asp-for="@item.MaterialId">
+                                </select>
+                            </td>
+                            <td>
+                                <input type="number" name="Product.BillOfMaterialItems[@(Model.Product.BillOfMaterialItems.ToList().IndexOf(item))].Quantity" class="form-control item-quantity" asp-for="@item.Quantity" min="0.001" step="any" />
+                            </td>
+                            <td>
+                                <button type="button" class="btn btn-sm btn-outline-danger remove-item-btn"><i class="bi bi-trash"></i></button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <hr class="my-4" />
+    <div class="d-flex justify-content-end">
+        <a asp-page="Index" class="btn btn-outline-secondary me-2">إلغاء</a>
+        <button type="submit" class="btn btn-primary">حفظ التعديلات</button>
+    </div>
+</form>
+
+<!-- Template for new item row (hidden) -->
+<table style="display: none;">
+    <tbody id="item-template">
+        <tr>
+            <td>
+                <select name="Product.BillOfMaterialItems[INDEX].MaterialId" class="form-select item-material searchable-select" asp-items="Model.MaterialList">
+                    <option value="">-- اختر المادة --</option>
+                </select>
+            </td>
+            <td>
+                <input type="number" name="Product.BillOfMaterialItems[INDEX].Quantity" class="form-control item-quantity" value="1" min="0.001" step="any" />
+            </td>
+            <td>
+                <button type="button" class="btn btn-sm btn-outline-danger remove-item-btn"><i class="bi bi-trash"></i></button>
+            </td>
+        </tr>
+    </tbody>
+</table>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        $(document).ready(function () {
+            // تفعيل البحث للقوائم الثابتة والموجودة مسبقاً
+            $('select.searchable-select').select2({
+                theme: "bootstrap-5",
+                dir: "rtl",
+                placeholder: '-- اختر --',
+                width: '100%'
+            });
+
+            let itemIndex = @Model.Product.BillOfMaterialItems.Count;
+
+            function addItemRow() {
+                const templateHtml = $('#item-template').html();
+                let newRowHtml = templateHtml.replace(/INDEX/g, itemIndex);
+                let newRow = $(newRowHtml);
+                $('#items-container').append(newRow);
+
+                newRow.find('.searchable-select').select2({
+                    theme: "bootstrap-5",
+                    dir: "rtl",
+                    placeholder: '-- اختر المادة --',
+                    width: '100%'
+                });
+
+                itemIndex++;
+            }
+
+            $('#add-item-btn').click(addItemRow);
+
+            $('#items-container').on('click', '.remove-item-btn', function () {
+                let row = $(this).closest('tr');
+                if (row.find('.searchable-select').data('select2')) {
+                    row.find('.searchable-select').select2('destroy');
+                }
+                row.remove();
+            });
+        });
+    </script>
+}

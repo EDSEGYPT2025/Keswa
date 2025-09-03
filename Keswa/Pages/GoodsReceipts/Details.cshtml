@@ -1,0 +1,90 @@
+﻿@page "{id:int}"
+@model Keswa.Pages.GoodsReceipts.DetailsModel
+@{
+    ViewData["Title"] = $"تفاصيل سند - {Model.GoodsReceiptNote.DocumentNumber ?? Model.GoodsReceiptNote.Id.ToString()}";
+}
+
+<!-- Page Header -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="h2 fw-bold">تفاصيل سند استلام</h1>
+        <p class="text-muted">عرض جميع تفاصيل السند رقم: @(Model.GoodsReceiptNote.DocumentNumber ?? Model.GoodsReceiptNote.Id.ToString())</p>
+    </div>
+    <div>
+        <a asp-page="./Index" class="btn btn-outline-secondary"><i class="bi bi-arrow-right me-2"></i>العودة للسندات</a>
+        <button class="btn btn-secondary"><i class="bi bi-printer me-2"></i>طباعة</button>
+    </div>
+</div>
+
+<!-- Main Document Info -->
+<div class="card shadow-sm border-0 mb-4">
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-3 mb-3">
+                <h6 class="text-muted">رقم السند</h6>
+                <p class="fw-bold">@Model.GoodsReceiptNote.Id</p>
+            </div>
+            <div class="col-md-3 mb-3">
+                <h6 class="text-muted">رقم السند الورقي</h6>
+                <p class="fw-bold">@(Model.GoodsReceiptNote.DocumentNumber ?? "لا يوجد")</p>
+            </div>
+            <div class="col-md-3 mb-3">
+                <h6 class="text-muted">نوع السند</h6>
+                <p class="fw-bold">@Html.DisplayFor(model => model.GoodsReceiptNote.TransactionType)</p>
+            </div>
+            <div class="col-md-3 mb-3">
+                <h6 class="text-muted">تاريخ الاستلام</h6>
+                <p class="fw-bold">@Model.GoodsReceiptNote.ReceiptDate.ToShortDateString()</p>
+            </div>
+            <div class="col-md-6 mb-3">
+                <h6 class="text-muted">المخزن المستلم</h6>
+                <p class="fw-bold">@Model.GoodsReceiptNote.Warehouse.Name</p>
+            </div>
+            <div class="col-md-6">
+                <h6 class="text-muted">ملاحظات</h6>
+                <p class="fw-bold">@(Model.GoodsReceiptNote.Notes ?? "لا يوجد")</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Document Details Table -->
+<div class="card shadow-sm border-0">
+    <div class="card-header bg-transparent">
+        <h5 class="fw-bold mb-0">تفاصيل الأصناف</h5>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>المادة الخام</th>
+                        <th class="text-center">الكمية</th>
+                        <th class="text-center">سعر الوحدة</th>
+                        <th class="text-center">الإجمالي</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model.GoodsReceiptNote.Details)
+                    {
+                        <tr>
+                            <td>
+                                <strong>@item.Material.Name</strong>
+                                <small class="d-block text-muted">(@Html.DisplayFor(modelItem => item.Material.Unit))</small>
+                            </td>
+                            <td class="text-center">@item.Quantity</td>
+                            <td class="text-center">@item.UnitPrice.ToString("N2")</td>
+                            <td class="text-center fw-bold">@(( (decimal)item.Quantity * item.UnitPrice).ToString("N2"))</td>
+                        </tr>
+                    }
+                </tbody>
+                <tfoot class="table-light">
+                    <tr>
+                        <th colspan="3" class="text-start">القيمة الإجمالية للسند</th>
+                        <th class="text-center fw-bolder h5">@Model.TotalValue.ToString("N2")</th>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,72 @@
+﻿@page
+@model Keswa.Pages.Reports.InventoryValuationModel
+@{
+    ViewData["Title"] = "تقرير تقييم المخزون";
+    var egyptianCulture = new System.Globalization.CultureInfo("ar-EG");
+}
+
+<!-- Page Header -->
+<div class="mb-4">
+    <h1 class="h2 fw-bold">@ViewData["Title"]</h1>
+    <p class="text-muted">حساب القيمة الإجمالية للمخزون بناءً على طريقة التقييم المختارة.</p>
+</div>
+
+<!-- Filters Card -->
+<div class="card shadow-sm border-0 mb-4">
+    <div class="card-body">
+        <form method="get">
+            <div class="row g-3 align-items-end">
+                <div class="col-md-5">
+                    <label class="form-label">المخزن</label>
+                    <select asp-for="SelectedWarehouseId" class="form-select searchable-select" asp-items="Model.WarehouseList">
+                        <option value="">-- كل المخازن --</option>
+                    </select>
+                </div>
+                <div class="col-md-5">
+                    <label class="form-label">طريقة التقييم</label>
+                    <select asp-for="SelectedValuationMethod" class="form-select" asp-items="Html.GetEnumSelectList<Keswa.Pages.Reports.ValuationMethod>()"></select>
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary w-100">عرض التقرير</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Report Results Table -->
+<div class="card shadow-sm border-0">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>المادة الخام</th>
+                        <th>المخزن</th>
+                        <th class="text-center">الكمية المتاحة</th>
+                        <th class="text-center">تكلفة الوحدة</th>
+                        <th class="text-end">القيمة الإجمالية</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model.ValuationReport)
+                    {
+                        <tr>
+                            <td><strong>@item.MaterialName</strong></td>
+                            <td>@item.WarehouseName</td>
+                            <td class="text-center">@item.Quantity.ToString("0.##")</td>
+                            <td class="text-center">@item.UnitPrice.ToString("C", egyptianCulture)</td>
+                            <td class="text-end fw-bold">@item.TotalValue.ToString("C", egyptianCulture)</td>
+                        </tr>
+                    }
+                </tbody>
+                <tfoot class="table-group-divider table-total-row">
+                    <tr>
+                        <th colspan="4" class="text-start">الإجمالي العام لقيمة المخزون</th>
+                        <th class="text-end">@Model.GrandTotal.ToString("C", egyptianCulture)</th>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,33 @@
+﻿@page
+@model Keswa.Pages.Customers.DeleteModel
+@{
+    ViewData["Title"] = "حذف العميل";
+}
+
+<!-- Page Header -->
+<div class="mb-4">
+    <h1 class="h2 fw-bold">@ViewData["Title"]</h1>
+    <p class="text-danger">هل أنت متأكد من رغبتك في حذف هذا العميل؟ لا يمكن التراجع عن هذا الإجراء.</p>
+</div>
+
+<div class="card shadow-sm border-0">
+    <div class="card-body">
+        <h4 class="card-title">@Html.DisplayFor(model => model.Customer.Name)</h4>
+        <hr />
+        <dl class="row">
+            <dt class="col-sm-3">@Html.DisplayNameFor(model => model.Customer.PhoneNumber)</dt>
+            <dd class="col-sm-9">@Html.DisplayFor(model => model.Customer.PhoneNumber)</dd>
+
+            <dt class="col-sm-3">@Html.DisplayNameFor(model => model.Customer.Address)</dt>
+            <dd class="col-sm-9">@Html.DisplayFor(model => model.Customer.Address)</dd>
+        </dl>
+
+        <form method="post">
+            <input type="hidden" asp-for="Customer.Id" />
+            <div class="d-flex justify-content-end mt-4">
+                <a asp-page="./Index" class="btn btn-outline-secondary me-2">إلغاء</a>
+                <button type="submit" class="btn btn-danger">تأكيد الحذف</button>
+            </div>
+        </form>
+    </div>
+</div>

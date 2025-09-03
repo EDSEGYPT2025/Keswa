@@ -1,0 +1,88 @@
+﻿@page
+@model Keswa.Pages.Reports.MaterialAnalysisModel
+@{
+    ViewData["Title"] = "تحليل أسعار المواد الخام";
+    var egyptianCulture = new System.Globalization.CultureInfo("ar-EG");
+}
+
+<!-- Page Header -->
+<div class="mb-4">
+    <h1 class="h2 fw-bold">@ViewData["Title"]</h1>
+    <p class="text-muted">تحليل تفصيلي لتاريخ أسعار الشراء لكل مادة خام.</p>
+</div>
+
+<!-- Filters Card -->
+<div class="card shadow-sm border-0 mb-4">
+    <div class="card-body">
+        <form method="get">
+            <div class="row g-3 align-items-end">
+                <div class="col-md-10">
+                    <label class="form-label">اختر المادة الخام</label>
+                    <select asp-for="SelectedMaterialId" class="form-select searchable-select" asp-items="Model.MaterialList">
+                        <option value="">-- اختر لعرض التقرير --</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary w-100">تحليل</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+@if (Model.Report != null)
+{
+    <!-- Report Results -->
+    <div class="card shadow-sm border-0">
+        <div class="card-header bg-transparent">
+            <h5 class="fw-bold mb-0">نتائج التحليل للمادة: @Model.Report.MaterialName</h5>
+        </div>
+        <div class="card-body">
+            <!-- Summary -->
+            <div class="row g-3 mb-4">
+                <div class="col-md-4">
+                    <div class="summary-card" style="border-left-color: #2980b9;">
+                        <h6 class="text-muted">متوسط سعر الشراء</h6>
+                        <h3 class="fw-bold">@Model.Report.AveragePrice.ToString("C", egyptianCulture)</h3>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="summary-card" style="border-left-color: #27ae60;">
+                        <h6 class="text-muted">أعلى سعر شراء</h6>
+                        <h3 class="fw-bold">@Model.Report.HighestPrice.ToString("C", egyptianCulture)</h3>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="summary-card" style="border-left-color: #c0392b;">
+                        <h6 class="text-muted">أقل سعر شراء</h6>
+                        <h3 class="fw-bold">@Model.Report.LowestPrice.ToString("C", egyptianCulture)</h3>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Receipts History -->
+            <h6 class="fw-bold report-section-title">سجل سندات الاستلام</h6>
+            <div class="table-responsive">
+                <table class="table table-bordered">
+                    <thead class="table-light">
+                        <tr>
+                            <th>رقم سند الاستلام</th>
+                            <th>تاريخ الاستلام</th>
+                            <th class="text-end">سعر الوحدة</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model.Report.Receipts)
+                        {
+                            <tr>
+                                <td><strong>@item.ReceiptNumber</strong></td>
+                                <td>@item.ReceiptDate.ToShortDateString()</td>
+                                <td class="text-end">@item.UnitPrice.ToString("C", egyptianCulture)</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+}

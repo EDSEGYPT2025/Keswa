@@ -1,0 +1,37 @@
+﻿@page "{id:int}"
+@model Keswa.Pages.Products.DeleteModel
+@{
+    ViewData["Title"] = "حذف موديل";
+}
+
+<!-- Page Header -->
+<div class="mb-4">
+    <h1 class="h2 fw-bold">@ViewData["Title"]</h1>
+    <p class="text-danger">هل أنت متأكد أنك تريد حذف هذا الموديل بشكل نهائي؟ سيتم حذف قائمة المواد (BOM) المرتبطة به.</p>
+</div>
+
+<!-- Main Product Info -->
+<div class="card shadow-sm border-0 mb-4">
+    <div class="card-body">
+        <h5 class="card-title">بيانات الموديل</h5>
+        <hr />
+        <div class="row">
+            <div class="col-md-4 mb-3">
+                <h6 class="text-muted">@Html.DisplayNameFor(model => model.Product.Code)</h6>
+                <p class="fw-bold">@Model.Product.Code</p>
+            </div>
+            <div class="col-md-8 mb-3">
+                <h6 class="text-muted">@Html.DisplayNameFor(model => model.Product.Name)</h6>
+                <p class="fw-bold">@Model.Product.Name</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<form method="post">
+    <input type="hidden" asp-for="Product.Id" />
+    <div class="d-flex justify-content-start">
+        <button type="submit" class="btn btn-danger"><i class="bi bi-trash me-2"></i>تأكيد الحذف</button>
+        <a asp-page="./Index" class="btn btn-outline-secondary me-2">إلغاء</a>
+    </div>
+</form>

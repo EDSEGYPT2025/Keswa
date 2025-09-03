@@ -1,0 +1,164 @@
+﻿@page
+@model Keswa.Pages.GoodsReceipts.CreateModel
+@{
+    ViewData["Title"] = "إنشاء سند استلام جديد";
+}
+
+<!-- Page Header -->
+<div class="mb-4">
+    <h1 class="h2 fw-bold">@ViewData["Title"]</h1>
+    <p class="text-muted">أدخل بيانات السند والأصناف المستلمة.</p>
+</div>
+
+<form method="post">
+    <!-- Main Document Info -->
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label asp-for="GoodsReceiptNote.TransactionType" class="form-label"></label>
+                    <select asp-for="GoodsReceiptNote.TransactionType" class="form-select" asp-items="Html.GetEnumSelectList<Keswa.Enums.TransactionType>()"></select>
+                    <span asp-validation-for="GoodsReceiptNote.TransactionType" class="text-danger"></span>
+                </div>
+                <div class="col-md-4">
+                    <label asp-for="GoodsReceiptNote.WarehouseId" class="form-label"></label>
+                    <select asp-for="GoodsReceiptNote.WarehouseId" class="form-select searchable-select" asp-items="Model.WarehouseList">
+                        <option value="">-- اختر المخزن --</option>
+                    </select>
+                    <span asp-validation-for="GoodsReceiptNote.WarehouseId" class="text-danger"></span>
+                </div>
+                <div class="col-md-4">
+                    <label asp-for="GoodsReceiptNote.ReceiptDate" class="form-label"></label>
+                    <input asp-for="GoodsReceiptNote.ReceiptDate" class="form-control" />
+                    <span asp-validation-for="GoodsReceiptNote.ReceiptDate" class="text-danger"></span>
+                </div>
+                <div class="col-md-8">
+                    <label asp-for="GoodsReceiptNote.Notes" class="form-label"></label>
+                    <input asp-for="GoodsReceiptNote.Notes" class="form-control" />
+                    <span asp-validation-for="GoodsReceiptNote.Notes" class="text-danger"></span>
+                </div>
+                <div class="col-md-4">
+                    <label asp-for="GoodsReceiptNote.DocumentNumber" class="form-label"></label>
+                    <input asp-for="GoodsReceiptNote.DocumentNumber" class="form-control" />
+                    <span asp-validation-for="GoodsReceiptNote.DocumentNumber" class="text-danger"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Document Details -->
+    <div class="card shadow-sm border-0">
+        <div class="card-header bg-transparent d-flex justify-content-between align-items-center">
+            <h5 class="fw-bold mb-0">تفاصيل الأصناف</h5>
+            <button type="button" id="add-item-btn" class="btn btn-sm btn-outline-success"><i class="bi bi-plus-circle me-2"></i>إضافة صنف</button>
+        </div>
+        <div class="card-body">
+            <table class="table">
+                <thead class="table-light">
+                    <tr>
+                        <th style="width: 40%;">المادة الخام</th>
+                        <th style="width: 20%;">الكمية</th>
+                        <th style="width: 20%;">سعر الوحدة</th>
+                        <th style="width: 10%;">الإجمالي</th>
+                        <th style="width: 10%;"></th>
+                    </tr>
+                </thead>
+                <tbody id="items-container">
+                    <!-- الصفوف الديناميكية ستضاف هنا -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <hr class="my-4" />
+    <div class="d-flex justify-content-end">
+        <a asp-page="Index" class="btn btn-outline-secondary me-2">إلغاء</a>
+        <button type="submit" class="btn btn-primary">حفظ السند</button>
+    </div>
+</form>
+
+<!-- Template for new item row (hidden) -->
+<table style="display: none;">
+    <tbody id="item-template">
+        <tr>
+            <td>
+                <select name="GoodsReceiptNote.Details[INDEX].MaterialId" class="form-select item-material searchable-select" asp-items="Model.MaterialList">
+                    <option value="">-- اختر المادة --</option>
+                </select>
+            </td>
+            <td>
+                <input type="number" name="GoodsReceiptNote.Details[INDEX].Quantity" class="form-control item-quantity" value="1" min="0.01" step="any" />
+            </td>
+            <td>
+                <input type="number" name="GoodsReceiptNote.Details[INDEX].UnitPrice" class="form-control item-price" value="0" min="0.01" step="any" />
+            </td>
+            <td>
+                <span class="item-total fw-bold">0.00</span>
+            </td>
+            <td>
+                <button type="button" class="btn btn-sm btn-outline-danger remove-item-btn"><i class="bi bi-trash"></i></button>
+            </td>
+        </tr>
+    </tbody>
+</table>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        $(document).ready(function () {
+            // تفعيل البحث للقوائم الثابتة فقط
+            $('select.searchable-select').not('#item-template .searchable-select').select2({
+                theme: "bootstrap-5",
+                dir: "rtl",
+                placeholder: '-- اختر --',
+                width: '100%'
+            });
+
+            let itemIndex = 0;
+            // *** تم التعديل هنا: حفظ القالب كنص HTML نقي ***
+            const templateHtml = $('#item-template').html();
+
+            function addItemRow() {
+                // استبدال "INDEX" بالرقم الصحيح في النص
+                let newRowHtml = templateHtml.replace(/INDEX/g, itemIndex);
+
+                // تحويل النص إلى عنصر jQuery جديد
+                let newRow = $(newRowHtml);
+
+                // إضافة الصف الجديد للجدول
+                $('#items-container').append(newRow);
+
+                // تفعيل البحث على القائمة المنسدلة الجديدة فقط
+                newRow.find('.searchable-select').select2({
+                    theme: "bootstrap-5",
+                    dir: "rtl",
+                    placeholder: '-- اختر المادة --',
+                    width: '100%'
+                });
+
+                itemIndex++;
+            }
+
+            // إضافة صف عند الضغط على الزر
+            $('#add-item-btn').click(addItemRow);
+
+            // حذف صف
+            $('#items-container').on('click', '.remove-item-btn', function () {
+                let row = $(this).closest('tr');
+                if (row.find('.searchable-select').data('select2')) {
+                    row.find('.searchable-select').select2('destroy');
+                }
+                row.remove();
+            });
+
+            // حساب الإجمالي عند تغيير الكمية أو السعر
+            $('#items-container').on('input', '.item-quantity, .item-price', function () {
+                let row = $(this).closest('tr');
+                let quantity = parseFloat(row.find('.item-quantity').val()) || 0;
+                let price = parseFloat(row.find('.item-price').val()) || 0;
+                let total = (quantity * price).toFixed(2);
+                row.find('.item-total').text(total);
+            });
+        });
+    </script>
+}
