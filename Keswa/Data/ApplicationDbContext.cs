@@ -42,6 +42,9 @@ namespace Keswa.Data
 
         public DbSet<Keswa.Models.AuditLog> AuditLogs { get; set; }
 
+        // Sales 
+        public DbSet<Keswa.Models.CustomerTransaction> CustomerTransactions { get; set; }
+
 
         // *** تم إضافة هذه الوظيفة لحل مشكلة الحذف المتعدد ***
         protected override void OnModelCreating(ModelBuilder builder)

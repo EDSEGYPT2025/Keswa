@@ -1,4 +1,4 @@
-﻿@page
+﻿@page "{id:int}"
 @model Keswa.Pages.Customers.EditModel
 @{
     ViewData["Title"] = "تعديل بيانات العميل";
@@ -7,47 +7,69 @@
 <!-- Page Header -->
 <div class="mb-4">
     <h1 class="h2 fw-bold">@ViewData["Title"]</h1>
-    <p class="text-muted">قم بتحديث بيانات العميل ثم اضغط على حفظ.</p>
+    <p class="text-muted">تعديل بيانات العميل: @Model.Customer.Name</p>
 </div>
 
-<div class="row">
-    <div class="col-md-8">
-        <div class="card shadow-sm border-0">
-            <div class="card-body">
-                <form method="post">
+<form method="post">
+    <input type="hidden" asp-for="Customer.Id" />
+    <div class="row">
+        <div class="col-lg-8">
+            <!-- Customer Details Card -->
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-header bg-transparent">
+                    <h5 class="mb-0">البيانات الأساسية</h5>
+                </div>
+                <div class="card-body">
                     <div asp-validation-summary="ModelOnly" class="text-danger mb-3" role="alert"></div>
-                    <input type="hidden" asp-for="Customer.Id" />
 
-                    <div class="mb-3">
-                        <label asp-for="Customer.Name" class="form-label"></label>
-                        <input asp-for="Customer.Name" class="form-control" />
-                        <span asp-validation-for="Customer.Name" class="text-danger"></span>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label asp-for="Customer.Name" class="form-label"></label>
+                            <input asp-for="Customer.Name" class="form-control" />
+                            <span asp-validation-for="Customer.Name" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="Customer.PhoneNumber" class="form-label"></label>
+                            <input asp-for="Customer.PhoneNumber" class="form-control" />
+                            <span asp-validation-for="Customer.PhoneNumber" class="text-danger"></span>
+                        </div>
+                        <div class="col-12">
+                            <label asp-for="Customer.Address" class="form-label"></label>
+                            <textarea asp-for="Customer.Address" class="form-control" rows="2"></textarea>
+                            <span asp-validation-for="Customer.Address" class="text-danger"></span>
+                        </div>
                     </div>
-
-                    <div class="mb-3">
-                        <label asp-for="Customer.PhoneNumber" class="form-label"></label>
-                        <input asp-for="Customer.PhoneNumber" class="form-control" />
-                        <span asp-validation-for="Customer.PhoneNumber" class="text-danger"></span>
-                    </div>
-
-                    <div class="mb-3">
-                        <label asp-for="Customer.Address" class="form-label"></label>
-                        <textarea asp-for="Customer.Address" class="form-control" rows="3"></textarea>
-                        <span asp-validation-for="Customer.Address" class="text-danger"></span>
-                    </div>
-
-                    <hr class="my-4" />
-
-                    <div class="d-flex justify-content-end">
-                        <a asp-page="./Index" class="btn btn-outline-secondary me-2">إلغاء</a>
-                        <button type="submit" class="btn btn-primary">حفظ التعديلات</button>
-                    </div>
-                </form>
+                </div>
             </div>
+
+            <!-- Opening Balance Card -->
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-transparent">
+                    <h5 class="mb-0">الرصيد الافتتاحي</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label asp-for="Customer.OpeningBalance" class="form-label"></label>
+                            <input asp-for="Customer.OpeningBalance" class="form-control" type="number" step="0.01" min="0" />
+                            <span asp-validation-for="Customer.OpeningBalance" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="Customer.BalanceType" class="form-label"></label>
+                            <select asp-for="Customer.BalanceType" class="form-select" asp-items="Html.GetEnumSelectList<Keswa.Enums.BalanceType>()"></select>
+                            <span asp-validation-for="Customer.BalanceType" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
         </div>
     </div>
-</div>
 
-@section Scripts {
-    <partial name="_ValidationScriptsPartial" />
-}
+    <hr class="my-4" />
+    <div class="d-flex justify-content-end">
+        <a asp-page="./Index" class="btn btn-outline-secondary me-2">إلغاء</a>
+        <button type="submit" class="btn btn-primary">حفظ التعديلات</button>
+    </div>
+</form>
+

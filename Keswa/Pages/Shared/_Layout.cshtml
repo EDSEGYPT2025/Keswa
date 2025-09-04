@@ -12,6 +12,8 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" />
+    <!-- *** تمت إضافة مكتبة Toastr *** -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" />
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.rtl.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
 </head>
@@ -19,58 +21,41 @@
     <div class="app-container" id="app-container">
         <!-- Sidebar -->
         <aside class="app-sidebar">
+            <!-- Sidebar content remains the same -->
             <div class="sidebar-header">
                 <h2 class="sidebar-title">نظام كسوة</h2>
             </div>
             <nav class="sidebar-nav">
                 <a asp-page="/Index" class="nav-link" data-bs-toggle="tooltip" data-bs-placement="left" title="لوحة التحكم"><i class="bi bi-speedometer2"></i><span>لوحة التحكم</span></a>
-
                 <p class="nav-section-title">إدارة المخزون</p>
                 <a asp-page="/Inventory/Index" class="nav-link" data-bs-toggle="tooltip" data-bs-placement="left" title="المخازن"><i class="bi bi-shop"></i><span>المخازن</span></a>
                 <a asp-page="/Materials/Index" class="nav-link" data-bs-toggle="tooltip" data-bs-placement="left" title="المواد الخام"><i class="bi bi-rulers"></i><span>المواد الخام</span></a>
                 <a asp-page="/GoodsReceipts/Index" class="nav-link" data-bs-toggle="tooltip" data-bs-placement="left" title="سندات الاستلام"><i class="bi bi-box-arrow-in-down"></i><span>سندات الاستلام</span></a>
                 <a asp-page="/PurchaseOrders/Index" class="nav-link" data-bs-toggle="tooltip" data-bs-placement="left" title="أوامر الشراء"><i class="bi bi-cart-check"></i><span>أوامر الشراء</span></a>
-
                 <p class="nav-section-title">إدارة الإنتاج</p>
                 <a asp-page="/Products/Index" class="nav-link" data-bs-toggle="tooltip" data-bs-placement="left" title="إدارة الموديلات"><i class="bi bi-box-seam"></i><span>إدارة الموديلات</span></a>
                 <a asp-page="/WorkOrders/Index" class="nav-link" data-bs-toggle="tooltip" data-bs-placement="left" title="أوامر الشغل"><i class="bi bi-clipboard-data"></i><span>أوامر الشغل</span></a>
-
-                <!-- *** تم التعديل هنا *** -->
                 <p class="nav-section-title">الموارد البشرية</p>
                 <a asp-page="/Workers/Index" class="nav-link" data-bs-toggle="tooltip" data-bs-placement="left" title="إدارة العمال"><i class="bi bi-people-fill"></i><span>إدارة العمال</span></a>
-
-
                 <p class="nav-section-title">إدارة المبيعات</p>
                 <a asp-page="/Customers/Index" class="nav-link" data-bs-toggle="tooltip" data-bs-placement="left" title="إدارة العملاء"><i class="bi bi-person-rolodex"></i><span>إدارة العملاء</span></a>
                 <a asp-page="/SalesOrders/Index" class="nav-link" data-bs-toggle="tooltip" data-bs-placement="left" title="إدارة الطلبيات"><i class="bi bi-receipt"></i><span>إدارة الطلبيات</span></a>
-
-                <!-- *** تم التعديل هنا *** -->
                 <p class="nav-section-title">إدارة التكاليف</p>
                 <a asp-page="/Costs/Index" class="nav-link" data-bs-toggle="tooltip" data-bs-placement="left" title="تكاليف الأقسام"><i class="bi bi-cash-stack"></i><span>تكاليف الأقسام</span></a>
-                <!-- *** تم التعديل هنا *** -->
                 <p class="nav-section-title">التقارير</p>
                 <a asp-page="/Reports/WorkerProductivity" class="nav-link" data-bs-toggle="tooltip" data-bs-placement="left" title="إنتاجية العمال"><i class="bi bi-graph-up"></i><span>إنتاجية العمال</span></a>
                 <a asp-page="/Reports/WorkOrderCosting" class="nav-link" data-bs-toggle="tooltip" data-bs-placement="left" title="تكلفة أمر الشغل"><i class="bi bi-calculator-fill"></i><span>تكلفة أمر الشغل</span></a>
                 <a asp-page="/Reports/MaterialAnalysis" class="nav-link" data-bs-toggle="tooltip" data-bs-placement="left" title="تحليل أسعار المواد"><i class="bi bi-bar-chart-line-fill"></i><span>تحليل أسعار المواد</span></a>
-                <a asp-page="/Reports/InventoryValuation" class="nav-link" data-bs-toggle="tooltip" data-bs-placement="left" title="تقييم المخزون"><i class="bi bi-safe-fill"></i><span>تقييم المخزون</span></a>
-                <!-- *** تم التعديل هنا *** -->
+                <a asp-page="/Reports/InventoryValuation" class="nav-link" data-bs-toggle="tooltip" data-bs-placement="left" title="تقييم مخزون المواد"><i class="bi bi-safe-fill"></i><span>تقييم مخزون المواد</span></a>
                 <a asp-page="/Reports/FinishedGoodsValuation" class="nav-link" data-bs-toggle="tooltip" data-bs-placement="left" title="تقييم مخزون المنتجات"><i class="bi bi-archive-fill"></i><span>تقييم مخزون المنتجات</span></a>
-
-
-                <!-- *** تم التعديل هنا *** -->
                 <p class="nav-section-title">الإدارة</p>
                 <a asp-page="/Administration/AuditLog" class="nav-link" data-bs-toggle="tooltip" data-bs-placement="left" title="سجل المراجعة"><i class="bi bi-shield-lock-fill"></i><span>سجل المراجعة</span></a>
-
-
-
             </nav>
         </aside>
-        <!-- /#sidebar -->
-        <!-- Main Content -->
+
         <div class="app-main">
-            <!-- Top Header -->
+            <!-- Header content remains the same -->
             <header class="app-header">
-                <!-- *** تم التعديل هنا: تصحيح الـ ID *** -->
                 <button class="btn btn-icon" id="sidebar-toggle-btn">
                     <i class="bi bi-list"></i>
                 </button>
@@ -78,19 +63,59 @@
                     <partial name="_LoginPartial" />
                 </div>
             </header>
-            <!-- /#header -->
-            <!-- Page Content -->
             <main class="app-content">
                 @RenderBody()
             </main>
         </div>
-        <!-- /#main-content -->
     </div>
+
+    <!-- *** تم إضافة نافذة الحذف المنبثقة هنا *** -->
+    <div class="modal fade" id="deleteConfirmationModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="deleteModalLabel">تأكيد الحذف</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>هل أنت متأكد أنك تريد حذف العنصر: <strong id="deleteItemName"></strong>؟</p>
+                    <p class="text-danger">لا يمكن التراجع عن هذا الإجراء.</p>
+                </div>
+                <div class="modal-footer">
+                    <form method="post" id="deleteForm">
+                        <input type="hidden" id="deleteItemId" name="id" />
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                        <button type="submit" class="btn btn-danger">تأكيد الحذف</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
 
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <!-- *** تمت إضافة مكتبة Toastr *** -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
+
+    <!-- *** تمت إضافة هذا الجزء لعرض الرسائل *** -->
+    @{
+        var successMessage = TempData["SuccessMessage"] as string;
+        var errorMessage = TempData["ErrorMessage"] as string;
+    }
+
+    @if (!string.IsNullOrEmpty(successMessage))
+    {
+        <script>toastr.success('@Html.Raw(successMessage)');</script>
+    }
+
+    @if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <script>toastr.error('@Html.Raw(errorMessage)');</script>
+    }
+
 
     @await RenderSectionAsync("Scripts", required: false)
 </body>

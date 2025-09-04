@@ -2,13 +2,14 @@
 @model Keswa.Pages.Customers.IndexModel
 @{
     ViewData["Title"] = "إدارة العملاء";
+    var egyptianCulture = new System.Globalization.CultureInfo("ar-EG");
 }
 
 <!-- Page Header -->
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
         <h1 class="h2 fw-bold">@ViewData["Title"]</h1>
-        <p class="text-muted">عرض وتتبع جميع عملاء المصنع.</p>
+        <p class="text-muted">عرض وتتبع جميع عملاء المصنع وأرصدتهم الحالية.</p>
     </div>
     <div>
         <a asp-page="Create" class="btn btn-primary"><i class="bi bi-plus-circle me-2"></i>إضافة عميل جديد</a>
@@ -41,9 +42,10 @@
             <table class="table table-hover align-middle">
                 <thead class="table-light">
                     <tr>
-                        <th>@Html.DisplayNameFor(model => model.Customers[0].Name)</th>
-                        <th>@Html.DisplayNameFor(model => model.Customers[0].PhoneNumber)</th>
-                        <th>@Html.DisplayNameFor(model => model.Customers[0].Address)</th>
+                        <th>اسم العميل</th>
+                        <th>رقم الهاتف</th>
+                        <th>العنوان</th>
+                        <th class="text-center">الرصيد الحالي</th>
                         <th>إجراءات</th>
                     </tr>
                 </thead>
@@ -51,11 +53,24 @@
                     @foreach (var item in Model.Customers)
                     {
                         <tr>
-                            <td><strong>@Html.DisplayFor(modelItem => item.Name)</strong></td>
-                            <td>@Html.DisplayFor(modelItem => item.PhoneNumber)</td>
-                            <td>@Html.DisplayFor(modelItem => item.Address)</td>
+                            <td><strong>@item.Name</strong></td>
+                            <td>@item.PhoneNumber</td>
+                            <td>@item.Address</td>
+                            <td class="text-center fw-bold">
+                                @if (item.Balance > 0)
+                                {
+                                    <span class="text-danger">@item.Balance.ToString("C", egyptianCulture) (مدين)</span>
+                                }
+                                else if (item.Balance < 0)
+                                {
+                                    <span class="text-success">@((item.Balance * -1).ToString("C", egyptianCulture)) (دائن)</span>
+                                }
+                                else
+                                {
+                                    <span>@item.Balance.ToString("C", egyptianCulture)</span>
+                                }
+                            </td>
                             <td>
-                                <!-- *** تم التعديل هنا *** -->
                                 <a asp-page="./Edit" asp-route-id="@item.Id" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil-square"></i></a>
                                 <a asp-page="./Delete" asp-route-id="@item.Id" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></a>
                             </td>

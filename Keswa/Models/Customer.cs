@@ -1,22 +1,35 @@
-﻿using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+﻿using Keswa.Enums;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
-namespace Keswa.Models;
-
-public class Customer
+namespace Keswa.Models
 {
-    public int Id { get; set; }
+    public class Customer
+    {
+        public int Id { get; set; }
 
-    [Required(ErrorMessage = "اسم العميل مطلوب.")]
-    [Display(Name = "اسم العميل")]
-    public string Name { get; set; }
+        [Required(ErrorMessage = "اسم العميل مطلوب")]
+        [Display(Name = "اسم العميل")]
+        public string Name { get; set; }
 
-    [Display(Name = "رقم الهاتف")]
-    public string PhoneNumber { get; set; }
+        [Display(Name = "رقم الهاتف")]
+        public string? PhoneNumber { get; set; }
 
-    [Display(Name = "العنوان")]
-    public string Address { get; set; }
+        [Display(Name = "العنوان")]
+        public string? Address { get; set; }
 
-    [ValidateNever]
-    public ICollection<SalesOrder> SalesOrders { get; set; } = new List<SalesOrder>();
+        // *** تمت إضافة هذه الحقول ***
+        [NotMapped] // هذا الحقل لن يتم حفظه في قاعدة البيانات مباشرة
+        [Display(Name = "الرصيد الافتتاحي")]
+        public decimal OpeningBalance { get; set; } = 0;
+
+        [NotMapped]
+        [Display(Name = "نوع الرصيد")]
+        public BalanceType BalanceType { get; set; }
+
+        [ValidateNever]
+        public List<CustomerTransaction> Transactions { get; set; } = new List<CustomerTransaction>();
+    }
 }
