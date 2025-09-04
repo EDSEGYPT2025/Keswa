@@ -71,8 +71,18 @@
                                 }
                             </td>
                             <td>
-                                <a asp-page="./Edit" asp-route-id="@item.Id" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil-square"></i></a>
-                                <a asp-page="./Delete" asp-route-id="@item.Id" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></a>
+                                <a asp-page="./Edit" asp-route-id="@item.Id" class="btn btn-sm btn-outline-primary" title="تعديل"><i class="bi bi-pencil-square"></i></a>
+
+                                <!-- زر الحذف الجديد الذي يفتح النافذة المنبثقة -->
+                                <button type="button" class="btn btn-sm btn-outline-danger"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#deleteConfirmationModal"
+                                        data-id="@item.Id"
+                                        data-name="@item.Name"
+                                        data-handler="Delete"
+                                        title="حذف">
+                                    <i class="bi bi-trash"></i>
+                                </button>
                             </td>
                         </tr>
                     }
@@ -108,3 +118,4 @@
         }
     </div>
 </div>
+
