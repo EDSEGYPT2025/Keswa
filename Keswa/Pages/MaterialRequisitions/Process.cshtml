@@ -1,0 +1,93 @@
+﻿@page "{id:int}"
+@model Keswa.Pages.MaterialRequisitions.ProcessModel
+@{
+    ViewData["Title"] = "تجهيز وصرف طلب مواد خام";
+}
+
+<!-- Page Header -->
+<div class="mb-4">
+    <h1 class="h2 fw-bold">@ViewData["Title"]</h1>
+    <p class="text-muted">طلب رقم @Model.MaterialRequisition.Id | أمر الشغل: @Model.MaterialRequisition.WorkOrder.WorkOrderNumber</p>
+</div>
+
+<form method="post">
+    <!-- Main Document Info -->
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-body">
+            <div class="col-12">
+                <label asp-for="Notes" class="form-label">ملاحظات إذن الصرف (اختياري)</label>
+                <textarea asp-for="Notes" class="form-control" rows="2"></textarea>
+            </div>
+        </div>
+    </div>
+
+    <!-- Document Details -->
+    <div class="card shadow-sm border-0">
+        <div class="card-header bg-transparent">
+            <h5 class="fw-bold mb-0">تجهيز المواد المطلوبة</h5>
+        </div>
+        <div class="card-body">
+            @if (!ViewData.ModelState.IsValid)
+            {
+                <div class="alert alert-danger" asp-validation-summary="ModelOnly"></div>
+            }
+            <div class="table-responsive">
+                <table class="table">
+                    <thead class="table-light">
+                        <tr>
+                            <th style="width: 30%;">المادة الخام</th>
+                            <th class="text-center" style="width: 15%;">الكمية المطلوبة</th>
+                            <th style="width: 25%;">المخزن المصروف منه</th>
+                            <th style="width: 20%;">الكمية المصروفة فعلياً</th>
+                            <th style="width: 10%;"></th>
+                        </tr>
+                    </thead>
+                    <tbody id="items-container">
+                        @for (var i = 0; i < Model.ProcessDetails.Count; i++)
+                        {
+                            <tr>
+                                <input type="hidden" asp-for="ProcessDetails[i].DetailId" />
+                                <td>
+                                    <input asp-for="ProcessDetails[i].MaterialName" class="form-control" readonly />
+                                </td>
+                                <td class="text-center">
+                                    <input asp-for="ProcessDetails[i].RequestedQuantity" class="form-control" readonly style="background-color: #e9ecef;" />
+                                </td>
+                                <td>
+                                    <select asp-for="ProcessDetails[i].WarehouseId" class="form-select searchable-select" asp-items="Model.WarehouseList">
+                                        <option value="">-- اختر المخزن --</option>
+                                    </select>
+                                </td>
+                                <td>
+                                    <input asp-for="ProcessDetails[i].IssuedQuantity" class="form-control" type="number" step="any" min="0" />
+                                </td>
+                                <td>
+                                    <button type="button" class="btn btn-sm btn-outline-danger remove-item-btn" title="حذف الصنف من إذن الصرف"><i class="bi bi-trash"></i></button>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <hr class="my-4" />
+    <div class="d-flex justify-content-end">
+        <a asp-page="./Index" class="btn btn-outline-secondary me-2">إلغاء</a>
+        <button type="submit" class="btn btn-primary">تأكيد الصرف وتحديث الأرصدة</button>
+    </div>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+       $(document).ready(function () {
+            // عند الضغط على زر الحذف، قم بتصفير كمية الصرف بدلاً من حذف الصف
+            $('#items-container').on('click', '.remove-item-btn', function () {
+                $(this).closest('tr').find('input[type="number"]').val(0);
+                $(this).closest('tr').hide(); // إخفاء الصف للإشارة إلى أنه تم حذفه
+            });
+        });
+    </script>
+}

@@ -1,0 +1,82 @@
+﻿@page
+@model Keswa.Pages.MaterialRequisitions.CreateModel
+@{
+    ViewData["Title"] = "إنشاء طلب صرف مواد خام";
+}
+
+<!-- Page Header -->
+<div class="mb-4">
+    <h1 class="h2 fw-bold">@ViewData["Title"]</h1>
+    <p class="text-muted">طلب صرف مواد خام من المخزن لصالح أمر الشغل رقم: @Model.CurrentWorkOrder.WorkOrderNumber</p>
+</div>
+
+<form method="post">
+    <input type="hidden" asp-for="MaterialRequisition.WorkOrderId" />
+
+    <!-- Main Document Info -->
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-body">
+            <div class="col-12">
+                <label asp-for="MaterialRequisition.Notes" class="form-label"></label>
+                <textarea asp-for="MaterialRequisition.Notes" class="form-control" rows="2"></textarea>
+                <span asp-validation-for="MaterialRequisition.Notes" class="text-danger"></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Document Details -->
+    <div class="card shadow-sm border-0">
+        <div class="card-header bg-transparent">
+            <h5 class="fw-bold mb-0">تفاصيل المواد المطلوبة</h5>
+        </div>
+        <div class="card-body">
+            @if (!ViewData.ModelState.IsValid)
+            {
+                <div class="alert alert-danger" asp-validation-summary="ModelOnly"></div>
+            }
+            <table class="table">
+                <thead class="table-light">
+                    <tr>
+                        <th style="width: 60%;">المادة الخام</th>
+                        <th style="width: 30%;">الكمية المطلوبة</th>
+                        <th style="width: 10%;"></th>
+                    </tr>
+                </thead>
+                <tbody id="items-container">
+                    @for (var i = 0; i < Model.MaterialRequisition.Details.Count; i++)
+                    {
+                        <tr>
+                            <td>
+                                <input type="hidden" asp-for="MaterialRequisition.Details[i].MaterialId" />
+                                <input class="form-control" value="@Model.MaterialRequisition.Details[i].Material.Name" readonly />
+                            </td>
+                            <td>
+                                <input asp-for="MaterialRequisition.Details[i].Quantity" class="form-control" type="number" step="any" min="0.01" />
+                            </td>
+                            <td>
+                                <button type="button" class="btn btn-sm btn-outline-danger remove-item-btn"><i class="bi bi-trash"></i></button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <hr class="my-4" />
+    <div class="d-flex justify-content-end">
+        <a asp-page="/WorkOrders/Details" asp-route-id="@Model.MaterialRequisition.WorkOrderId" class="btn btn-outline-secondary me-2">إلغاء</a>
+        <button type="submit" class="btn btn-primary">إرسال الطلب لأمين المخزن</button>
+    </div>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+       $(document).ready(function () {
+            $('#items-container').on('click', '.remove-item-btn', function () {
+                $(this).closest('tr').remove();
+            });
+        });
+    </script>
+}

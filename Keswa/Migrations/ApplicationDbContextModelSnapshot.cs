@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
 
-namespace Keswa.Data.Migrations
+namespace Keswa.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
     partial class ApplicationDbContextModelSnapshot : ModelSnapshot
@@ -207,6 +207,60 @@ namespace Keswa.Data.Migrations
                     b.ToTable("CustomerTransactions");
                 });
 
+            modelBuilder.Entity("Keswa.Models.CuttingStatement", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Color")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Count")
+                        .HasColumnType("int");
+
+                    b.Property<int>("CustomerId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("MaterialId")
+                        .HasColumnType("int");
+
+                    b.Property<double>("Meterage")
+                        .HasColumnType("float");
+
+                    b.Property<int>("ProductId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("RunNumber")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("StatementDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("WorkOrderId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("WorkerId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CustomerId");
+
+                    b.HasIndex("MaterialId");
+
+                    b.HasIndex("ProductId");
+
+                    b.HasIndex("WorkOrderId");
+
+                    b.HasIndex("WorkerId");
+
+                    b.ToTable("CuttingStatements");
+                });
+
             modelBuilder.Entity("Keswa.Models.DepartmentCost", b =>
                 {
                     b.Property<int>("Id")
@@ -397,6 +451,59 @@ namespace Keswa.Data.Migrations
                     b.HasIndex("MaterialIssuanceNoteId");
 
                     b.ToTable("MaterialIssuanceNoteDetails");
+                });
+
+            modelBuilder.Entity("Keswa.Models.MaterialRequisition", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Notes")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("RequestDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<int>("WorkOrderId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("WorkOrderId");
+
+                    b.ToTable("MaterialRequisitions");
+                });
+
+            modelBuilder.Entity("Keswa.Models.MaterialRequisitionDetail", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("MaterialId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("MaterialRequisitionId")
+                        .HasColumnType("int");
+
+                    b.Property<double>("Quantity")
+                        .HasColumnType("float");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MaterialId");
+
+                    b.HasIndex("MaterialRequisitionId");
+
+                    b.ToTable("MaterialRequisitionDetails");
                 });
 
             modelBuilder.Entity("Keswa.Models.Product", b =>
@@ -661,6 +768,9 @@ namespace Keswa.Data.Migrations
                     b.Property<int>("ProductId")
                         .HasColumnType("int");
 
+                    b.Property<int?>("ProductionLine")
+                        .HasColumnType("int");
+
                     b.Property<int>("QuantityToProduce")
                         .HasColumnType("int");
 
@@ -900,6 +1010,49 @@ namespace Keswa.Data.Migrations
                     b.Navigation("Customer");
                 });
 
+            modelBuilder.Entity("Keswa.Models.CuttingStatement", b =>
+                {
+                    b.HasOne("Keswa.Models.Customer", "Customer")
+                        .WithMany()
+                        .HasForeignKey("CustomerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Keswa.Models.Material", "Material")
+                        .WithMany()
+                        .HasForeignKey("MaterialId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Keswa.Models.Product", "Product")
+                        .WithMany()
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Keswa.Models.WorkOrder", "WorkOrder")
+                        .WithMany()
+                        .HasForeignKey("WorkOrderId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Keswa.Models.Worker", "Worker")
+                        .WithMany()
+                        .HasForeignKey("WorkerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Customer");
+
+                    b.Navigation("Material");
+
+                    b.Navigation("Product");
+
+                    b.Navigation("WorkOrder");
+
+                    b.Navigation("Worker");
+                });
+
             modelBuilder.Entity("Keswa.Models.GoodsReceiptNote", b =>
                 {
                     b.HasOne("Keswa.Models.Warehouse", "Warehouse")
@@ -991,6 +1144,36 @@ namespace Keswa.Data.Migrations
                     b.Navigation("Material");
 
                     b.Navigation("MaterialIssuanceNote");
+                });
+
+            modelBuilder.Entity("Keswa.Models.MaterialRequisition", b =>
+                {
+                    b.HasOne("Keswa.Models.WorkOrder", "WorkOrder")
+                        .WithMany()
+                        .HasForeignKey("WorkOrderId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("WorkOrder");
+                });
+
+            modelBuilder.Entity("Keswa.Models.MaterialRequisitionDetail", b =>
+                {
+                    b.HasOne("Keswa.Models.Material", "Material")
+                        .WithMany()
+                        .HasForeignKey("MaterialId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Keswa.Models.MaterialRequisition", "MaterialRequisition")
+                        .WithMany("Details")
+                        .HasForeignKey("MaterialRequisitionId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Material");
+
+                    b.Navigation("MaterialRequisition");
                 });
 
             modelBuilder.Entity("Keswa.Models.ProductionLog", b =>
@@ -1194,6 +1377,11 @@ namespace Keswa.Data.Migrations
                 });
 
             modelBuilder.Entity("Keswa.Models.MaterialIssuanceNote", b =>
+                {
+                    b.Navigation("Details");
+                });
+
+            modelBuilder.Entity("Keswa.Models.MaterialRequisition", b =>
                 {
                     b.Navigation("Details");
                 });

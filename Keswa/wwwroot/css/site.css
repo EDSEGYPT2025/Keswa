@@ -12,7 +12,6 @@
     --active-bg: #e0e7ff;
     --active-color: #4f46e5;
     --sidebar-section-title: #adb5bd;
-    /* مدة الحركة الاحترافية */
     --transition-speed: 0.3s;
 }
 
@@ -29,7 +28,7 @@ body {
     min-height: 100vh;
 }
 
-/* Sidebar Styles */
+/* Sidebar */
 .app-sidebar {
     width: var(--sidebar-width);
     background-color: #ffffff;
@@ -41,7 +40,6 @@ body {
     right: 0;
     top: 0;
     z-index: 1020;
-    /* تأثير الحركة الرئيسي للقائمة */
     transition: width var(--transition-speed) ease-in-out, transform var(--transition-speed) ease-in-out;
 }
 
@@ -60,7 +58,6 @@ body {
     color: var(--primary-text);
     margin: 0;
     white-space: nowrap;
-    /* تأثير الحركة لعنوان القائمة */
     transition: opacity calc(var(--transition-speed) / 2) ease;
 }
 
@@ -78,10 +75,8 @@ body {
     text-transform: uppercase;
     letter-spacing: 0.5px;
     white-space: nowrap;
-    /* تأثير الحركة لعناوين الأقسام */
     transition: opacity calc(var(--transition-speed) / 2) ease;
 }
-
 
 .nav-link {
     display: flex;
@@ -103,12 +98,10 @@ body {
         width: 24px;
         text-align: center;
         flex-shrink: 0;
-        /* تأثير الحركة للأيقونة */
         transition: margin var(--transition-speed) ease-in-out;
     }
 
     .nav-link span {
-        /* تأثير الحركة لنص الرابط */
         transition: opacity calc(var(--transition-speed) / 2) ease;
     }
 
@@ -123,17 +116,16 @@ body {
         font-weight: 600;
     }
 
-/* Main Content Area */
+/* Main Content */
 .app-main {
     flex-grow: 1;
     margin-right: var(--sidebar-width);
     display: flex;
     flex-direction: column;
-    /* تأثير الحركة للمحتوى الرئيسي */
     transition: margin-right var(--transition-speed) ease-in-out;
 }
 
-/* Header Styles */
+/* Header */
 .app-header {
     height: var(--header-height);
     background-color: #ffffff;
@@ -157,7 +149,7 @@ body {
     flex-grow: 1;
 }
 
-/* Collapsed Sidebar Styles */
+/* Collapsed Sidebar */
 .app-container.sidebar-collapsed .app-sidebar {
     width: var(--sidebar-width-collapsed);
 }
@@ -178,11 +170,10 @@ body {
     margin-right: var(--sidebar-width-collapsed);
 }
 
-
-/* Responsive Styles for Tablet and Mobile */
+/* Responsive */
 @media (max-width: 992px) {
     .app-sidebar {
-        transform: translateX(100%); /* إخفاء القائمة خارج الشاشة */
+        transform: translateX(100%);
     }
 
     .app-main {
@@ -190,7 +181,7 @@ body {
     }
 
     .app-container.sidebar-mobile-open .app-sidebar {
-        transform: translateX(0); /* إظهار القائمة على الشاشة */
+        transform: translateX(0);
         box-shadow: 0 0 20px rgba(0,0,0,0.15);
     }
 
@@ -213,7 +204,7 @@ body {
     }
 }
 
-/* Islamic Dashboard Styles & Other Page Styles */
+/* KPI Cards */
 .kpi-card {
     position: relative;
     overflow: hidden;
@@ -270,3 +261,22 @@ body {
 .modal-dialog {
     transform: translateZ(0);
 }
+
+/* ✅ Toastr Customization */
+#toast-container > .toast {
+    opacity: 1 !important;
+    border-radius: 8px;
+    font-size: 1rem;
+    direction: rtl;
+    text-align: right;
+}
+
+    #toast-container > .toast.toast-success {
+        background-color: #28a745 !important;
+        color: #fff !important;
+    }
+
+    #toast-container > .toast.toast-error {
+        background-color: #dc3545 !important;
+        color: #fff !important;
+    }

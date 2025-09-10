@@ -1,0 +1,185 @@
+﻿@page
+@model Keswa.Pages.Departments.CuttingModel
+@{
+    ViewData["Title"] = "شاشة قسم القص";
+}
+
+<!-- Page Header -->
+<div class="mb-4">
+    <h1 class="h2 fw-bold">@ViewData["Title"]</h1>
+    <p class="text-muted">عرض أوامر الشغل الحالية وتسجيل بيانات القص.</p>
+</div>
+
+<div class="row g-4">
+    <!-- Left Panel: Work Order List -->
+    <div class="col-lg-5">
+        <div class="card shadow-sm border-0" style="max-height: 80vh; display: flex; flex-direction: column;">
+            <div class="card-header bg-transparent">
+                <h5 class="mb-0">أوامر الشغل بانتظار القص</h5>
+            </div>
+            <div class="list-group list-group-flush overflow-auto">
+                @if (!Model.WorkOrdersInCutting.Any())
+                {
+                    <div class="p-4 text-center text-muted">لا توجد أوامر شغل في هذا القسم حالياً.</div>
+                }
+                @foreach (var wo in Model.WorkOrdersInCutting)
+                {
+                    var isActive = wo.WorkOrderId == Model.SelectedWorkOrder?.Id;
+                    <a asp-page="/Departments/Cutting" asp-route-id="@wo.WorkOrderId" class="list-group-item list-group-item-action @(isActive ? "active" : "")">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h6 class="mb-1 fw-bold">@wo.WorkOrderNumber</h6>
+                            <small>@wo.ProductName</small>
+                        </div>
+                        <p class="mb-1">
+                            مطلوب: @wo.QuantityToProduce |
+                            <span class="text-success">تم قص: @wo.QuantityCut</span> |
+                            <span class="text-danger">متبقي: @wo.RemainingToCut</span>
+                        </p>
+                        <div class="progress" style="height: 5px;">
+                            @{ var progress = wo.QuantityToProduce > 0 ? (int)((double)wo.QuantityCut * 100 / wo.QuantityToProduce) : 0; }
+                            <div class="progress-bar" role="progressbar" style="width: @progress%;" aria-valuenow="@progress" aria-valuemin="0" aria-valuemax="100"></div>
+                        </div>
+                    </a>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Panel: Details and Logging -->
+    <div class="col-lg-7">
+        @if (Model.SelectedWorkOrder == null)
+        {
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-body d-flex justify-content-center align-items-center">
+                    <div class="text-center">
+                        <i class="bi bi-scissors" style="font-size: 4rem; color: #e0e0e0;"></i>
+                        <p class="text-muted mt-3">الرجاء اختيار أمر شغل من القائمة.</p>
+                    </div>
+                </div>
+            </div>
+        }
+        else
+        {
+            @if (Model.CanCreateStatement)
+            {
+                <!-- New Cutting Statement Form -->
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-header bg-transparent">
+                        <h5 class="mb-0">إنشاء بيان قص جديد لأمر الشغل: @Model.SelectedWorkOrder.WorkOrderNumber</h5>
+                    </div>
+                    <div class="card-body">
+                        <form method="post">
+                            <input type="hidden" name="workOrderId" value="@Model.SelectedWorkOrder.Id" />
+                            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label asp-for="NewCuttingStatement.MaterialId" class="form-label"></label>
+                                    <select asp-for="NewCuttingStatement.MaterialId" class="form-select searchable-select" asp-items="Model.IssuedMaterialsList">
+                                        <option value="">-- اختر الخامة --</option>
+                                    </select>
+                                    <span asp-validation-for="NewCuttingStatement.MaterialId" class="text-danger"></span>
+                                </div>
+                                <div class="col-md-6">
+                                    <label asp-for="NewCuttingStatement.Meterage" class="form-label"></label>
+                                    <input asp-for="NewCuttingStatement.Meterage" class="form-control" type="number" step="any" min="0.01" />
+                                    <span asp-validation-for="NewCuttingStatement.Meterage" class="text-danger"></span>
+                                </div>
+                                <div class="col-md-6">
+                                    <label asp-for="NewCuttingStatement.ProductId" class="form-label"></label>
+                                    <select asp-for="NewCuttingStatement.ProductId" class="form-select searchable-select" asp-items="Model.ProductList">
+                                        <option value="">-- اختر الموديل --</option>
+                                    </select>
+                                    <span asp-validation-for="NewCuttingStatement.ProductId" class="text-danger"></span>
+                                </div>
+                                <div class="col-md-6">
+                                    <label asp-for="NewCuttingStatement.Color" class="form-label"></label>
+                                    <input asp-for="NewCuttingStatement.Color" class="form-control" />
+                                    <span asp-validation-for="NewCuttingStatement.Color" class="text-danger"></span>
+                                </div>
+                                <div class="col-md-4">
+                                    <label asp-for="NewCuttingStatement.Count" class="form-label"></label>
+                                    <input asp-for="NewCuttingStatement.Count" class="form-control" type="number" min="1" />
+                                    <span asp-validation-for="NewCuttingStatement.Count" class="text-danger"></span>
+                                </div>
+                                <div class="col-md-4">
+                                    <label asp-for="NewCuttingStatement.WorkerId" class="form-label"></label>
+                                    <select asp-for="NewCuttingStatement.WorkerId" class="form-select searchable-select" asp-items="Model.WorkerList">
+                                        <option value="">-- اختر العامل --</option>
+                                    </select>
+                                    <span asp-validation-for="NewCuttingStatement.WorkerId" class="text-danger"></span>
+                                </div>
+                                <div class="col-md-4">
+                                    <label asp-for="NewCuttingStatement.CustomerId" class="form-label"></label>
+                                    <select asp-for="NewCuttingStatement.CustomerId" class="form-select searchable-select" asp-items="Model.CustomerList">
+                                        <option value="">-- اختر العميل --</option>
+                                    </select>
+                                    <span asp-validation-for="NewCuttingStatement.CustomerId" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="text-end mt-4">
+                                <button type="submit" class="btn btn-success">حفظ البيان وتسجيل الإنتاج</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="alert alert-warning">
+                    <h5 class="alert-heading"><i class="bi bi-exclamation-triangle-fill me-2"></i>خطوة مطلوبة</h5>
+                    <p>@Model.PreRequisiteMessage</p>
+                    <hr>
+                    <a asp-page="/WorkOrders/Details" asp-route-id="@Model.SelectedWorkOrder.Id" class="btn btn-primary">الانتقال إلى تفاصيل أمر الشغل</a>
+                </div>
+            }
+
+            <!-- Cutting Statements Table -->
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-transparent">
+                    <h5 class="mb-0">بيانات القص السابقة لهذا الأمر</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped table-sm">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>رقم التشغيل</th>
+                                    <th>الخامة</th>
+                                    <th>المتراج</th>
+                                    <th>الموديل</th>
+                                    <th>اللون</th>
+                                    <th>العدد</th>
+                                    <th>العامل</th>
+                                    <th>العميل</th>
+                                    <th>التاريخ</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (!Model.CuttingStatements.Any())
+                                {
+                                    <tr><td colspan="9" class="text-center text-muted">لم يتم تسجيل أي بيانات قص لهذا الأمر بعد.</td></tr>
+                                }
+                                @foreach (var log in Model.CuttingStatements)
+                                {
+                                    <tr>
+                                        <td><strong>@log.RunNumber</strong></td>
+                                        <td>@log.Material.Name</td>
+                                        <td>@log.Meterage</td>
+                                        <td>@log.Product.Name</td>
+                                        <td>@log.Color</td>
+                                        <td>@log.Count</td>
+                                        <td>@log.Worker.Name</td>
+                                        <td>@log.Customer.Name</td>
+                                        <td>@log.StatementDate.ToString("yyyy/MM/dd")</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+

@@ -42,6 +42,11 @@ namespace Keswa.Data
 
         public DbSet<Keswa.Models.AuditLog> AuditLogs { get; set; }
 
+        public DbSet<Keswa.Models.MaterialRequisition> MaterialRequisitions { get; set; }
+        public DbSet<Keswa.Models.MaterialRequisitionDetail> MaterialRequisitionDetails { get; set; }
+        public DbSet<Keswa.Models.CuttingStatement> CuttingStatements { get; set; }
+
+
         // Sales 
         public DbSet<Keswa.Models.CustomerTransaction> CustomerTransactions { get; set; }
 

@@ -50,42 +50,52 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach (var item in Model.Customers)
+                    @if (Model.Customers != null && Model.Customers.Any())
+                    {
+                        foreach (var item in Model.Customers)
+                        {
+                            <tr>
+                                <td><strong>@item.Name</strong></td>
+                                <td>@item.PhoneNumber</td>
+                                <td>@item.Address</td>
+                                <td class="text-center fw-bold">
+                                    @if (item.Balance > 0)
+                                    {
+                                        <span class="text-danger">@item.Balance.ToString("C", egyptianCulture) (مدين)</span>
+                                    }
+                                    else if (item.Balance < 0)
+                                    {
+                                        <span class="text-success">@((item.Balance * -1).ToString("C", egyptianCulture)) (دائن)</span>
+                                    }
+                                    else
+                                    {
+                                        <span>@item.Balance.ToString("C", egyptianCulture)</span>
+                                    }
+                                </td>
+                                <td>
+                                    <a asp-page="./Edit" asp-route-id="@item.Id" class="btn btn-sm btn-outline-primary" title="تعديل">
+                                        <i class="bi bi-pencil-square"></i>
+                                    </a>
+                                    <button type="button" class="btn btn-sm btn-outline-danger"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#deleteConfirmationModal"
+                                            data-id="@item.Id"
+                                            data-name="@item.Name"
+                                            data-handler="Delete"
+                                            title="حذف">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
                     {
                         <tr>
-                            <td><strong>@item.Name</strong></td>
-                            <td>@item.PhoneNumber</td>
-                            <td>@item.Address</td>
-                            <td class="text-center fw-bold">
-                                @if (item.Balance > 0)
-                                {
-                                    <span class="text-danger">@item.Balance.ToString("C", egyptianCulture) (مدين)</span>
-                                }
-                                else if (item.Balance < 0)
-                                {
-                                    <span class="text-success">@((item.Balance * -1).ToString("C", egyptianCulture)) (دائن)</span>
-                                }
-                                else
-                                {
-                                    <span>@item.Balance.ToString("C", egyptianCulture)</span>
-                                }
-                            </td>
-                            <td>
-                                <a asp-page="./Edit" asp-route-id="@item.Id" class="btn btn-sm btn-outline-primary" title="تعديل"><i class="bi bi-pencil-square"></i></a>
-
-                                <!-- زر الحذف الجديد الذي يفتح النافذة المنبثقة -->
-                                <button type="button" class="btn btn-sm btn-outline-danger"
-                                        data-bs-toggle="modal"
-                                        data-bs-target="#deleteConfirmationModal"
-                                        data-id="@item.Id"
-                                        data-name="@item.Name"
-                                        data-handler="Delete"
-                                        title="حذف">
-                                    <i class="bi bi-trash"></i>
-                                </button>
-                            </td>
+                            <td colspan="5" class="text-center text-muted">لا توجد بيانات عملاء</td>
                         </tr>
                     }
+
                 </tbody>
             </table>
         </div>

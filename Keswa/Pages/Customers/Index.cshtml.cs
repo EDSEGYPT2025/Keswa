@@ -20,7 +20,7 @@ namespace Keswa.Pages.Customers
             _context = context;
         }
 
-        public IList<CustomerViewModel> Customers { get; set; } = default!;
+        public IList<CustomerViewModel> Customers { get; set; } = new List<CustomerViewModel>();
 
         [BindProperty(SupportsGet = true)]
         public string? SearchTerm { get; set; }

@@ -1,0 +1,54 @@
+﻿@page
+@model Keswa.Pages.MaterialRequisitions.IndexModel
+@{
+    ViewData["Title"] = "طلبات الصرف المعلقة";
+}
+
+<!-- Page Header -->
+<div class="mb-4">
+    <h1 class="h2 fw-bold">@ViewData["Title"]</h1>
+    <p class="text-muted">عرض جميع طلبات صرف المواد الخام المرسلة من قسم الإنتاج والجاهزة للتجهيز.</p>
+</div>
+
+<!-- Requisitions Table -->
+<div class="card shadow-sm border-0">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>رقم الطلب</th>
+                        <th>أمر الشغل المرتبط</th>
+                        <th>تاريخ الطلب</th>
+                        <th>ملاحظات</th>
+                        <th>إجراءات</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (!Model.MaterialRequisitions.Any())
+                    {
+                        <tr>
+                            <td colspan="5" class="text-center text-muted py-4">
+                                لا توجد أي طلبات صرف معلقة حالياً.
+                            </td>
+                        </tr>
+                    }
+                    @foreach (var item in Model.MaterialRequisitions)
+                    {
+                        <tr>
+                            <td><strong>@item.Id</strong></td>
+                            <td>@item.WorkOrder.WorkOrderNumber</td>
+                            <td>@item.RequestDate.ToShortDateString()</td>
+                            <td>@item.Notes</td>
+                            <td>
+                                <a asp-page="./Process" asp-route-id="@item.Id" class="btn btn-sm btn-success">
+                                    <i class="bi bi-box-arrow-up-right me-2"></i>تجهيز وصرف
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

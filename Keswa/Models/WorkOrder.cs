@@ -42,5 +42,8 @@ namespace Keswa.Models
 
         [Display(Name = "ملاحظات")]
         public string? Notes { get; set; }
+
+        // أضف هذا السطر داخل كلاس WorkOrder
+        public ProductionLine? ProductionLine { get; set; }
     }
 }
