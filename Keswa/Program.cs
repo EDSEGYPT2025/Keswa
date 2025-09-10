@@ -14,8 +14,6 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(connectionString));
 
-
-
 //------------------------------------------------------------------------------------------------
 // 2. إضافة خدمات Identity وتخصيصها لاستخدام كلاس ApplicationUser
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options => {
