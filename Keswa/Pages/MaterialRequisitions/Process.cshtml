@@ -35,10 +35,11 @@
                 <table class="table">
                     <thead class="table-light">
                         <tr>
-                            <th style="width: 30%;">المادة الخام</th>
+                            <th style="width: 25%;">المادة الخام</th>
+                            <th style="width: 15%;">اللون</th>
                             <th class="text-center" style="width: 15%;">الكمية المطلوبة</th>
-                            <th style="width: 25%;">المخزن المصروف منه</th>
-                            <th style="width: 20%;">الكمية المصروفة فعلياً</th>
+                            <th style="width: 20%;">المخزن المصروف منه</th>
+                            <th style="width: 15%;">الكمية المصروفة</th>
                             <th style="width: 10%;"></th>
                         </tr>
                     </thead>
@@ -49,6 +50,9 @@
                                 <input type="hidden" asp-for="ProcessDetails[i].DetailId" />
                                 <td>
                                     <input asp-for="ProcessDetails[i].MaterialName" class="form-control" readonly />
+                                </td>
+                                <td>
+                                    <input asp-for="ProcessDetails[i].ColorName" class="form-control" readonly />
                                 </td>
                                 <td class="text-center">
                                     <input asp-for="ProcessDetails[i].RequestedQuantity" class="form-control" readonly style="background-color: #e9ecef;" />
@@ -82,12 +86,13 @@
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
     <script>
-       $(document).ready(function () {
+        $(document).ready(function () {
             // عند الضغط على زر الحذف، قم بتصفير كمية الصرف بدلاً من حذف الصف
             $('#items-container').on('click', '.remove-item-btn', function () {
                 $(this).closest('tr').find('input[type="number"]').val(0);
-                $(this).closest('tr').hide(); // إخفاء الصف للإشارة إلى أنه تم حذفه
+                $(this).closest('tr').hide();
             });
         });
     </script>
 }
+

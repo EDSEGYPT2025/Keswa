@@ -44,6 +44,7 @@ namespace Keswa.Models
         public string? Notes { get; set; }
 
         // أضف هذا السطر داخل كلاس WorkOrder
+        [Display(Name = "خط الإنتاج")]
         public ProductionLine? ProductionLine { get; set; }
     }
 }

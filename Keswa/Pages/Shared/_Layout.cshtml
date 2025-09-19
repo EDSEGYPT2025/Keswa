@@ -9,63 +9,166 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+
+    <!-- Bootstrap & Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" />
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" />
-    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.rtl.min.css" />
-    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.rtl.min.css" />
+
+    <style>
+        body {
+            font-family: 'Tajawal', sans-serif;
+            background-color: #f8f9fa;
+        }
+
+        .app-container {
+            display: flex;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Sidebar */
+        .app-sidebar {
+            width: 250px;
+            background: #fff;
+            border-left: 1px solid #ddd;
+            position: fixed;
+            top: 0;
+            bottom: 0;
+            right: 0;
+            transition: transform 0.3s ease-in-out;
+            z-index: 1050;
+            overflow-y: auto;
+            box-shadow: -2px 0 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .app-sidebar.closed {
+            transform: translateX(100%);
+        }
+
+        .sidebar-header {
+            padding: 1rem;
+            background: transparent;
+            text-align: center;
+        }
+
+
+        .sidebar-logo {
+            max-width: 120px;
+            height: auto;
+            border-radius: 8px;
+        }
+
+        .sidebar-nav {
+            padding: 0;
+            margin: 0;
+            list-style: none;
+        }
+
+        .sidebar-nav .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 0.75rem 1rem;
+            color: #333;
+            transition: background 0.2s;
+        }
+
+        .sidebar-nav .nav-link:hover {
+            background: #f1f1f1;
+            text-decoration: none;
+        }
+
+        .nav-section-title {
+            font-size: 0.85rem;
+            font-weight: bold;
+            color: #666;
+            padding: 0.5rem 1rem;
+            margin-top: 1rem;
+        }
+
+        /* Main Content */
+        .app-main {
+            flex: 1;
+            margin-right: 250px;
+            transition: margin-right 0.3s ease-in-out;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        .app-main.full-width {
+            margin-right: 0;
+        }
+
+        .app-header {
+            background: #fff;
+            padding: 0.5rem 1rem;
+            border-bottom: 1px solid #ddd;
+            display: flex;
+            align-items: center;
+        }
+
+        .app-content {
+            flex: 1;
+            padding: 1rem;
+        }
+
+        /* Responsive */
+        @@media (max-width: 992px) {
+            .app-sidebar {
+                transform: translateX(100%);
+            }
+
+            .app-sidebar.open {
+                transform: translateX(0);
+            }
+
+            .app-main {
+                margin-right: 0;
+            }
+        }
+    </style>
 </head>
 <body>
     <div class="app-container" id="app-container">
         <!-- Sidebar -->
-        <aside class="app-sidebar">
+        <aside class="app-sidebar closed">
             <div class="sidebar-header">
-                <h2 class="sidebar-title">نظام كسوة</h2>
+                <img src="~/images/logo.png" alt="Logo" class="sidebar-logo">
             </div>
             <nav class="sidebar-nav">
-                <a asp-page="/Index" class="nav-link" data-bs-toggle="tooltip" data-bs-placement="left" title="لوحة التحكم"><i class="bi bi-speedometer2"></i><span>لوحة التحكم</span></a>
-
+                <a asp-page="/Index" class="nav-link"><i class="bi bi-speedometer2"></i><span>لوحة التحكم</span></a>
                 <p class="nav-section-title">إدارة المخزون</p>
-                <!-- *** تم التعديل هنا *** -->
-                <a asp-page="/MaterialRequisitions/Index" class="nav-link" data-bs-toggle="tooltip" data-bs-placement="left" title="طلبات الصرف"><i class="bi bi-clipboard-plus"></i><span>طلبات الصرف</span></a>
-                <a asp-page="/Inventory/Index" class="nav-link" data-bs-toggle="tooltip" data-bs-placement="left" title="المخازن"><i class="bi bi-shop"></i><span>المخازن</span></a>
-                <a asp-page="/Materials/Index" class="nav-link" data-bs-toggle="tooltip" data-bs-placement="left" title="المواد الخام"><i class="bi bi-rulers"></i><span>المواد الخام</span></a>
-                <a asp-page="/GoodsReceipts/Index" class="nav-link" data-bs-toggle="tooltip" data-bs-placement="left" title="سندات الاستلام"><i class="bi bi-box-arrow-in-down"></i><span>سندات الاستلام</span></a>
-                <a asp-page="/PurchaseOrders/Index" class="nav-link" data-bs-toggle="tooltip" data-bs-placement="left" title="أوامر الشراء"><i class="bi bi-cart-check"></i><span>أوامر الشراء</span></a>
+                <a asp-page="/Inventory/Index" class="nav-link"><i class="bi bi-shop"></i><span>المخازن</span></a>
+                <a asp-page="/Materials/Index" class="nav-link"><i class="bi bi-rulers"></i><span>المواد الخام</span></a>
+                <a asp-page="/Colors/Index" class="nav-link"><i class="bi bi-palette-fill"></i><span>إدارة الألوان</span></a>
+                <a asp-page="/GoodsReceipts/Index" class="nav-link"><i class="bi bi-box-arrow-in-down"></i><span>سندات الاستلام</span></a>
+                <a asp-page="/MaterialRequisitions/Index" class="nav-link"><i class="bi bi-clipboard-plus"></i><span>طلبات الصرف</span></a>
 
                 <p class="nav-section-title">إدارة الإنتاج</p>
-                <a asp-page="/Products/Index" class="nav-link" data-bs-toggle="tooltip" data-bs-placement="left" title="إدارة الموديلات"><i class="bi bi-box-seam"></i><span>إدارة الموديلات</span></a>
-                <a asp-page="/WorkOrders/Index" class="nav-link" data-bs-toggle="tooltip" data-bs-placement="left" title="أوامر الشغل"><i class="bi bi-clipboard-data"></i><span>أوامر الشغل</span></a>
+                <a asp-page="/Products/Index" class="nav-link"><i class="bi bi-box-seam"></i><span>إدارة الموديلات</span></a>
+                <a asp-page="/WorkOrders/Index" class="nav-link"><i class="bi bi-clipboard-data"></i><span>أوامر الشغل</span></a>
 
                 <p class="nav-section-title">متابعة الإنتاج</p>
-                <a asp-page="/Departments/Cutting" class="nav-link" data-bs-toggle="tooltip" data-bs-placement="left" title="قسم القص"><i class="bi bi-scissors"></i><span>قسم القص</span></a>
+                <a asp-page="/Departments/Cutting" class="nav-link"><i class="bi bi-scissors"></i><span>قسم القص</span></a>
 
                 <p class="nav-section-title">الموارد البشرية</p>
-                <a asp-page="/Workers/Index" class="nav-link" data-bs-toggle="tooltip" data-bs-placement="left" title="إدارة العمال"><i class="bi bi-people-fill"></i><span>إدارة العمال</span></a>
+                <a asp-page="/Workers/Index" class="nav-link"><i class="bi bi-people-fill"></i><span>إدارة العمال</span></a>
 
                 <p class="nav-section-title">إدارة المبيعات</p>
-                <a asp-page="/Customers/Index" class="nav-link" data-bs-toggle="tooltip" data-bs-placement="left" title="إدارة العملاء"><i class="bi bi-person-rolodex"></i><span>إدارة العملاء</span></a>
-                <a asp-page="/SalesOrders/Index" class="nav-link" data-bs-toggle="tooltip" data-bs-placement="left" title="إدارة الطلبيات"><i class="bi bi-receipt"></i><span>إدارة الطلبيات</span></a>
-
-                <p class="nav-section-title">إدارة التكاليف</p>
-                <a asp-page="/Costs/Index" class="nav-link" data-bs-toggle="tooltip" data-bs-placement="left" title="تكاليف الأقسام"><i class="bi bi-cash-stack"></i><span>تكاليف الأقسام</span></a>
-
-                <p class="nav-section-title">التقارير</p>
-                <a asp-page="/Reports/WorkerProductivity" class="nav-link" data-bs-toggle="tooltip" data-bs-placement="left" title="إنتاجية العمال"><i class="bi bi-graph-up"></i><span>إنتاجية العمال</span></a>
-                <a asp-page="/Reports/WorkOrderCosting" class="nav-link" data-bs-toggle="tooltip" data-bs-placement="left" title="تكلفة أمر الشغل"><i class="bi bi-calculator-fill"></i><span>تكلفة أمر الشغل</span></a>
-                <a asp-page="/Reports/MaterialAnalysis" class="nav-link" data-bs-toggle="tooltip" data-bs-placement="left" title="تحليل أسعار المواد"><i class="bi bi-bar-chart-line-fill"></i><span>تحليل أسعار المواد</span></a>
-                <a asp-page="/Reports/InventoryValuation" class="nav-link" data-bs-toggle="tooltip" data-bs-placement="left" title="تقييم مخزون المواد"><i class="bi bi-safe-fill"></i><span>تقييم مخزون المواد</span></a>
-                <a asp-page="/Reports/FinishedGoodsValuation" class="nav-link" data-bs-toggle="tooltip" data-bs-placement="left" title="تقييم مخزون المنتجات"><i class="bi bi-archive-fill"></i><span>تقييم مخزون المنتجات</span></a>
+                <a asp-page="/Customers/Index" class="nav-link"><i class="bi bi-person-rolodex"></i><span>إدارة العملاء</span></a>
+                <a asp-page="/SalesOrders/Index" class="nav-link"><i class="bi bi-receipt"></i><span>إدارة الطلبيات</span></a>
 
                 <p class="nav-section-title">الإدارة</p>
-                <a asp-page="/Administration/AuditLog" class="nav-link" data-bs-toggle="tooltip" data-bs-placement="left" title="سجل المراجعة"><i class="bi bi-shield-lock-fill"></i><span>سجل المراجعة</span></a>
+                <a asp-page="/Administration/AuditLog" class="nav-link"><i class="bi bi-shield-lock-fill"></i><span>سجل المراجعة</span></a>
             </nav>
         </aside>
 
-        <div class="app-main">
+        <!-- Main -->
+        <div class="app-main full-width">
             <header class="app-header">
-                <button class="btn btn-icon" id="sidebar-toggle-btn">
+                <button class="btn btn-icon btn-light" id="sidebar-toggle-btn">
                     <i class="bi bi-list"></i>
                 </button>
                 <div class="d-flex align-items-center ms-auto">
@@ -78,12 +181,13 @@
         </div>
     </div>
 
-    <div class="modal fade" id="deleteConfirmationModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <!-- Delete Confirmation Modal -->
+    <div class="modal fade" id="deleteConfirmationModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="deleteModalLabel">تأكيد الحذف</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <h5 class="modal-title">تأكيد الحذف</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
                     <p>هل أنت متأكد أنك تريد حذف العنصر: <strong id="deleteItemName"></strong>؟</p>
@@ -100,12 +204,28 @@
         </div>
     </div>
 
+    <!-- Scripts -->
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
-    <script src="~/js/site.js" asp-append-version="true"></script>
 
+    <script>
+        $(document).ready(function () {
+            const sidebar = $(".app-sidebar");
+            const main = $(".app-main");
+
+            $("#sidebar-toggle-btn").on("click", function () {
+                if ($(window).width() < 992) {
+                    sidebar.toggleClass("open");
+                } else {
+                    sidebar.toggleClass("closed");
+                    main.toggleClass("full-width");
+                }
+            });
+        });
+    </script>
+
+    @* رسائل تنبيه *@
     @{
         var successMessage = TempData["SuccessMessage"] as string;
         var errorMessage = TempData["ErrorMessage"] as string;
@@ -115,7 +235,6 @@
     {
         <script>toastr.success('@Html.Raw(successMessage)');</script>
     }
-
     @if (!string.IsNullOrEmpty(errorMessage))
     {
         <script>toastr.error('@Html.Raw(errorMessage)');</script>

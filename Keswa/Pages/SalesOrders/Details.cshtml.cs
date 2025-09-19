@@ -4,6 +4,9 @@ using Keswa.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
+using System;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Keswa.Pages.SalesOrders
 {
@@ -67,20 +70,30 @@ namespace Keswa.Pages.SalesOrders
             };
 
             _context.WorkOrders.Add(newWorkOrder);
-            await _context.SaveChangesAsync(); // First save to generate the ID and include it in the count
+            await _context.SaveChangesAsync(); // First save to generate the ID
 
-            // *** تم التعديل هنا: توليد وحفظ رقم أمر الشغل بالتنسيق الجديد ***
             // 2. Generate and assign the WorkOrderNumber
-            var countForYear = await _context.WorkOrders
-                .CountAsync(wo => wo.CreationDate.Year == newWorkOrder.CreationDate.Year);
-
+            var countForYear = await _context.WorkOrders.CountAsync(wo => wo.CreationDate.Year == newWorkOrder.CreationDate.Year);
             newWorkOrder.WorkOrderNumber = $"WO-{newWorkOrder.CreationDate.Year}-{countForYear}";
 
-            // 3. Update the Sales Order Detail
+            // *** تم التعديل هنا: إنشاء مسار الإنتاج تلقائياً ***
+            // 3. Create the production routing stages for the new work order
+            var departments = Enum.GetValues(typeof(Department)).Cast<Department>();
+            foreach (var dept in departments)
+            {
+                _context.WorkOrderRoutings.Add(new WorkOrderRouting
+                {
+                    WorkOrderId = newWorkOrder.Id,
+                    Department = dept,
+                    Status = WorkOrderStageStatus.Pending
+                });
+            }
+
+            // 4. Update the Sales Order Detail
             salesOrderDetail.Status = SalesOrderDetailStatus.ConvertedToWorkOrder;
             salesOrderDetail.WorkOrderId = newWorkOrder.Id;
 
-            // 4. Update the main Sales Order status
+            // 5. Update the main Sales Order status
             var orderDetails = await _context.SalesOrderDetails
                 .Where(d => d.SalesOrderId == salesOrderDetail.SalesOrderId)
                 .ToListAsync();
@@ -94,8 +107,9 @@ namespace Keswa.Pages.SalesOrders
                 salesOrderDetail.SalesOrder.Status = SalesOrderStatus.InProgress;
             }
 
-            await _context.SaveChangesAsync(); // Save all subsequent changes (WO Number, SO Detail, SO Status)
+            await _context.SaveChangesAsync(); // Save all subsequent changes
 
+            TempData["SuccessMessage"] = $"تم تحويل البند إلى أمر الشغل رقم {newWorkOrder.WorkOrderNumber} بنجاح.";
             return RedirectToPage(new { id = salesOrderDetail.SalesOrderId });
         }
     }

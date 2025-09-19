@@ -31,5 +31,9 @@ namespace Keswa.Models
         [Display(Name = "تاريخ الانتهاء")]
         [DataType(DataType.Date)]
         public DateTime? EndDate { get; set; }
+
+        // --- تمت إضافة هذا الحقل ---
+        [Display(Name = "حالة المرحلة")]
+        public WorkOrderStageStatus Status { get; set; } = WorkOrderStageStatus.Pending;
     }
 }

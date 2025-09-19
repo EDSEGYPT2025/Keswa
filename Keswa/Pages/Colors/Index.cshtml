@@ -1,0 +1,57 @@
+﻿@page
+@model Keswa.Pages.Colors.IndexModel
+@{
+    ViewData["Title"] = "إدارة الألوان";
+}
+
+<!-- Page Header -->
+<div class="mb-4">
+    <h1 class="h2 fw-bold">@ViewData["Title"]</h1>
+    <p class="text-muted">إضافة وتعديل الألوان المستخدمة في المواد الخام.</p>
+</div>
+
+<div class="row">
+    <div class="col-md-5">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-transparent"><h5 class="mb-0">إضافة لون جديد</h5></div>
+            <div class="card-body">
+                <form method="post">
+                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                    <div class="mb-3">
+                        <label asp-for="NewColor.Name" class="form-label"></label>
+                        <input asp-for="NewColor.Name" class="form-control" />
+                        <span asp-validation-for="NewColor.Name" class="text-danger"></span>
+                    </div>
+                    <button type="submit" class="btn btn-primary">حفظ اللون</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-7">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-transparent"><h5 class="mb-0">الألوان الحالية</h5></div>
+            <div class="card-body">
+                <table class="table table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>اسم اللون</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model.Colors)
+                        {
+                            <tr>
+                                <td>@item.Name</td>
+                                <td class="text-end">
+                                    @* Add Edit/Delete buttons here in the future *@
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+

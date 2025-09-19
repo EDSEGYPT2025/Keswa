@@ -1,31 +1,25 @@
 ﻿using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
-namespace Keswa.Models;
-
-public class Product
+namespace Keswa.Models
 {
-    public Product()
+    public class Product
     {
-        BillOfMaterialItems = new HashSet<BillOfMaterialItem>();
+        public int Id { get; set; }
+
+        [Display(Name = "كود الموديل")]
+        public string? Code { get; set; }
+
+        [Required(ErrorMessage = "اسم الموديل مطلوب")]
+        [Display(Name = "اسم الموديل")]
+        public string Name { get; set; }
+
+        [Display(Name = "الوصف")]
+        public string? Description { get; set; }
+
+        [ValidateNever]
+        // *** تم التعديل هنا: تغيير النوع من ICollection إلى List ***
+        public List<BillOfMaterialItem> BillOfMaterialItems { get; set; } = new List<BillOfMaterialItem>();
     }
-
-    public int Id { get; set; }
-
-    [Required(ErrorMessage = "كود الموديل مطلوب")]
-    [StringLength(50)]
-    [Display(Name = "كود الموديل")]
-    public string Code { get; set; }
-
-    [Required(ErrorMessage = "اسم الموديل مطلوب")]
-    [StringLength(150)]
-    [Display(Name = "اسم الموديل")]
-    public string Name { get; set; }
-
-    [Display(Name = "الوصف")]
-    public string? Description { get; set; }
-
-    // علاقة الربط: كل موديل له قائمة مواد مكونة له
-    [ValidateNever]
-    public ICollection<BillOfMaterialItem> BillOfMaterialItems { get; set; }
 }

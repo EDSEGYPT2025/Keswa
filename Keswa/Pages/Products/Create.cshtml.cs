@@ -3,6 +3,7 @@ using Keswa.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -22,38 +23,39 @@ namespace Keswa.Pages.Products
 
         public SelectList MaterialList { get; set; }
 
-        public IActionResult OnGet()
+        public async Task<IActionResult> OnGetAsync()
         {
-            // تجهيز قائمة المواد الخام للاختيار منها
-            MaterialList = new SelectList(_context.Materials.OrderBy(m => m.Name), "Id", "Name");
+            // *** تم التعديل هنا: تجهيز القائمة لعرض الاسم مع اللون ***
+            var materialsForList = await _context.Materials
+                .Include(m => m.Color) // جلب بيانات اللون المرتبطة
+                .OrderBy(m => m.Name)
+                .Select(m => new {
+                    m.Id,
+                    // دمج الاسم مع اللون في نص واحد
+                    DisplayText = m.Name + (m.Color != null ? $" - {m.Color.Name}" : "")
+                })
+                .ToListAsync();
+
+            MaterialList = new SelectList(materialsForList, "Id", "DisplayText");
             return Page();
         }
 
         public async Task<IActionResult> OnPostAsync()
         {
-            // *** تم التعديل هنا: إنشاء كائن جديد ونقل المكونات إليه ***
-            var newProduct = new Product();
+            // إزالة المكونات الفارغة قبل التحقق
+            Product.BillOfMaterialItems?.RemoveAll(i => i.MaterialId == 0);
 
-            if (await TryUpdateModelAsync<Product>(
-                newProduct,
-                "Product", // Prefix for form value matching
-                p => p.Code, p => p.Name, p => p.Description))
+            if (!ModelState.IsValid)
             {
-                // التحقق من وجود مكونات وتعيينها للموديل الجديد
-                if (Product.BillOfMaterialItems != null)
-                {
-                    newProduct.BillOfMaterialItems = Product.BillOfMaterialItems;
-                }
-
-                _context.Products.Add(newProduct);
-                await _context.SaveChangesAsync();
-
-                return RedirectToPage("./Index");
+                await OnGetAsync(); // إعادة تحميل القائمة في حالة الخطأ
+                return Page();
             }
 
-            // في حالة فشل الربط، أعد تحميل القائمة
-            MaterialList = new SelectList(_context.Materials.OrderBy(m => m.Name), "Id", "Name");
-            return Page();
+            _context.Products.Add(Product);
+            await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = $"تم إنشاء الموديل '{Product.Name}' بنجاح.";
+            return RedirectToPage("./Index");
         }
     }
 }

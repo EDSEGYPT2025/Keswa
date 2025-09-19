@@ -28,6 +28,7 @@ namespace Keswa.Pages.MaterialRequisitions
                 .Include(wo => wo.Product)
                 .ThenInclude(p => p.BillOfMaterialItems)
                 .ThenInclude(bom => bom.Material)
+                .ThenInclude(m => m.Color) // *** تم التعديل هنا: جلب بيانات اللون المرتبطة ***
                 .AsNoTracking()
                 .FirstOrDefaultAsync(wo => wo.Id == workOrderId);
 
@@ -42,7 +43,7 @@ namespace Keswa.Pages.MaterialRequisitions
                 .Select(bom => new MaterialRequisitionDetail
                 {
                     MaterialId = bom.MaterialId,
-                    Material = bom.Material,
+                    Material = bom.Material, // الكائن الآن يحتوي على اللون
                     Quantity = bom.Quantity * CurrentWorkOrder.QuantityToProduce
                 }).ToList();
 
@@ -74,4 +75,3 @@ namespace Keswa.Pages.MaterialRequisitions
         }
     }
 }
-

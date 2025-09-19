@@ -2,6 +2,7 @@
 @model Keswa.Pages.GoodsReceipts.DetailsModel
 @{
     ViewData["Title"] = $"تفاصيل سند - {Model.GoodsReceiptNote.DocumentNumber ?? Model.GoodsReceiptNote.Id.ToString()}";
+    var egyptianCulture = new System.Globalization.CultureInfo("ar-EG");
 }
 
 <!-- Page Header -->
@@ -12,7 +13,7 @@
     </div>
     <div>
         <a asp-page="./Index" class="btn btn-outline-secondary"><i class="bi bi-arrow-right me-2"></i>العودة للسندات</a>
-        <button class="btn btn-secondary"><i class="bi bi-printer me-2"></i>طباعة</button>
+        <button class="btn btn-secondary" onclick="window.print()"><i class="bi bi-printer me-2"></i>طباعة</button>
     </div>
 </div>
 
@@ -51,17 +52,19 @@
 <!-- Document Details Table -->
 <div class="card shadow-sm border-0">
     <div class="card-header bg-transparent">
-        <h5 class="fw-bold mb-0">تفاصيل الأصناف</h5>
+        <h5 class="fw-bold mb-0">تفاصيل الأصناف المستلمة</h5>
     </div>
     <div class="card-body">
         <div class="table-responsive">
             <table class="table align-middle">
                 <thead class="table-light">
                     <tr>
-                        <th>المادة الخام</th>
+                        <!-- *** تم التعديل هنا *** -->
+                        <th style="width: 40%;">المادة الخام</th>
+                        <th style="width: 20%;">اللون</th>
                         <th class="text-center">الكمية</th>
                         <th class="text-center">سعر الوحدة</th>
-                        <th class="text-center">الإجمالي</th>
+                        <th class="text-end">الإجمالي</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -72,16 +75,18 @@
                                 <strong>@item.Material.Name</strong>
                                 <small class="d-block text-muted">(@Html.DisplayFor(modelItem => item.Material.Unit))</small>
                             </td>
+                            <!-- *** تم إضافة هذا الحقل *** -->
+                            <td>@item.Material.Color?.Name</td>
                             <td class="text-center">@item.Quantity</td>
-                            <td class="text-center">@item.UnitPrice.ToString("N2")</td>
-                            <td class="text-center fw-bold">@(( (decimal)item.Quantity * item.UnitPrice).ToString("N2"))</td>
+                            <td class="text-center">@item.UnitPrice.ToString("C", egyptianCulture)</td>
+                            <td class="text-end fw-bold">@(( (decimal)item.Quantity * item.UnitPrice).ToString("C", egyptianCulture))</td>
                         </tr>
                     }
                 </tbody>
                 <tfoot class="table-light">
                     <tr>
-                        <th colspan="3" class="text-start">القيمة الإجمالية للسند</th>
-                        <th class="text-center fw-bolder h5">@Model.TotalValue.ToString("N2")</th>
+                        <th colspan="4" class="text-start">القيمة الإجمالية للسند</th>
+                        <th class="text-end fw-bolder h5">@Model.TotalValue.ToString("C", egyptianCulture)</th>
                     </tr>
                 </tfoot>
             </table>

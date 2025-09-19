@@ -15,29 +15,24 @@
     <div class="card shadow-sm border-0 mb-4">
         <div class="card-body">
             <div class="row g-3">
-                <div class="col-md-4">
+                <div class="col-md-3">
                     <label asp-for="GoodsReceiptNote.TransactionType" class="form-label"></label>
                     <select asp-for="GoodsReceiptNote.TransactionType" class="form-select" asp-items="Html.GetEnumSelectList<Keswa.Enums.TransactionType>()"></select>
                     <span asp-validation-for="GoodsReceiptNote.TransactionType" class="text-danger"></span>
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-3">
                     <label asp-for="GoodsReceiptNote.WarehouseId" class="form-label"></label>
                     <select asp-for="GoodsReceiptNote.WarehouseId" class="form-select searchable-select" asp-items="Model.WarehouseList">
                         <option value="">-- اختر المخزن --</option>
                     </select>
                     <span asp-validation-for="GoodsReceiptNote.WarehouseId" class="text-danger"></span>
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-3">
                     <label asp-for="GoodsReceiptNote.ReceiptDate" class="form-label"></label>
-                    <input asp-for="GoodsReceiptNote.ReceiptDate" class="form-control" />
+                    <input asp-for="GoodsReceiptNote.ReceiptDate" class="form-control" type="date" />
                     <span asp-validation-for="GoodsReceiptNote.ReceiptDate" class="text-danger"></span>
                 </div>
-                <div class="col-md-8">
-                    <label asp-for="GoodsReceiptNote.Notes" class="form-label"></label>
-                    <input asp-for="GoodsReceiptNote.Notes" class="form-control" />
-                    <span asp-validation-for="GoodsReceiptNote.Notes" class="text-danger"></span>
-                </div>
-                <div class="col-md-4">
+                <div class="col-md-3">
                     <label asp-for="GoodsReceiptNote.DocumentNumber" class="form-label"></label>
                     <input asp-for="GoodsReceiptNote.DocumentNumber" class="form-control" />
                     <span asp-validation-for="GoodsReceiptNote.DocumentNumber" class="text-danger"></span>
@@ -53,12 +48,17 @@
             <button type="button" id="add-item-btn" class="btn btn-sm btn-outline-success"><i class="bi bi-plus-circle me-2"></i>إضافة صنف</button>
         </div>
         <div class="card-body">
+            @if (!ViewData.ModelState.IsValid)
+            {
+                <div class="alert alert-danger" asp-validation-summary="ModelOnly"></div>
+            }
             <table class="table">
                 <thead class="table-light">
                     <tr>
-                        <th style="width: 40%;">المادة الخام</th>
-                        <th style="width: 20%;">الكمية</th>
-                        <th style="width: 20%;">سعر الوحدة</th>
+                        <th style="width: 30%;">المادة الخام</th>
+                        <th style="width: 20%;">اللون</th>
+                        <th style="width: 15%;">الكمية</th>
+                        <th style="width: 15%;">سعر الوحدة</th>
                         <th style="width: 10%;">الإجمالي</th>
                         <th style="width: 10%;"></th>
                     </tr>
@@ -77,87 +77,106 @@
     </div>
 </form>
 
-<!-- Template for new item row (hidden) -->
-<table style="display: none;">
-    <tbody id="item-template">
-        <tr>
-            <td>
-                <select name="GoodsReceiptNote.Details[INDEX].MaterialId" class="form-select item-material searchable-select" asp-items="Model.MaterialList">
-                    <option value="">-- اختر المادة --</option>
-                </select>
-            </td>
-            <td>
-                <input type="number" name="GoodsReceiptNote.Details[INDEX].Quantity" class="form-control item-quantity" value="1" min="0.01" step="any" />
-            </td>
-            <td>
-                <input type="number" name="GoodsReceiptNote.Details[INDEX].UnitPrice" class="form-control item-price" value="0" min="0.01" step="any" />
-            </td>
-            <td>
-                <span class="item-total fw-bold">0.00</span>
-            </td>
-            <td>
-                <button type="button" class="btn btn-sm btn-outline-danger remove-item-btn"><i class="bi bi-trash"></i></button>
-            </td>
-        </tr>
-    </tbody>
-</table>
-
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
     <script>
         $(document).ready(function () {
-            // تفعيل البحث للقوائم الثابتة فقط
-            $('select.searchable-select').not('#item-template .searchable-select').select2({
-                theme: "bootstrap-5",
-                dir: "rtl",
-                placeholder: '-- اختر --',
-                width: '100%'
-            });
-
+            const materialsData = JSON.parse('@Html.Raw(Model.MaterialsJson)');
+            const baseMaterialOptions = @Html.Raw(Json.Serialize(Model.BaseMaterialList.Select(p => new { value = p.Text, text = p.Text })));
             let itemIndex = 0;
-            // *** تم التعديل هنا: حفظ القالب كنص HTML نقي ***
-            const templateHtml = $('#item-template').html();
 
-            function addItemRow() {
-                // استبدال "INDEX" بالرقم الصحيح في النص
-                let newRowHtml = templateHtml.replace(/INDEX/g, itemIndex);
-
-                // تحويل النص إلى عنصر jQuery جديد
-                let newRow = $(newRowHtml);
-
-                // إضافة الصف الجديد للجدول
-                $('#items-container').append(newRow);
-
-                // تفعيل البحث على القائمة المنسدلة الجديدة فقط
-                newRow.find('.searchable-select').select2({
-                    theme: "bootstrap-5",
-                    dir: "rtl",
-                    placeholder: '-- اختر المادة --',
-                    width: '100%'
+            function reindexRows() {
+                $('#items-container tr').each(function(index) {
+                    $(this).find('input, select').each(function() {
+                        if (this.name) {
+                            this.name = this.name.replace(/\[\d+\]/, '[' + index + ']');
+                        }
+                    });
                 });
-
-                itemIndex++;
+                itemIndex = $('#items-container tr').length;
             }
 
-            // إضافة صف عند الضغط على الزر
-            $('#add-item-btn').click(addItemRow);
+            function initializeSelect2(element) {
+                $(element).select2({ theme: "bootstrap-5", dir: "rtl", placeholder: '-- اختر --', width: '100%' });
+            }
 
-            // حذف صف
-            $('#items-container').on('click', '.remove-item-btn', function () {
-                let row = $(this).closest('tr');
-                if (row.find('.searchable-select').data('select2')) {
-                    row.find('.searchable-select').select2('destroy');
-                }
-                row.remove();
+            $('#add-item-btn').click(function() {
+                const newRow = $('<tr>').attr('id', `row-${itemIndex}`);
+
+                // --- خلايا الجدول ---
+                const cellMaterial = $('<td>');
+                const cellColor = $('<td>');
+                const cellQuantity = $('<td><input type="number" name="GoodsReceiptNote.Details[' + itemIndex + '].Quantity" class="form-control item-quantity" value="1" min="0.01" step="any" /></td>');
+                const cellPrice = $('<td><input type="number" name="GoodsReceiptNote.Details[' + itemIndex + '].UnitPrice" class="form-control item-price" value="0" min="0.01" step="any" /></td>');
+                const cellTotal = $('<td><span class="item-total fw-bold">0.00</span></td>');
+                const cellRemove = $('<td><button type="button" class="btn btn-sm btn-outline-danger remove-item-btn"><i class="bi bi-trash"></i></button></td>');
+
+                // --- إنشاء القوائم المنسدلة ---
+                const hiddenInput = $('<input>').attr({ type: 'hidden', name: `GoodsReceiptNote.Details[${itemIndex}].MaterialId`, class: 'final-material-id'});
+                const materialSelect = $('<select>').addClass('form-select base-material-select searchable-select');
+                const colorSelect = $('<select>').addClass('form-select color-select').prop('disabled', true);
+
+                // تعبئة قائمة المواد الأساسية
+                materialSelect.append($('<option>', { value: '', text: '-- اختر المادة --' }));
+                baseMaterialOptions.forEach(opt => materialSelect.append($('<option>', { value: opt.value, text: opt.text })));
+
+                colorSelect.append($('<option>', { value: '', text: '-- اختر اللون --' }));
+
+                cellMaterial.append(materialSelect).append(hiddenInput);
+                cellColor.append(colorSelect);
+
+                newRow.append(cellMaterial, cellColor, cellQuantity, cellPrice, cellTotal, cellRemove);
+                $('#items-container').append(newRow);
+
+                initializeSelect2(newRow.find('.searchable-select'));
+                reindexRows();
             });
 
-            // حساب الإجمالي عند تغيير الكمية أو السعر
+            // --- المنطق الديناميكي للقوائم المنسدلة ---
+            $('#items-container').on('change', '.base-material-select', function() {
+                const selectedMaterialName = $(this).val();
+                const row = $(this).closest('tr');
+                const colorSelect = row.find('.color-select');
+                const hiddenInput = row.find('.final-material-id');
+
+                colorSelect.empty().append($('<option>', { value: '', text: '-- اختر اللون --' })).prop('disabled', true);
+                hiddenInput.val('');
+
+                if (selectedMaterialName && materialsData[selectedMaterialName]) {
+                    const colors = materialsData[selectedMaterialName];
+                    if (colors.length > 0) {
+                        colors.forEach(color => colorSelect.append($('<option>', { value: color.id, text: color.color })));
+                        colorSelect.prop('disabled', false);
+
+                        // إذا كان هناك لون واحد فقط، اختره تلقائياً
+                        if (colors.length === 1) {
+                            colorSelect.val(colors[0].id).trigger('change');
+                        }
+                    }
+                }
+            });
+
+            $('#items-container').on('change', '.color-select', function() {
+                const selectedMaterialId = $(this).val();
+                const row = $(this).closest('tr');
+                const hiddenInput = row.find('.final-material-id');
+                hiddenInput.val(selectedMaterialId);
+            });
+
+            // --- باقي الوظائف ---
+             $('#items-container').on('click', '.remove-item-btn', function () {
+                $(this).closest('tr').find('.searchable-select').each(function() {
+                    if ($(this).data('select2')) $(this).select2('destroy');
+                });
+                $(this).closest('tr').remove();
+                reindexRows();
+            });
+
             $('#items-container').on('input', '.item-quantity, .item-price', function () {
                 let row = $(this).closest('tr');
                 let quantity = parseFloat(row.find('.item-quantity').val()) || 0;
                 let price = parseFloat(row.find('.item-price').val()) || 0;
-                let total = (quantity * price).toFixed(2);
-                row.find('.item-total').text(total);
+                row.find('.item-total').text((quantity * price).toFixed(2));
             });
         });
     </script>

@@ -46,6 +46,7 @@ namespace Keswa.Data
         public DbSet<Keswa.Models.MaterialRequisitionDetail> MaterialRequisitionDetails { get; set; }
         public DbSet<Keswa.Models.CuttingStatement> CuttingStatements { get; set; }
 
+        public DbSet<Keswa.Models.Color> Colors { get; set; }
 
         // Sales 
         public DbSet<Keswa.Models.CustomerTransaction> CustomerTransactions { get; set; }

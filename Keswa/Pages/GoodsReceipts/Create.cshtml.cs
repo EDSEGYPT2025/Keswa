@@ -1,10 +1,12 @@
 ﻿using Keswa.Data;
+using Keswa.Enums;
 using Keswa.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace Keswa.Pages.GoodsReceipts
@@ -19,86 +21,81 @@ namespace Keswa.Pages.GoodsReceipts
         }
 
         [BindProperty]
-        public GoodsReceiptNote GoodsReceiptNote { get; set; }
+        public GoodsReceiptNote GoodsReceiptNote { get; set; } = new();
 
         public SelectList WarehouseList { get; set; }
-        public SelectList MaterialList { get; set; }
+        public SelectList BaseMaterialList { get; set; }
+        public string MaterialsJson { get; set; }
 
-        public IActionResult OnGet()
+        public async Task OnGetAsync()
         {
-            // تجهيز القوائم المنسدلة
-            WarehouseList = new SelectList(_context.Warehouses.OrderBy(w => w.Name), "Id", "Name");
-            MaterialList = new SelectList(_context.Materials.OrderBy(m => m.Name), "Id", "Name");
+            WarehouseList = new SelectList(await _context.Warehouses.Where(w => w.Type == WarehouseType.RawMaterials).OrderBy(w => w.Name).ToListAsync(), "Id", "Name");
 
-            // تهيئة السند بتاريخ اليوم
-            GoodsReceiptNote = new GoodsReceiptNote
-            {
-                ReceiptDate = System.DateTime.Now
-            };
+            var allMaterials = await _context.Materials
+                .Include(m => m.Color)
+                .OrderBy(m => m.Name)
+                .ToListAsync();
 
-            return Page();
+            var groupedMaterials = allMaterials
+                .GroupBy(m => m.Name)
+                .ToDictionary(
+                    g => g.Key,
+                    g => g.Select(m => new { id = m.Id, color = m.Color?.Name ?? "بدون لون" }).ToList()
+                );
+
+            MaterialsJson = JsonSerializer.Serialize(groupedMaterials);
+            BaseMaterialList = new SelectList(groupedMaterials.Keys.ToList());
         }
 
         public async Task<IActionResult> OnPostAsync()
         {
+            GoodsReceiptNote.Details.RemoveAll(d => d.MaterialId == 0 || d.Quantity <= 0);
+
+            if (GoodsReceiptNote.Details.Count == 0)
+            {
+                ModelState.AddModelError("", "يجب إضافة صنف واحد على الأقل للسند.");
+            }
+
             if (!ModelState.IsValid)
             {
-                // إعادة تجهيز القوائم في حالة وجود خطأ
-                WarehouseList = new SelectList(_context.Warehouses.OrderBy(w => w.Name), "Id", "Name");
-                MaterialList = new SelectList(_context.Materials.OrderBy(m => m.Name), "Id", "Name");
+                await OnGetAsync();
                 return Page();
             }
 
-            // بدء معاملة لضمان حفظ البيانات معاً أو عدم حفظها على الإطلاق
-            using (var transaction = await _context.Database.BeginTransactionAsync())
+            // *** تم التعديل هنا: إضافة منطق تحديث المخزون ***
+            // الخطوة 1: تحديث أرصدة المخزون
+            foreach (var detail in GoodsReceiptNote.Details)
             {
-                try
+                var inventoryItem = await _context.InventoryItems.FirstOrDefaultAsync(i =>
+                    i.WarehouseId == GoodsReceiptNote.WarehouseId &&
+                    i.MaterialId == detail.MaterialId);
+
+                if (inventoryItem != null)
                 {
-                    // 1. حفظ رأس السند أولاً
-                    _context.GoodsReceiptNotes.Add(GoodsReceiptNote);
-                    await _context.SaveChangesAsync();
-
-                    // 2. تحديث أرصدة المخزون بناءً على تفاصيل السند
-                    foreach (var detail in GoodsReceiptNote.Details)
-                    {
-                        // البحث عن الصنف في المخزن المحدد
-                        var inventoryItem = await _context.InventoryItems.FirstOrDefaultAsync(
-                            i => i.WarehouseId == GoodsReceiptNote.WarehouseId && i.MaterialId == detail.MaterialId);
-
-                        if (inventoryItem != null)
-                        {
-                            // إذا كان الصنف موجوداً، قم بزيادة الرصيد
-                            inventoryItem.StockLevel += detail.Quantity;
-                        }
-                        else
-                        {
-                            // إذا كان الصنف غير موجود، قم بإنشاء سجل جديد له
-                            inventoryItem = new InventoryItem
-                            {
-                                WarehouseId = GoodsReceiptNote.WarehouseId,
-                                MaterialId = detail.MaterialId,
-                                StockLevel = detail.Quantity
-                            };
-                            _context.InventoryItems.Add(inventoryItem);
-                        }
-                    }
-
-                    // 3. حفظ التغييرات في أرصدة المخزون
-                    await _context.SaveChangesAsync();
-
-                    // 4. إتمام المعاملة بنجاح
-                    await transaction.CommitAsync();
+                    // إذا كان الصنف موجوداً، قم بزيادة الرصيد
+                    inventoryItem.StockLevel += detail.Quantity;
                 }
-                catch
+                else
                 {
-                    // في حالة حدوث أي خطأ، تراجع عن كل التغييرات
-                    await transaction.RollbackAsync();
-                    // يمكنك إضافة رسالة خطأ هنا
-                    return Page();
+                    // إذا كان الصنف جديداً على هذا المخزن، قم بإنشاء سجل رصيد جديد
+                    _context.InventoryItems.Add(new InventoryItem
+                    {
+                        WarehouseId = GoodsReceiptNote.WarehouseId,
+                        MaterialId = detail.MaterialId,
+                        ItemType = InventoryItemType.RawMaterial,
+                        StockLevel = detail.Quantity
+                    });
                 }
             }
 
-            return RedirectToPage("./Index"); // سنقوم بإنشاء هذه الصفحة لاحقاً
+            // الخطوة 2: حفظ سند الاستلام
+            _context.GoodsReceiptNotes.Add(GoodsReceiptNote);
+
+            // الخطوة 3: حفظ جميع التغييرات (تحديث المخزون + السند الجديد)
+            await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = "تم حفظ سند الاستلام وتحديث أرصدة المخزون بنجاح.";
+            return RedirectToPage("./Index");
         }
     }
 }

@@ -37,6 +37,7 @@ namespace Keswa.Pages.MaterialRequisitions
                 .Include(r => r.WorkOrder)
                 .Include(r => r.Details)!
                 .ThenInclude(d => d.Material)
+                .ThenInclude(m => m.Color)
                 .FirstOrDefaultAsync(m => m.Id == id);
 
             if (MaterialRequisition == null || MaterialRequisition.Status == Enums.RequisitionStatus.Processed)
@@ -48,13 +49,13 @@ namespace Keswa.Pages.MaterialRequisitions
                 await _context.Warehouses.Where(w => w.Type == Enums.WarehouseType.RawMaterials).OrderBy(w => w.Name).ToListAsync(),
                 "Id", "Name");
 
-            // تجهيز النموذج بالبيانات
             ProcessDetails = MaterialRequisition.Details.Select(d => new ProcessDetailInputModel
             {
                 DetailId = d.Id,
                 MaterialName = d.Material.Name,
+                ColorName = d.Material.Color?.Name,
                 RequestedQuantity = d.Quantity,
-                IssuedQuantity = d.Quantity // اقتراح نفس الكمية المطلوبة
+                IssuedQuantity = d.Quantity
             }).ToList();
 
             return Page();
@@ -63,7 +64,8 @@ namespace Keswa.Pages.MaterialRequisitions
         public async Task<IActionResult> OnPostAsync(int id)
         {
             var requisition = await _context.MaterialRequisitions
-                .Include(r => r.Details)
+                .Include(r => r.Details)!
+                .ThenInclude(d => d.Material)
                 .FirstOrDefaultAsync(r => r.Id == id);
 
             if (requisition == null) return NotFound();
@@ -85,7 +87,8 @@ namespace Keswa.Pages.MaterialRequisitions
 
                     if (stock == null || stock.StockLevel < item.IssuedQuantity)
                     {
-                        ModelState.AddModelError("", $"الكمية المصروفة من '{item.MaterialName}' أكبر من الرصيد المتاح في المخزن المحدد. الرصيد: {stock?.StockLevel ?? 0}");
+                        var materialName = requisition.Details.First(d => d.Id == item.DetailId).Material.Name;
+                        ModelState.AddModelError("", $"الكمية المصروفة من '{materialName}' أكبر من الرصيد المتاح. الرصيد: {stock?.StockLevel ?? 0}");
                     }
                 }
             }
@@ -102,10 +105,9 @@ namespace Keswa.Pages.MaterialRequisitions
                 WorkOrderId = requisition.WorkOrderId,
                 IssuanceDate = System.DateTime.Today,
                 Notes = Notes,
-                // سيتم تحديد المخزن لكل صنف على حدة
             };
 
-            // معالجة كل صنف
+            // **هذا هو الجزء المسؤول عن خصم الكمية من المخزون**
             foreach (var item in ProcessDetails)
             {
                 if (item.IssuedQuantity > 0)
@@ -127,7 +129,6 @@ namespace Keswa.Pages.MaterialRequisitions
 
             if (issuanceNote.Details.Any())
             {
-                // بما أن الأصناف قد تصرف من مخازن مختلفة، سنختار أول مخزن كرئيسي في الإذن
                 issuanceNote.WarehouseId = ProcessDetails.First(d => d.WarehouseId.HasValue).WarehouseId.Value;
                 _context.MaterialIssuanceNotes.Add(issuanceNote);
             }
@@ -153,6 +154,7 @@ namespace Keswa.Pages.MaterialRequisitions
     {
         public int DetailId { get; set; }
         public string MaterialName { get; set; }
+        public string? ColorName { get; set; }
         public double RequestedQuantity { get; set; }
 
         [Display(Name = "الكمية المصروفة")]
@@ -162,3 +164,4 @@ namespace Keswa.Pages.MaterialRequisitions
         public int? WarehouseId { get; set; }
     }
 }
+

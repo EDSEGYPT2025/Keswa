@@ -17,7 +17,7 @@ namespace Keswa.Pages.GoodsReceipts
             _context = context;
         }
 
-        public GoodsReceiptNote GoodsReceiptNote { get; set; }
+        public GoodsReceiptNote GoodsReceiptNote { get; set; } = default!;
         public decimal TotalValue { get; set; }
 
         public async Task<IActionResult> OnGetAsync(int? id)
@@ -27,19 +27,20 @@ namespace Keswa.Pages.GoodsReceipts
                 return NotFound();
             }
 
-            // جلب بيانات السند المحدد مع تضمين جميع التفاصيل المرتبطة به
-            GoodsReceiptNote = await _context.GoodsReceiptNotes
-                .Include(g => g.Warehouse) // تضمين بيانات المخزن
-                .Include(g => g.Details)    // تضمين قائمة تفاصيل السند
-                    .ThenInclude(d => d.Material) // ولكل تفصيل، قم بتضمين بيانات المادة الخام
+            // *** تم التعديل هنا: إضافة ThenInclude لجلب بيانات اللون ***
+            var goodsreceiptnote = await _context.GoodsReceiptNotes
+                .Include(g => g.Warehouse)
+                .Include(g => g.Details)!
+                    .ThenInclude(d => d.Material)
+                        .ThenInclude(m => m.Color) // جلب اللون المرتبط بالمادة
                 .FirstOrDefaultAsync(m => m.Id == id);
 
-            if (GoodsReceiptNote == null)
+            if (goodsreceiptnote == null)
             {
                 return NotFound();
             }
 
-            // حساب القيمة الإجمالية للسند
+            GoodsReceiptNote = goodsreceiptnote;
             TotalValue = GoodsReceiptNote.Details.Sum(d => (decimal)d.Quantity * d.UnitPrice);
 
             return Page();

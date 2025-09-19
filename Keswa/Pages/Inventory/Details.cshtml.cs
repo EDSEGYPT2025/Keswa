@@ -25,12 +25,13 @@ namespace Keswa.Pages.Inventory
                 return NotFound();
             }
 
-            // جلب بيانات المخزن المحدد
-            // مع تضمين (Include) قائمة أرصدة المواد (InventoryItems)
-            // ثم تضمين (ThenInclude) بيانات المادة نفسها (Material) لكل رصيد
+            // *** تم التعديل هنا: إضافة ThenInclude لجلب بيانات اللون والمنتج ***
             Warehouse = await _context.Warehouses
                 .Include(w => w.InventoryItems)
                     .ThenInclude(i => i.Material)
+                        .ThenInclude(m => m.Color) // جلب اللون المرتبط بالمادة الخام
+                .Include(w => w.InventoryItems)
+                    .ThenInclude(i => i.Product) // جلب المنتج النهائي
                 .FirstOrDefaultAsync(m => m.Id == id);
 
             if (Warehouse == null)

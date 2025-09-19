@@ -8,7 +8,7 @@
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
         <h1 class="h2 fw-bold">@ViewData["Title"]</h1>
-        <p class="text-muted">عرض وإدارة قائمة المواد الخام الرئيسية في النظام.</p>
+        <p class="text-muted">عرض وتتبع جميع المواد الخام المسجلة في النظام.</p>
     </div>
     <div>
         <a asp-page="Create" class="btn btn-primary"><i class="bi bi-plus-circle me-2"></i>إضافة مادة جديدة</a>
@@ -21,7 +21,7 @@
         <form method="get">
             <div class="row g-3 align-items-center">
                 <div class="col">
-                    <input asp-for="SearchTerm" class="form-control" placeholder="ابحث باسم المادة..." />
+                    <input asp-for="SearchTerm" class="form-control" placeholder="ابحث باسم المادة أو كودها..." />
                 </div>
                 <div class="col-auto">
                     <button type="submit" class="btn btn-secondary"><i class="bi bi-search me-2"></i>بحث</button>
@@ -41,8 +41,10 @@
             <table class="table table-hover align-middle">
                 <thead class="table-light">
                     <tr>
-                        <th>@Html.DisplayNameFor(model => model.Materials[0].Name)</th>
-                        <th>@Html.DisplayNameFor(model => model.Materials[0].Unit)</th>
+                        <th>اسم المادة الخام</th>
+                        <!-- *** تم إضافة هذا العمود *** -->
+                        <th>اللون</th>
+                        <th>وحدة القياس</th>
                         <th>إجراءات</th>
                     </tr>
                 </thead>
@@ -51,10 +53,19 @@
                     {
                         <tr>
                             <td><strong>@Html.DisplayFor(modelItem => item.Name)</strong></td>
+                            <!-- *** تم إضافة هذا الحقل *** -->
+                            <td>@Html.DisplayFor(modelItem => item.Color.Name)</td>
                             <td>@Html.DisplayFor(modelItem => item.Unit)</td>
                             <td>
-                                <a href="#" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil-square"></i></a>
-                                <a href="#" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></a>
+                                <a asp-page="./Edit" asp-route-id="@item.Id" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil-square"></i></a>
+                                <button type="button" class="btn btn-sm btn-outline-danger"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#deleteConfirmationModal"
+                                        data-id="@item.Id"
+                                        data-name="@item.Name"
+                                        data-handler="Delete">
+                                    <i class="bi bi-trash"></i>
+                                </button>
                             </td>
                         </tr>
                     }
