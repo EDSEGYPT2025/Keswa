@@ -98,7 +98,6 @@
                                     </select>
                                     <span asp-validation-for="NewCuttingStatement.MaterialId" class="text-danger"></span>
                                 </div>
-
                                 <div class="col-md-6">
                                     <label class="form-label">الكمية المصروفة</label>
                                     <input id="issued-quantity" class="form-control" readonly style="background-color: #e9ecef;" />
@@ -107,7 +106,6 @@
                                     <label class="form-label">الكمية المتبقية</label>
                                     <input id="remaining-quantity" class="form-control" readonly style="background-color: #e9ecef;" />
                                 </div>
-
                                 <div class="col-md-6">
                                     <label asp-for="NewCuttingStatement.Meterage" class="form-label"></label>
                                     <input asp-for="NewCuttingStatement.Meterage" class="form-control" type="number" step="any" min="0.01" />
@@ -164,21 +162,39 @@
 
             <!-- Cutting Statements Table -->
             <div class="card shadow-sm border-0">
-                <div class="card-header bg-transparent">
+                <!-- *** تم التعديل هنا: إضافة زر الطباعة المجمعة *** -->
+                <div class="card-header bg-transparent d-flex justify-content-between align-items-center">
                     <h5 class="mb-0">بيانات القص السابقة لهذا الأمر</h5>
+                    <a asp-page="./PrintCuttingStatementAll" asp-route-workOrderId="@Model.SelectedWorkOrder.Id"
+                       class="btn btn-sm btn-outline-primary" target="_blank">
+                        <i class="bi bi-printer me-1"></i> طباعة جميع البيانات
+                    </a>
                 </div>
                 <div class="card-body">
                     <div class="table-responsive">
                         <table class="table table-striped table-sm">
-                            <thead class="table-light"> <tr><th>رقم التشغيل</th><th>الخامة</th><th>المتراج</th><th>الموديل</th><th>اللون</th><th>العدد</th><th>العامل</th><th>العميل</th><th>التاريخ</th></tr></thead>
+                            <thead class="table-light"> <tr><th></th><th>رقم التشغيل</th><th>الخامة</th><th>المتراج</th><th>الموديل</th><th>اللون</th><th>العدد</th><th>العامل</th><th>العميل</th><th>التاريخ</th></tr></thead>
                             <tbody>
                                 @if (!Model.CuttingStatements.Any())
                                 {
-                                    <tr><td colspan="9" class="text-center text-muted">لم يتم تسجيل أي بيانات قص.</td></tr>
+                                    <tr><td colspan="10" class="text-center text-muted">لم يتم تسجيل أي بيانات قص.</td></tr>
                                 }
                                 @foreach (var log in Model.CuttingStatements)
                                 {
-                                    <tr><td><strong>@log.RunNumber</strong></td><td>@log.Material.Name - @log.Material.Color?.Name</td><td>@log.Meterage</td><td>@log.Product.Name</td><td>@log.Color</td><td>@log.Count</td><td>@log.Worker.Name</td><td>@log.Customer.Name</td><td>@log.StatementDate.ToString("yyyy/MM/dd")</td></tr>
+                                    <tr>
+                                        <td>
+                                            <a asp-page="./PrintCuttingStatement" asp-route-id="@log.Id" class="btn btn-sm btn-outline-secondary" target="_blank" title="طباعة البيان"><i class="bi bi-printer"></i></a>
+                                        </td>
+                                        <td><strong>@log.RunNumber</strong></td>
+                                        <td>@log.Material.Name - @log.Material.Color?.Name</td>
+                                        <td>@log.Meterage</td>
+                                        <td>@log.Product.Name</td>
+                                        <td>@log.Color</td>
+                                        <td>@log.Count</td>
+                                        <td>@log.Worker.Name</td>
+                                        <td>@log.Customer.Name</td>
+                                        <td>@log.StatementDate.ToString("yyyy/MM/dd")</td>
+                                    </tr>
                                 }
                             </tbody>
                         </table>
@@ -215,4 +231,3 @@
         });
     </script>
 }
-

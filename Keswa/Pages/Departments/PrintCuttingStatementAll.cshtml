@@ -1,0 +1,161 @@
+﻿@page
+@model Keswa.Pages.Departments.PrintCuttingStatementAllModel
+@{
+    Layout = "/Pages/Shared/_PrintLayout.cshtml";
+    ViewData["Title"] = $"طباعة بيانات القص - {Model.WorkOrder.WorkOrderNumber}";
+}
+
+<style>
+    body {
+        font-family: 'Tajawal', sans-serif;
+        background-color: #fff;
+    }
+
+    .print-container {
+        max-width: 800px;
+        margin: 20px auto;
+        padding: 20px;
+        border: 1px solid #dee2e6;
+        background-color: #fff;
+    }
+
+    .print-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 2px solid #343a40;
+        padding-bottom: 15px;
+        margin-bottom: 20px;
+    }
+
+        .print-header .logo img {
+            max-width: 150px;
+            height: auto;
+        }
+
+        .print-header .title {
+            text-align: right;
+        }
+
+        .print-header h1 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+    .print-section {
+        margin-bottom: 20px;
+    }
+
+    .details-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+    }
+
+    .detail-item {
+        display: flex;
+    }
+
+        .detail-item dt {
+            font-weight: bold;
+            min-width: 120px;
+        }
+
+    .print-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 10px;
+    }
+
+        .print-table th, .print-table td {
+            border: 1px solid #dee2e6;
+            padding: 8px;
+            text-align: right;
+            font-size: 12px;
+        }
+
+        .print-table thead {
+            background-color: #e9ecef;
+        }
+
+    .print-footer {
+        margin-top: 40px;
+        text-align: center;
+        font-size: 14px;
+        color: #6c757d;
+    }
+
+    .print-button-container {
+        text-align: center;
+        margin: 20px 0;
+    }
+
+    @@media print {
+        .no-print {
+            display: none !important;
+        }
+
+        body, .print-container {
+            margin: 0;
+            padding: 0;
+            border: none;
+            box-shadow: none;
+        }
+    }
+</style>
+
+<div class="print-button-container no-print">
+    <button onclick="window.print()" class="btn btn-primary"><i class="bi bi-printer-fill me-2"></i>طباعة التقرير</button>
+</div>
+
+<div class="print-container">
+    <div class="print-header">
+        <div class="logo">
+            <img src="/images/logo.png" alt="شعار مصنع كسوة">
+        </div>
+        <div class="title">
+            <h1>بيان قص مجمع</h1>
+            <p>أمر الشغل رقم: @Model.WorkOrder.WorkOrderNumber</p>
+        </div>
+    </div>
+
+    <div class="print-section">
+        <div class="details-grid">
+            <div class="detail-item"><dt>الموديل:</dt> <dd>@Model.WorkOrder.Product.Name</dd></div>
+            <div class="detail-item"><dt>الكمية الإجمالية:</dt> <dd>@Model.WorkOrder.QuantityToProduce قطعة</dd></div>
+        </div>
+    </div>
+
+    <div class="print-section">
+        <table class="print-table">
+            <thead>
+                <tr>
+                    <th>رقم التشغيل</th>
+                    <th>الخامة واللون</th>
+                    <th>المتراج</th>
+                    <th>العدد</th>
+                    <th>العامل</th>
+                    <th>العميل</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model.CuttingStatements)
+                {
+                    <tr>
+                        <td>@item.RunNumber</td>
+                        <td>@item.Material.Name - @item.Material.Color?.Name</td>
+                        <td>@item.Meterage</td>
+                        <td>@item.Count</td>
+                        <td>@item.Worker.Name</td>
+                        <td>@item.Customer.Name</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <div class="print-footer">
+        <p>مصنع كسوة - نظام الإدارة المتكامل</p>
+    </div>
+</div>
