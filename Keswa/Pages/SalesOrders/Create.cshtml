@@ -41,7 +41,9 @@
     <div class="card shadow-sm border-0">
         <div class="card-header bg-transparent d-flex justify-content-between align-items-center">
             <h5 class="fw-bold mb-0">تفاصيل الموديلات</h5>
-            <button type="button" id="add-item-btn" class="btn btn-sm btn-outline-success"><i class="bi bi-plus-circle me-2"></i>إضافة موديل</button>
+            <button type="button" id="add-item-btn" class="btn btn-sm btn-outline-success">
+                <i class="bi bi-plus-circle me-2"></i>إضافة موديل
+            </button>
         </div>
         <div class="card-body">
             <span asp-validation-for="SalesOrder.Details" class="text-danger d-block mb-2"></span>
@@ -54,9 +56,14 @@
                     </tr>
                 </thead>
                 <tbody id="items-container">
-                    <!-- الصفوف الديناميكية ستضاف هنا -->
+                    <tr class="no-items">
+                        <td colspan="3" class="text-center text-muted">لم يتم إضافة أي موديل بعد</td>
+                    </tr>
                 </tbody>
             </table>
+            <div class="text-end mt-3">
+                <strong>إجمالي الكميات: <span id="totalQuantity">0</span></strong>
+            </div>
         </div>
     </div>
 
@@ -72,8 +79,12 @@
     <tbody id="item-template">
         <tr>
             <td>
-                <select name="SalesOrder.Details[0].ProductId" class="form-select item-product searchable-select" asp-items="Model.ProductList">
+                <select name="SalesOrder.Details[0].ProductId" class="form-select item-product searchable-select">
                     <option value="">-- اختر الموديل --</option>
+                    @foreach (var item in Model.ProductList)
+                    {
+                        <option value="@item.Value">@item.Text</option>
+                    }
                 </select>
             </td>
             <td>
@@ -90,57 +101,106 @@
     <partial name="_ValidationScriptsPartial" />
     <script>
         $(document).ready(function () {
-            // تفعيل البحث للقوائم الثابتة في الصفحة
-            $('.searchable-select').select2({
+            // تحسين شكل الجدول
+            $(".table tbody").on("mouseenter", "tr", function () {
+                $(this).css("background-color", "#f9f9f9");
+            }).on("mouseleave", "tr", function () {
+                $(this).css("background-color", "");
+            });
+
+            // تفعيل Select2 للـ select الثابتة فقط (العملاء مثلاً)
+            $('select[name="SalesOrder.CustomerId"]').select2({
                 theme: "bootstrap-5",
                 dir: "rtl",
-                placeholder: '-- اختر --',
+                placeholder: '-- اختر العميل --',
                 width: '100%'
             });
 
-            // الحصول على الصف الأصلي كقالب
             const templateRow = $('#item-template tr').first();
 
-            // *** تم التعديل هنا: وظيفة إعادة ترتيب الفهرس لضمان تسلسل صحيح ***
+            // إعادة الترتيب
             function reindexItems() {
                 let currentIndex = 0;
                 $('#items-container tr').each(function () {
                     $(this).find('select, input').each(function () {
-                        // استخدام regex أكثر دقة لضمان استبدال الفهرس فقط
-                        this.name = this.name.replace(/Details\[\d+\]/g, 'Details[' + currentIndex + ']');
+                        if (this.name && this.name.indexOf("Details[") !== -1) {
+                            this.name = this.name.replace(/Details\[\d+\]/g, 'Details[' + currentIndex + ']');
+                        }
+                        if (this.id && this.id.indexOf("Details_") !== -1) {
+                            this.id = this.id.replace(/Details_\d+__/g, 'Details_' + currentIndex + '__');
+                        }
                     });
                     currentIndex++;
                 });
             }
 
+            // عرض رسالة الجدول الفاضي
+            function toggleNoItemsMessage() {
+                if ($('#items-container tr').length === 0) {
+                    $('#items-container').append(`
+                            <tr class="no-items">
+                                <td colspan="3" class="text-center text-muted">لم يتم إضافة أي موديل بعد</td>
+                            </tr>
+                        `);
+                } else {
+                    $('#items-container .no-items').remove();
+                }
+                calculateTotalQuantity();
+            }
+
+            // حساب إجمالي الكمية
+            function calculateTotalQuantity() {
+                let total = 0;
+                $('#items-container .item-quantity').each(function () {
+                    total += parseInt($(this).val()) || 0;
+                });
+                $('#totalQuantity').text(total);
+            }
+
+            // إضافة صف جديد
             function addItemRow() {
-                // استنساخ القالب لإنشاء صف جديد
                 let newRow = templateRow.clone();
                 $('#items-container').append(newRow);
 
-                // تفعيل مكتبة البحث على القائمة المنسدلة في الصف الجديد فقط
+                // تفعيل Select2 للـ select الجديد
                 newRow.find('.searchable-select').select2({
                     theme: "bootstrap-5",
                     dir: "rtl",
-                    placeholder: '-- اختر --',
+                    placeholder: '-- اختر الموديل --',
                     width: '100%'
                 });
 
-                // إعادة ترتيب جميع الصفوف لضمان تسلسل الفهرس
                 reindexItems();
+                toggleNoItemsMessage();
             }
 
+            // زر إضافة موديل
             $('#add-item-btn').click(addItemRow);
 
+            // حذف صف
             $('#items-container').on('click', '.remove-item-btn', function () {
-                // تدمير نسخة Select2 قبل حذف الصف لتجنب المشاكل
                 $(this).closest('tr').find('.searchable-select').select2('destroy');
                 $(this).closest('tr').remove();
-
-                // إعادة ترتيب جميع الصفوف بعد الحذف
                 reindexItems();
+                toggleNoItemsMessage();
             });
+
+            // إضافة صف جديد عند الضغط على Enter في الكمية
+            $('#items-container').on('keypress', '.item-quantity', function (e) {
+                if (e.which === 13) {
+                    e.preventDefault();
+                    $('#add-item-btn').click();
+                }
+            });
+
+            // حساب الإجمالي عند تعديل الكمية
+            $('#items-container').on('input', '.item-quantity', calculateTotalQuantity);
+
+            // استدعاء مبدئي
+            toggleNoItemsMessage();
+
+            // ✅ إضافة صف أول بشكل تلقائي
+            addItemRow();
         });
     </script>
 }
-

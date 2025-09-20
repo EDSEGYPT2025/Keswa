@@ -32,29 +32,25 @@ namespace Keswa.Pages.SalesOrders
 
         public async Task<IActionResult> OnPostAsync()
         {
-            // *** تم التعديل هنا: استخدام طريقة تحقق أكثر دقة ***
-
-            // أولاً، إزالة أي صفوف فارغة تماماً قد يرسلها المتصفح
+            // إزالة أي صفوف فارغة
             SalesOrder.Details.RemoveAll(d => d.ProductId == 0 && d.Quantity == 0);
 
-            // ثانياً، التحقق من أن المستخدم أضاف صفاً واحداً على الأقل
+            // التحقق من وجود تفاصيل
             if (SalesOrder.Details == null || SalesOrder.Details.Count == 0)
             {
                 ModelState.AddModelError("SalesOrder.Details", "يجب إضافة موديل واحد على الأقل للطلبية.");
             }
             else
             {
-                // ثالثاً، التحقق من أن كل صف تمت إضافته يحتوي على موديل صالح
                 foreach (var detail in SalesOrder.Details)
                 {
                     if (detail.ProductId == 0)
                     {
-                        ModelState.AddModelError("SalesOrder.Details", "يجب اختيار موديل صالح لكل صف في الطلبية.");
-                        break; // التوقف عند أول خطأ
+                        ModelState.AddModelError("SalesOrder.Details", "يجب اختيار موديل صالح لكل صف.");
+                        break;
                     }
                 }
             }
-
 
             if (!ModelState.IsValid)
             {
@@ -62,7 +58,7 @@ namespace Keswa.Pages.SalesOrders
                 return Page();
             }
 
-            // تعيين الحالة الافتراضية لكل بند في الطلبية
+            // الحالة الافتراضية لكل بند
             foreach (var detail in SalesOrder.Details)
             {
                 detail.Status = Enums.SalesOrderDetailStatus.PendingConversion;
@@ -81,4 +77,3 @@ namespace Keswa.Pages.SalesOrders
         }
     }
 }
-

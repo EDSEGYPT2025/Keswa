@@ -41,7 +41,7 @@ namespace Keswa.Pages.SalesOrders
             var totalRecords = await query.CountAsync();
             TotalPages = (int)Math.Ceiling(totalRecords / (double)PageSize);
 
-            SalesOrders = await query.OrderByDescending(s => s.OrderDate)
+            SalesOrders = await query.OrderByDescending(s => s.Id)
                                      .Skip((CurrentPage - 1) * PageSize)
                                      .Take(PageSize)
                                      .ToListAsync();
