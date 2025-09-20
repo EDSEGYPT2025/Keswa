@@ -63,7 +63,7 @@ namespace Keswa.Pages.Departments
                 .ToListAsync();
 
             WorkOrdersInCutting = allOpenWorkOrders
-                .Where(vm => vm.RemainingToCut > 0)
+                //.Where(vm => vm.RemainingToCut > 0)
                 .OrderBy(vm => vm.WorkOrderId)
                 .ToList();
 
@@ -139,30 +139,6 @@ namespace Keswa.Pages.Departments
             TempData["SuccessMessage"] = $"تم حفظ بيان القص بنجاح برقم تشغيل {NewCuttingStatement.RunNumber}.";
             return RedirectToPage(new { id = workOrderId });
         }
-
-        public async Task<IActionResult> OnPostFinishCuttingAsync(int workOrderId)
-        {
-            var cuttingStage = await _context.WorkOrderRoutings
-                .FirstOrDefaultAsync(r => r.WorkOrderId == workOrderId && r.Department == Department.Cutting);
-
-            if (cuttingStage == null)
-            {
-                return NotFound();
-            }
-
-            // لو لسه مش مكتملة نخليها مكتملة
-            if (cuttingStage.Status != WorkOrderStageStatus.Completed)
-            {
-                cuttingStage.Status = WorkOrderStageStatus.Completed;
-                await _context.SaveChangesAsync();
-
-                TempData["SuccessMessage"] = "تم إنهاء مرحلة القص بنجاح ✅.";
-            }
-
-            // رجع لنفس الصفحة
-            return RedirectToPage(new { id = workOrderId });
-        }
-
     }
 
     public class CuttingWorkOrderViewModel

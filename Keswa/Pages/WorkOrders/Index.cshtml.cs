@@ -46,7 +46,7 @@ namespace Keswa.Pages.WorkOrders
             var count = await query.CountAsync();
             TotalPages = (int)Math.Ceiling(count / (double)PageSize);
 
-            WorkOrders = await query.OrderByDescending(w => w.CreationDate)
+            WorkOrders = await query.OrderByDescending(w => w.Id)
                                     .Skip((CurrentPage - 1) * PageSize)
                                     .Take(PageSize)
                                     .ToListAsync();

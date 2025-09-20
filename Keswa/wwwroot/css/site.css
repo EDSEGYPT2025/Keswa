@@ -1,7 +1,5 @@
-﻿/* --- FILENAME: wwwroot/css/site.css --- */
-
+﻿/* --- Root Variables for Theming --- */
 :root {
-    --sidebar-bg: #f8f9fa;
     --sidebar-width: 260px;
     --sidebar-width-collapsed: 80px;
     --header-height: 60px;
@@ -15,6 +13,7 @@
     --transition-speed: 0.3s;
 }
 
+/* --- General Body Styles --- */
 body {
     font-family: 'Tajawal', sans-serif;
     background-color: #f8f9fa;
@@ -23,12 +22,13 @@ body {
     overflow-x: hidden;
 }
 
+/* --- Main App Container --- */
 .app-container {
     display: flex;
     min-height: 100vh;
 }
 
-/* Sidebar */
+/* --- Sidebar Styles --- */
 .app-sidebar {
     width: var(--sidebar-width);
     background-color: #ffffff;
@@ -73,7 +73,6 @@ body {
     font-weight: 700;
     color: var(--sidebar-section-title);
     text-transform: uppercase;
-    letter-spacing: 0.5px;
     white-space: nowrap;
     transition: opacity calc(var(--transition-speed) / 2) ease;
 }
@@ -116,7 +115,7 @@ body {
         font-weight: 600;
     }
 
-/* Main Content */
+/* --- Main Content Area --- */
 .app-main {
     flex-grow: 1;
     margin-right: var(--sidebar-width);
@@ -125,7 +124,7 @@ body {
     transition: margin-right var(--transition-speed) ease-in-out;
 }
 
-/* Header */
+/* --- Header Styles --- */
 .app-header {
     height: var(--header-height);
     background-color: #ffffff;
@@ -143,13 +142,13 @@ body {
     color: var(--secondary-text);
 }
 
-/* Page Content */
+/* --- Page Content --- */
 .app-content {
     padding: 2rem;
     flex-grow: 1;
 }
 
-/* Collapsed Sidebar */
+/* --- Collapsed Sidebar Styles --- */
 .app-container.sidebar-collapsed .app-sidebar {
     width: var(--sidebar-width-collapsed);
 }
@@ -170,10 +169,10 @@ body {
     margin-right: var(--sidebar-width-collapsed);
 }
 
-/* Responsive */
+/* --- Responsive Styles for Mobile --- */
 @media (max-width: 992px) {
     .app-sidebar {
-        transform: translateX(100%);
+        transform: translateX(100%); /* Hide sidebar off-screen */
     }
 
     .app-main {
@@ -181,7 +180,7 @@ body {
     }
 
     .app-container.sidebar-mobile-open .app-sidebar {
-        transform: translateX(0);
+        transform: translateX(0); /* Show sidebar on mobile */
         box-shadow: 0 0 20px rgba(0,0,0,0.15);
     }
 
@@ -204,65 +203,8 @@ body {
     }
 }
 
-/* KPI Cards */
-.kpi-card {
-    position: relative;
-    overflow: hidden;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-    .kpi-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1) !important;
-    }
-
-    .kpi-card .card-body {
-        position: relative;
-        z-index: 2;
-    }
-
-.chart-container {
-    position: relative;
-    height: 300px;
-    width: 100%;
-}
-
-.auth-bg {
-    background-color: #f0f2f5;
-}
-
-@media (max-width: 768px) {
-    .app-content {
-        padding: 1rem;
-    }
-
-    .h2 {
-        font-size: 1.5rem;
-    }
-
-    .kpi-card .h3 {
-        font-size: 1.75rem;
-    }
-
-    .chart-container {
-        height: 250px;
-    }
-}
-
-/* Modal Fix */
-.modal {
-    z-index: 1060 !important;
-}
-
-.modal-backdrop {
-    z-index: 1050 !important;
-}
-
-.modal-dialog {
-    transform: translateZ(0);
-}
-
-/* ✅ Toastr Customization */
+/* --- Toastr Customization --- */
+/* This section ensures toastr messages are visible and properly styled */
 #toast-container > .toast {
     opacity: 1 !important;
     border-radius: 8px;
@@ -271,12 +213,12 @@ body {
     text-align: right;
 }
 
-    #toast-container > .toast.toast-success {
-        background-color: #28a745 !important;
-        color: #fff !important;
-    }
+#toast-container > .toast-success {
+    background-color: #28a745 !important;
+    color: #fff !important;
+}
 
-    #toast-container > .toast.toast-error {
-        background-color: #dc3545 !important;
-        color: #fff !important;
-    }
+#toast-container > .toast-error {
+    background-color: #dc3545 !important;
+    color: #fff !important;
+}

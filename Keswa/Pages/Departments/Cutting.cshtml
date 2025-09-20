@@ -98,24 +98,29 @@
                                     </select>
                                     <span asp-validation-for="NewCuttingStatement.MaterialId" class="text-danger"></span>
                                 </div>
+
                                 <div class="col-md-6">
                                     <label class="form-label">الكمية المصروفة</label>
                                     <input id="issued-quantity" class="form-control" readonly style="background-color: #e9ecef;" />
                                 </div>
+
                                 <div class="col-md-6">
                                     <label class="form-label">الكمية المتبقية</label>
                                     <input id="remaining-quantity" class="form-control" readonly style="background-color: #e9ecef;" />
                                 </div>
+
                                 <div class="col-md-6">
                                     <label asp-for="NewCuttingStatement.Meterage" class="form-label"></label>
                                     <input asp-for="NewCuttingStatement.Meterage" class="form-control" type="number" step="any" min="0.01" />
                                     <span asp-validation-for="NewCuttingStatement.Meterage" class="text-danger"></span>
                                 </div>
+
                                 <div class="col-md-6">
                                     <label asp-for="NewCuttingStatement.Count" class="form-label"></label>
                                     <input asp-for="NewCuttingStatement.Count" class="form-control" type="number" min="1" />
                                     <span asp-validation-for="NewCuttingStatement.Count" class="text-danger"></span>
                                 </div>
+
                                 <div class="col-md-4">
                                     <label asp-for="NewCuttingStatement.ProductId" class="form-label"></label>
                                     <select asp-for="NewCuttingStatement.ProductId" class="form-select searchable-select" asp-items="Model.ProductList">
@@ -123,11 +128,13 @@
                                     </select>
                                     <span asp-validation-for="NewCuttingStatement.ProductId" class="text-danger"></span>
                                 </div>
+
                                 <div class="col-md-4">
                                     <label asp-for="NewCuttingStatement.Color" class="form-label"></label>
                                     <input asp-for="NewCuttingStatement.Color" id="color-display" class="form-control" readonly style="background-color: #e9ecef;" />
                                     <span asp-validation-for="NewCuttingStatement.Color" class="text-danger"></span>
                                 </div>
+
                                 <div class="col-md-4">
                                     <label asp-for="NewCuttingStatement.WorkerId" class="form-label"></label>
                                     <select asp-for="NewCuttingStatement.WorkerId" class="form-select searchable-select" asp-items="Model.WorkerList">
@@ -135,6 +142,7 @@
                                     </select>
                                     <span asp-validation-for="NewCuttingStatement.WorkerId" class="text-danger"></span>
                                 </div>
+
                                 <div class="col-md-12">
                                     <label asp-for="NewCuttingStatement.CustomerId" class="form-label"></label>
                                     <select asp-for="NewCuttingStatement.CustomerId" class="form-select searchable-select" asp-items="Model.CustomerList">
@@ -143,6 +151,7 @@
                                     <span asp-validation-for="NewCuttingStatement.CustomerId" class="text-danger"></span>
                                 </div>
                             </div>
+
                             <div class="text-end mt-4">
                                 <button type="submit" class="btn btn-success">حفظ البيان وتسجيل الإنتاج</button>
                             </div>
@@ -162,7 +171,6 @@
 
             <!-- Cutting Statements Table -->
             <div class="card shadow-sm border-0">
-                <!-- *** تم التعديل هنا: إضافة زر الطباعة المجمعة *** -->
                 <div class="card-header bg-transparent d-flex justify-content-between align-items-center">
                     <h5 class="mb-0">بيانات القص السابقة لهذا الأمر</h5>
                     <a asp-page="./PrintCuttingStatementAll" asp-route-workOrderId="@Model.SelectedWorkOrder.Id"
@@ -173,7 +181,20 @@
                 <div class="card-body">
                     <div class="table-responsive">
                         <table class="table table-striped table-sm">
-                            <thead class="table-light"> <tr><th></th><th>رقم التشغيل</th><th>الخامة</th><th>المتراج</th><th>الموديل</th><th>اللون</th><th>العدد</th><th>العامل</th><th>العميل</th><th>التاريخ</th></tr></thead>
+                            <thead class="table-light">
+                                <tr>
+                                    <th></th>
+                                    <th>رقم التشغيل</th>
+                                    <th>الخامة</th>
+                                    <th>المتراج</th>
+                                    <th>الموديل</th>
+                                    <th>اللون</th>
+                                    <th>العدد</th>
+                                    <th>العامل</th>
+                                    <th>العميل</th>
+                                    <th>التاريخ</th>
+                                </tr>
+                            </thead>
                             <tbody>
                                 @if (!Model.CuttingStatements.Any())
                                 {
@@ -211,7 +232,7 @@
         $(document).ready(function () {
             const materialStockData = JSON.parse('@Html.Raw(Model.MaterialStockJson ?? "{}")');
 
-            $('#materialSelect').on('change', function() {
+            $('#materialSelect').on('change', function () {
                 const materialId = $(this).val();
                 const issuedQtyInput = $('#issued-quantity');
                 const remainingQtyInput = $('#remaining-quantity');
