@@ -43,12 +43,14 @@ namespace Keswa.Pages.Departments
 
         public async Task OnGetAsync(int? id)
         {
+            // اجمع الكميات اللي اتقصت فعلياً
             var quantitiesCut = await _context.ProductionLogs
                 .Where(p => p.Department == Department.Cutting)
                 .GroupBy(p => p.WorkOrderId)
                 .Select(g => new { WorkOrderId = g.Key, TotalCut = g.Sum(p => p.QuantityProduced) })
                 .ToDictionaryAsync(x => x.WorkOrderId, x => x.TotalCut);
 
+            // هات أوامر الشغل اللي لسه متقفلتش بالكامل
             var allOpenWorkOrders = await _context.WorkOrders
                 .Include(wo => wo.Product)
                 .Where(wo => wo.Status != WorkOrderStatus.Completed)
@@ -62,46 +64,101 @@ namespace Keswa.Pages.Departments
                 })
                 .ToListAsync();
 
+            // حدد أوامر الشغل اللي مرحلة القص فيها لسه مش Completed
+            var cuttingInProgressIds = await _context.WorkOrderRoutings
+                .Where(r => r.Department == Department.Cutting && r.Status != WorkOrderStageStatus.Completed)
+                .Select(r => r.WorkOrderId)
+                .ToListAsync();
+
+            // اعرض فقط أوامر الشغل دي
             WorkOrdersInCutting = allOpenWorkOrders
-                //.Where(vm => vm.RemainingToCut > 0)
+                .Where(vm => cuttingInProgressIds.Contains(vm.WorkOrderId))
                 .OrderBy(vm => vm.WorkOrderId)
                 .ToList();
 
+            // باقي الكود زي ما هو (تحميل تفاصيل أمر الشغل لو id.HasValue)
             if (id.HasValue)
             {
                 SelectedWorkOrder = await _context.WorkOrders.FindAsync(id.Value);
                 if (SelectedWorkOrder != null)
                 {
-                    var issuedMaterialIds = await _context.MaterialIssuanceNoteDetails.Where(d => d.MaterialIssuanceNote.WorkOrderId == id.Value).Select(d => d.MaterialId).Distinct().ToListAsync();
-                    var workersInDepartment = await _context.Workers.Where(w => w.Department == Department.Cutting).ToListAsync();
+                    var issuedMaterialIds = await _context.MaterialIssuanceNoteDetails
+                        .Where(d => d.MaterialIssuanceNote.WorkOrderId == id.Value)
+                        .Select(d => d.MaterialId)
+                        .Distinct()
+                        .ToListAsync();
 
-                    if (!issuedMaterialIds.Any()) { PreRequisiteMessage = "لا يمكن إنشاء بيان قص. يجب أولاً إنشاء 'إذن صرف مواد خام' واحد على الأقل لهذا الأمر."; }
-                    else if (!workersInDepartment.Any()) { PreRequisiteMessage = "لا يمكن إنشاء بيان قص. يجب أولاً تعريف عامل واحد على الأقل في 'قسم القص'."; }
-                    else { CanCreateStatement = true; }
+                    var workersInDepartment = await _context.Workers
+                        .Where(w => w.Department == Department.Cutting)
+                        .ToListAsync();
 
-                    var issuedQuantities = await _context.MaterialIssuanceNoteDetails.Where(d => d.MaterialIssuanceNote.WorkOrderId == id.Value).GroupBy(d => d.MaterialId).Select(g => new { MaterialId = g.Key, TotalIssued = g.Sum(d => d.Quantity) }).ToDictionaryAsync(x => x.MaterialId, x => x.TotalIssued);
-                    var usedMeterage = await _context.CuttingStatements.Where(cs => cs.WorkOrderId == id.Value).GroupBy(cs => cs.MaterialId).Select(g => new { MaterialId = g.Key, TotalUsed = g.Sum(cs => cs.Meterage) }).ToDictionaryAsync(x => x.MaterialId, x => x.TotalUsed);
+                    if (!issuedMaterialIds.Any())
+                    {
+                        PreRequisiteMessage = "لا يمكن إنشاء بيان قص. يجب أولاً إنشاء 'إذن صرف مواد خام' واحد على الأقل لهذا الأمر.";
+                    }
+                    else if (!workersInDepartment.Any())
+                    {
+                        PreRequisiteMessage = "لا يمكن إنشاء بيان قص. يجب أولاً تعريف عامل واحد على الأقل في 'قسم القص'.";
+                    }
+                    else
+                    {
+                        CanCreateStatement = true;
+                    }
 
-                    var issuedMaterials = await _context.Materials.Where(m => issuedMaterialIds.Contains(m.Id)).Include(m => m.Color).ToListAsync();
+                    var issuedQuantities = await _context.MaterialIssuanceNoteDetails
+                        .Where(d => d.MaterialIssuanceNote.WorkOrderId == id.Value)
+                        .GroupBy(d => d.MaterialId)
+                        .Select(g => new { MaterialId = g.Key, TotalIssued = g.Sum(d => d.Quantity) })
+                        .ToDictionaryAsync(x => x.MaterialId, x => x.TotalIssued);
+
+                    var usedMeterage = await _context.CuttingStatements
+                        .Where(cs => cs.WorkOrderId == id.Value)
+                        .GroupBy(cs => cs.MaterialId)
+                        .Select(g => new { MaterialId = g.Key, TotalUsed = g.Sum(cs => cs.Meterage) })
+                        .ToDictionaryAsync(x => x.MaterialId, x => x.TotalUsed);
+
+                    var issuedMaterials = await _context.Materials
+                        .Where(m => issuedMaterialIds.Contains(m.Id))
+                        .Include(m => m.Color)
+                        .ToListAsync();
 
                     var materialInfo = new Dictionary<int, object>();
                     foreach (var material in issuedMaterials)
                     {
                         var issued = issuedQuantities.GetValueOrDefault(material.Id, 0);
                         var used = usedMeterage.GetValueOrDefault(material.Id, 0);
-                        materialInfo[material.Id] = new { issued, remaining = issued - used, color = material.Color?.Name ?? "بدون لون" };
+                        materialInfo[material.Id] = new
+                        {
+                            issued,
+                            remaining = issued - used,
+                            color = material.Color?.Name ?? "بدون لون"
+                        };
                     }
                     MaterialStockJson = JsonSerializer.Serialize(materialInfo);
 
+                    CuttingStatements = await _context.CuttingStatements
+                        .Include(cs => cs.Material).ThenInclude(m => m.Color)
+                        .Include(cs => cs.Product)
+                        .Include(cs => cs.Worker)
+                        .Include(cs => cs.Customer)
+                        .Where(cs => cs.WorkOrderId == id.Value)
+                        .OrderByDescending(cs => cs.StatementDate)
+                        .ToListAsync();
 
-                    CuttingStatements = await _context.CuttingStatements.Include(cs => cs.Material).ThenInclude(m => m.Color).Include(cs => cs.Product).Include(cs => cs.Worker).Include(cs => cs.Customer).Where(cs => cs.WorkOrderId == id.Value).OrderByDescending(cs => cs.StatementDate).ToListAsync();
-                    IssuedMaterialsList = new SelectList(issuedMaterials.Select(m => new { Id = m.Id, DisplayText = m.Name + (m.Color != null ? $" - {m.Color.Name}" : "") }).ToList(), "Id", "DisplayText");
+                    IssuedMaterialsList = new SelectList(
+                        issuedMaterials.Select(m => new
+                        {
+                            Id = m.Id,
+                            DisplayText = m.Name + (m.Color != null ? $" - {m.Color.Name}" : "")
+                        }).ToList(), "Id", "DisplayText");
+
                     ProductList = new SelectList(await _context.Products.OrderBy(p => p.Name).ToListAsync(), "Id", "Name");
                     WorkerList = new SelectList(workersInDepartment, "Id", "Name");
                     CustomerList = new SelectList(await _context.Customers.OrderBy(c => c.Name).ToListAsync(), "Id", "Name");
                 }
             }
         }
+
 
         public async Task<IActionResult> OnPostAsync(int workOrderId)
         {
@@ -139,6 +196,41 @@ namespace Keswa.Pages.Departments
             TempData["SuccessMessage"] = $"تم حفظ بيان القص بنجاح برقم تشغيل {NewCuttingStatement.RunNumber}.";
             return RedirectToPage(new { id = workOrderId });
         }
+
+        public async Task<IActionResult> OnPostFinishCuttingAsync(int workOrderId)
+        {
+            // 1. ابحث عن أمر الشغل باستخدام workOrderId
+            var workOrder = await _context.WorkOrders.FindAsync(workOrderId);
+            if (workOrder == null)
+            {
+                return NotFound();
+            }
+
+            // 2. ابحث عن مرحلة القص في مسار أمر الشغل
+            var routingStage = await _context.WorkOrderRoutings
+                .FirstOrDefaultAsync(r => r.WorkOrderId == workOrderId && r.Department == Department.Cutting);
+
+            if (routingStage != null)
+            {
+                // 3. قم بتغيير حالة المرحلة إلى "مكتملة"
+                routingStage.Status = WorkOrderStageStatus.Completed;
+                // يمكنك أيضًا تحديث تاريخ الانتهاء الفعلي هنا
+                // routingStage.ActualEndDate = DateTime.Now;
+            }
+
+            // (اختياري) يمكنك إضافة منطق هنا للتحقق مما إذا كان أمر الشغل بأكمله قد اكتمل
+            // وتغيير حالة أمر الشغل الرئيسي (workOrder.Status)
+
+            // 4. احفظ التغييرات في قاعدة البيانات
+            await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = $"تم إنهاء مرحلة القص لأمر الشغل {workOrder.WorkOrderNumber} بنجاح.";
+
+            // 5. أعد توجيه المستخدم إلى نفس الصفحة (أو صفحة أخرى)
+            // أمر الشغل هذا لن يظهر في القائمة بعد الآن لأنه اكتمل
+            return RedirectToPage();
+        }
+
     }
 
     public class CuttingWorkOrderViewModel

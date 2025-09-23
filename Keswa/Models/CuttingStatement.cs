@@ -22,7 +22,6 @@ namespace Keswa.Models
         [Display(Name = "المتراج")]
         public double Meterage { get; set; }
 
-        // *** تم التعديل هنا: جعل الحقل اختيارياً ***
         [Display(Name = "رقم التشغيل")]
         public string? RunNumber { get; set; }
 
@@ -41,6 +40,10 @@ namespace Keswa.Models
         [Range(1, int.MaxValue)]
         public int Count { get; set; }
 
+        [Display(Name = "الكمية المنصرفة")]
+        [Range(0, double.MaxValue, ErrorMessage = "الكمية المنصرفة يجب أن تكون رقمًا موجبًا")]
+        public double IssuedQuantity { get; set; }   // 👈 الإضافة الجديدة
+
         [Required(ErrorMessage = "يجب اختيار العامل")]
         [Display(Name = "اسم العامل")]
         public int WorkerId { get; set; }
@@ -53,7 +56,7 @@ namespace Keswa.Models
         [ValidateNever]
         public Customer Customer { get; set; }
 
-        public System.DateTime StatementDate { get; set; } = System.DateTime.Now;
+        public DateTime StatementDate { get; set; } = DateTime.Now;
     }
 }
 

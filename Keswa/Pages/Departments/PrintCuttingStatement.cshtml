@@ -1,7 +1,7 @@
 ﻿@page "{id:int}"
 @model Keswa.Pages.Departments.PrintCuttingStatementModel
 @{
-    Layout = "/Pages/Shared/_PrintLayout.cshtml"; // استخدام تصميم الطباعة الخاص
+    Layout = "/Pages/Shared/_PrintLayout.cshtml";
     ViewData["Title"] = $"طباعة بيان قص - {Model.CuttingStatement.RunNumber}";
 }
 
@@ -9,6 +9,7 @@
     body {
         font-family: 'Tajawal', sans-serif;
         background-color: #fff;
+        position: relative;
     }
 
     .print-container {
@@ -17,6 +18,27 @@
         padding: 20px;
         border: 1px solid #dee2e6;
         background-color: #fff;
+        position: relative;
+    }
+
+    /* العلامة المائية */
+    .watermark img {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 60%;
+        height: 60%;
+        transform: translate(-50%, -50%);
+        object-fit: contain;
+        opacity: 0.1;
+        z-index: 0;
+        pointer-events: none;
+    }
+
+    /* النصوص فوق العلامة المائية */
+    .print-header, .print-section, .print-footer {
+        position: relative;
+        z-index: 1;
     }
 
     .print-header {
@@ -24,52 +46,52 @@
         justify-content: space-between;
         align-items: center;
         border-bottom: 2px solid #343a40;
-        padding-bottom: 15px;
-        margin-bottom: 20px;
+        padding-bottom: 10px;
+        margin-bottom: 15px;
     }
 
-        .print-header .logo img {
-            max-width: 150px;
-            height: auto;
-        }
+    .print-header .logo img {
+        max-width: 80px; /* حجم أصغر لتوفير مساحة */
+        height: auto;
+    }
 
-        .print-header .title {
-            text-align: right;
-        }
+    .print-header .title {
+        text-align: right;
+    }
 
-        .print-header h1 {
-            margin: 0;
-            font-size: 24px;
-            font-weight: 700;
-        }
+    .print-header h1 {
+        margin: 0;
+        font-size: 24px;
+        font-weight: 700;
+    }
 
     .print-section {
         margin-bottom: 20px;
     }
 
-        .print-section h5 {
-            font-weight: bold;
-            background-color: #f8f9fa;
-            padding: 8px 12px;
-            border-radius: 0.25rem;
-            border: 1px solid #dee2e6;
-            margin-bottom: 10px;
-        }
-
     .details-grid {
         display: grid;
         grid-template-columns: repeat(2, 1fr);
-        gap: 10px;
+        gap: 10px 20px;
     }
 
     .detail-item {
         display: flex;
+        padding: 5px 10px;
+        border: 1px solid #dee2e6;
+        border-radius: 5px;
+        background-color: #f8f9fa;
     }
 
-        .detail-item dt {
-            font-weight: bold;
-            min-width: 120px;
-        }
+    .detail-item dt {
+        font-weight: bold;
+        min-width: 120px;
+    }
+
+    .detail-item dd {
+        margin: 0;
+        padding-left: 5px;
+    }
 
     .print-table {
         width: 100%;
@@ -77,15 +99,29 @@
         margin-top: 10px;
     }
 
-        .print-table th, .print-table td {
-            border: 1px solid #dee2e6;
-            padding: 8px;
-            text-align: right;
-        }
+    .print-table th, .print-table td {
+        border: 1px solid #dee2e6;
+        padding: 8px;
+        text-align: right;
+    }
 
-        .print-table thead {
-            background-color: #e9ecef;
-        }
+    .print-table thead {
+        background-color: #e9ecef;
+    }
+
+    .summary-grid {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 15px;
+    }
+
+    .summary-item {
+        padding: 5px 10px;
+        border: 1px solid #dee2e6;
+        border-radius: 5px;
+        background-color: #e2e6ea;
+        font-weight: bold;
+    }
 
     .print-footer {
         margin-top: 40px;
@@ -118,9 +154,14 @@
 </div>
 
 <div class="print-container">
+    <!-- العلامة المائية -->
+    <div class="watermark">
+        <img src="~/images/logo.png" alt="Logo" />
+    </div>
+
+    <!-- رأس التقرير -->
     <div class="print-header">
         <div class="logo">
-            <!-- ضع رابط الشعار الخاص بك هنا -->
             <img src="~/images/logo.png" alt="شعار مصنع كسوة">
         </div>
         <div class="title">
@@ -129,18 +170,24 @@
         </div>
     </div>
 
+    <!-- بيانات أمر الشغل -->
     <div class="print-section">
-        <h5>بيانات أمر الشغل</h5>
         <div class="details-grid">
             <div class="detail-item"><dt>رقم أمر الشغل:</dt> <dd>@Model.CuttingStatement.WorkOrder.WorkOrderNumber</dd></div>
             <div class="detail-item"><dt>تاريخ الإنشاء:</dt> <dd>@Model.CuttingStatement.WorkOrder.CreationDate.ToShortDateString()</dd></div>
             <div class="detail-item"><dt>الموديل:</dt> <dd>@Model.CuttingStatement.WorkOrder.Product.Name</dd></div>
             <div class="detail-item"><dt>الكمية الإجمالية:</dt> <dd>@Model.CuttingStatement.WorkOrder.QuantityToProduce قطعة</dd></div>
         </div>
+
+        <!-- ملخص المتراج والعدد الفعلي -->
+        <div class="summary-grid">
+            <div class="summary-item">إجمالي المتراج: @Model.CuttingStatement.Meterage</div>
+            <div class="summary-item">العدد الفعلي: @Model.CuttingStatement.Count</div>
+        </div>
     </div>
 
+    <!-- جدول التفاصيل -->
     <div class="print-section">
-        <h5>تفاصيل بيان القص</h5>
         <table class="print-table">
             <thead>
                 <tr>
@@ -169,4 +216,3 @@
         <p>مصنع كسوة - نظام الإدارة المتكامل</p>
     </div>
 </div>
-

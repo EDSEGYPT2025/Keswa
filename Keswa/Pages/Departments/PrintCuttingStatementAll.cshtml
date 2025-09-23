@@ -9,6 +9,7 @@
     body {
         font-family: 'Tajawal', sans-serif;
         background-color: #fff;
+        position: relative;
     }
 
     .print-container {
@@ -17,6 +18,27 @@
         padding: 20px;
         border: 1px solid #dee2e6;
         background-color: #fff;
+        position: relative;
+    }
+
+    /* اللوجو كعلامة مائية واضح بحجم 60% من الصفحة */
+    .watermark img {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 60%; /* يغطي 60% من عرض الصفحة */
+        height: 60%; /* يغطي 60% من ارتفاع الصفحة */
+        transform: translate(-50%, -50%); /* توسيط العلامة المائية */
+        object-fit: contain;
+        opacity: 0.1; /* زيادة الوضوح قليلاً */
+        z-index: 0;
+        pointer-events: none;
+    }
+
+
+    .print-header, .print-section, .print-footer {
+        position: relative;
+        z-index: 1; /* النصوص فوق العلامة المائية */
     }
 
     .print-header {
@@ -28,20 +50,20 @@
         margin-bottom: 20px;
     }
 
-        .print-header .logo img {
-            max-width: 150px;
-            height: auto;
-        }
+    .print-header .logo img {
+        max-width: 80px;
+        height: auto;
+    }
 
-        .print-header .title {
-            text-align: right;
-        }
+    .print-header .title {
+        text-align: right;
+    }
 
-        .print-header h1 {
-            margin: 0;
-            font-size: 24px;
-            font-weight: 700;
-        }
+    .print-header h1 {
+        margin: 0;
+        font-size: 24px;
+        font-weight: 700;
+    }
 
     .print-section {
         margin-bottom: 20px;
@@ -50,17 +72,26 @@
     .details-grid {
         display: grid;
         grid-template-columns: repeat(2, 1fr);
-        gap: 10px;
+        gap: 10px 20px;
     }
 
     .detail-item {
         display: flex;
+        padding: 5px 10px;
+        border: 1px solid #dee2e6;
+        border-radius: 5px;
+        background-color: #f8f9fa;
     }
 
-        .detail-item dt {
-            font-weight: bold;
-            min-width: 120px;
-        }
+    .detail-item dt {
+        font-weight: bold;
+        min-width: 120px;
+    }
+
+    .detail-item dd {
+        margin: 0;
+        padding-left: 5px;
+    }
 
     .print-table {
         width: 100%;
@@ -68,16 +99,16 @@
         margin-top: 10px;
     }
 
-        .print-table th, .print-table td {
-            border: 1px solid #dee2e6;
-            padding: 8px;
-            text-align: right;
-            font-size: 12px;
-        }
+    .print-table th, .print-table td {
+        border: 1px solid #dee2e6;
+        padding: 8px;
+        text-align: right;
+        font-size: 12px;
+    }
 
-        .print-table thead {
-            background-color: #e9ecef;
-        }
+    .print-table thead {
+        background-color: #e9ecef;
+    }
 
     .print-footer {
         margin-top: 40px;
@@ -106,10 +137,18 @@
 </style>
 
 <div class="print-button-container no-print">
-    <button onclick="window.print()" class="btn btn-primary"><i class="bi bi-printer-fill me-2"></i>طباعة التقرير</button>
+    <button onclick="window.print()" class="btn btn-primary">
+        <i class="bi bi-printer-fill me-2"></i>طباعة التقرير
+    </button>
 </div>
 
 <div class="print-container">
+    <!-- العلامة المائية -->
+    <div class="watermark">
+        <img src="/images/logo.png" alt="Logo" />
+    </div>
+
+    <!-- رأس التقرير -->
     <div class="print-header">
         <div class="logo">
             <img src="/images/logo.png" alt="شعار مصنع كسوة">
@@ -120,13 +159,29 @@
         </div>
     </div>
 
+    <!-- بيانات الموديل والكمية الإجمالية وإجمالي المتراج والعدد الفعلي -->
     <div class="print-section">
         <div class="details-grid">
-            <div class="detail-item"><dt>الموديل:</dt> <dd>@Model.WorkOrder.Product.Name</dd></div>
-            <div class="detail-item"><dt>الكمية الإجمالية:</dt> <dd>@Model.WorkOrder.QuantityToProduce قطعة</dd></div>
+            <div class="detail-item">
+                <dt>الموديل:</dt>
+                <dd>@Model.WorkOrder.Product.Name</dd>
+            </div>
+            <div class="detail-item">
+                <dt>الكمية الإجمالية:</dt>
+                <dd>@Model.WorkOrder.QuantityToProduce قطعة</dd>
+            </div>
+            <div class="detail-item">
+                <dt>إجمالي المتراج المستخدم:</dt>
+                <dd>@Model.CuttingStatements.Sum(cs => cs.Meterage)</dd>
+            </div>
+            <div class="detail-item">
+                <dt>العدد الفعلي:</dt>
+                <dd>@Model.CuttingStatements.Sum(cs => cs.Count)</dd>
+            </div>
         </div>
     </div>
 
+    <!-- جدول بيانات القص -->
     <div class="print-section">
         <table class="print-table">
             <thead>

@@ -17,6 +17,8 @@
             <div class="card-header bg-transparent">
                 <h5 class="mb-0">أوامر الشغل في قسم القص</h5>
             </div>
+
+
             <div class="list-group list-group-flush overflow-auto">
                 @if (!Model.WorkOrdersInCutting.Any())
                 {
@@ -25,7 +27,20 @@
                 @foreach (var wo in Model.WorkOrdersInCutting)
                 {
                     var isActive = wo.WorkOrderId == Model.SelectedWorkOrder?.Id;
-                    <a asp-page="/Departments/Cutting" asp-route-id="@wo.WorkOrderId" class="list-group-item list-group-item-action @(isActive ? "active" : "")">
+
+                    var percentage = (double)wo.QuantityCut / wo.QuantityToProduce * 100;
+                    var displayPercentage = percentage > 100 ? 100 : percentage;
+                    var barClass = wo.QuantityCut > wo.QuantityToProduce ? "bg-danger" : "bg-success";
+                    var label = wo.QuantityCut > wo.QuantityToProduce
+                        ? $"{percentage:F1}% (زيادة) ⚠️"
+                        : $"{percentage:F1}%";
+
+                    var tooltip = wo.QuantityCut > wo.QuantityToProduce
+                        ? $"تم قص {wo.QuantityCut} من {wo.QuantityToProduce} (زيادة) ⚠️"
+                        : $"تم قص {wo.QuantityCut} من {wo.QuantityToProduce}";
+
+                    <a asp-page="/Departments/Cutting" asp-route-id="@wo.WorkOrderId"
+                       class="list-group-item list-group-item-action @(isActive ? "active" : "")">
                         <div class="d-flex w-100 justify-content-between">
                             <h6 class="mb-1 fw-bold">@wo.WorkOrderNumber</h6>
                             <small>@wo.ProductName</small>
@@ -35,13 +50,47 @@
                             <span class="text-success">تم قص: @wo.QuantityCut</span> |
                             <span class="text-danger">متبقي: @wo.RemainingToCut</span>
                         </p>
-                        <div class="progress" style="height: 5px;">
-                            @{ var progress = wo.QuantityToProduce > 0 ? (int)((double)wo.QuantityCut * 100 / wo.QuantityToProduce) : 0; }
-                            <div class="progress-bar" role="progressbar" style="width: @progress%;" aria-valuenow="@progress" aria-valuemin="0" aria-valuemax="100"></div>
+                        <div class="progress" style="height: 5px;" title="@tooltip">
+                            <div class="progress-bar @barClass"
+                                 role="progressbar"
+                                 style="width:@displayPercentage%;"
+                                 aria-valuenow="@wo.QuantityCut"
+                                 aria-valuemin="0"
+                                 aria-valuemax="@wo.QuantityToProduce">
+                            </div>
                         </div>
+                        <small class="d-block mt-1 @(wo.QuantityCut > wo.QuantityToProduce ? "text-danger fw-bold" : "text-muted")">
+                            @label
+                        </small>
                     </a>
                 }
             </div>
+
+            @*<div class="list-group list-group-flush overflow-auto">
+            @if (!Model.WorkOrdersInCutting.Any())
+            {
+                <div class="p-4 text-center text-muted">لا توجد أوامر شغل في هذا القسم حالياً.</div>
+            }
+            @foreach (var wo in Model.WorkOrdersInCutting)
+            {
+                var isActive = wo.WorkOrderId == Model.SelectedWorkOrder?.Id;
+                <a asp-page="/Departments/Cutting" asp-route-id="@wo.WorkOrderId" class="list-group-item list-group-item-action @(isActive ? "active" : "")">
+                    <div class="d-flex w-100 justify-content-between">
+                        <h6 class="mb-1 fw-bold">@wo.WorkOrderNumber</h6>
+                        <small>@wo.ProductName</small>
+                    </div>
+                    <p class="mb-1">
+                        مطلوب: @wo.QuantityToProduce |
+                        <span class="text-success">تم قص: @wo.QuantityCut</span> |
+                        <span class="text-danger">متبقي: @wo.RemainingToCut</span>
+                    </p>
+                    <div class="progress" style="height: 5px;">
+                        @{ var progress = wo.QuantityToProduce > 0 ? (int)((double)wo.QuantityCut * 100 / wo.QuantityToProduce) : 0; }
+                        <div class="progress-bar" role="progressbar" style="width: @progress%;" aria-valuenow="@progress" aria-valuemin="0" aria-valuemax="100"></div>
+                    </div>
+                </a>
+            }
+        </div>*@
         </div>
     </div>
 
