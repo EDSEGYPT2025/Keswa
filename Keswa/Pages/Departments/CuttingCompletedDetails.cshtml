@@ -1,36 +1,69 @@
 ﻿@page "{workOrderId:int}"
 @model Keswa.Pages.Departments.CuttingCompletedDetailsModel
 @{
-    ViewData["Title"] = "تفاصيل بيان القص";
+    ViewData["Title"] = "تفاصيل بيان القص المكتمل";
 }
 
-<h2 class="mb-3">تفاصيل أمر الشغل: @Model.WorkOrder?.WorkOrderNumber</h2>
+<!-- Page Header -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="h2 fw-bold">@ViewData["Title"]</h1>
+        <p class="text-muted">عرض ملخص الكميات الفعلية التي تم قصها لأمر الشغل المحدد.</p>
+    </div>
+    <div>
+        <a asp-page="./CuttingCompleted" class="btn btn-outline-secondary"><i class="bi bi-arrow-right me-2"></i>العودة للقائمة</a>
+    </div>
+</div>
 
-@if (Model.ProductsSummary == null || !Model.ProductsSummary.Any())
-{
-    <div class="alert alert-warning">لا توجد منتجات لهذا الأمر.</div>
-}
-else
-{
-    <table class="table table-bordered table-striped">
-        <thead class="table-light">
-            <tr>
-                <th>رقم أمر الشغل</th>
-                <th>المنتج</th>
-                <th>الكمية الفعلية</th>   <!-- ✅ تعديل العنوان -->
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var item in Model.ProductsSummary)
-            {
-                <tr>
-                    <td>@Model.WorkOrder?.WorkOrderNumber</td>
-                    <td>@item.ProductName</td>
-                    <td>@item.TotalQuantity</td> <!-- ✅ هتظهر كـ الكمية الفعلية -->
-                </tr>
-            }
-        </tbody>
-    </table>
-}
+<!-- Main Work Order Info -->
+<div class="card shadow-sm border-0 mb-4">
+    <div class="card-body">
+        <dl class="row mb-0">
+            <dt class="col-sm-3">رقم أمر الشغل</dt>
+            <dd class="col-sm-9"><strong>@Model.WorkOrder?.WorkOrderNumber</strong></dd>
 
-<a asp-page="./CuttingCompleted" class="btn btn-secondary">رجوع</a>
+            <dt class="col-sm-3">الموديل الرئيسي</dt>
+            <dd class="col-sm-9">@Model.WorkOrder?.Product.Name</dd>
+
+            <dt class="col-sm-3">الكمية المستهدفة</dt>
+            <dd class="col-sm-9">@Model.WorkOrder?.QuantityToProduce قطعة</dd>
+        </dl>
+    </div>
+</div>
+
+<!-- Products Summary Table -->
+<div class="card shadow-sm border-0">
+    <div class="card-header bg-transparent">
+        <h5 class="fw-bold mb-0">ملخص المنتجات المقصوصة</h5>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>المنتج / الموديل</th>
+                        <th class="text-center">إجمالي الكمية المقصوصة</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.ProductsSummary == null || !Model.ProductsSummary.Any())
+                    {
+                        <tr>
+                            <td colspan="2" class="text-center text-muted">لم يتم تسجيل أي بيانات قص لهذا الأمر.</td>
+                        </tr>
+                    }
+                    else
+                    {
+                        @foreach (var item in Model.ProductsSummary)
+                        {
+                            <tr>
+                                <td><strong>@item.ProductName</strong></td>
+                                <td class="text-center fw-bold">@item.TotalQuantity قطعة</td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
