@@ -1,0 +1,35 @@
+﻿@page
+@model Keswa.Pages.Departments.CuttingCompletedModel
+@{
+    ViewData["Title"] = "أوامر القص المنتهية";
+}
+
+<h1 class="h3">أوامر القص المنتهية</h1>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>رقم أمر الشغل</th>
+            <th>المنتج</th>
+            @*<th>الكمية المطلوبة</th>*@
+            <th>الكمية الفعلية </th>
+            @*<th>باقي</th>*@
+            <th>إجراءات</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var o in Model.FinishedOrders)
+        {
+            <tr>
+                <td>@o.WorkOrderNumber</td>
+                <td>@o.ProductName</td>
+                @*<td>@o.QuantityToProduce</td>*@
+                <td>@o.TotalCut</td>
+                @*<td>@(o.QuantityToProduce - o.TotalCut)</td>*@
+                <td>
+                    <a class="btn btn-sm btn-primary" asp-page="./CuttingCompletedDetails" asp-route-workOrderId="@o.WorkOrderId">تفاصيل</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

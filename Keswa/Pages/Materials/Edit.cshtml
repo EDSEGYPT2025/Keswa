@@ -1,0 +1,45 @@
+﻿@page "{id:int}"
+@model Keswa.Pages.Materials.EditModel
+@{
+    ViewData["Title"] = "تعديل المادة الخام";
+}
+
+<div class="card shadow-sm border-0">
+    <div class="card-body">
+        <h1 class="h2 fw-bold">@ViewData["Title"]</h1>
+        <form method="post">
+            <!-- Id مخفي -->
+            <input type="hidden" asp-for="Material.Id" />
+
+            <!-- اسم المادة -->
+            <div class="mb-3">
+                <label asp-for="Material.Name" class="form-label">اسم المادة الخام</label>
+                <input asp-for="Material.Name" class="form-control" />
+                <span asp-validation-for="Material.Name" class="text-danger"></span>
+            </div>
+
+            <!-- اللون -->
+            <div class="mb-3">
+                <label asp-for="Material.ColorId" class="form-label">اللون</label>
+                <select asp-for="Material.ColorId" class="form-select" asp-items="Model.ColorOptions">
+                    <option value="">-- اختر اللون --</option>
+                </select>
+                <span asp-validation-for="Material.ColorId" class="text-danger"></span>
+            </div>
+
+            <!-- وحدة القياس بالعربي -->
+            <div class="mb-3">
+                <label asp-for="Material.Unit" class="form-label">وحدة القياس</label>
+                <select asp-for="Material.Unit" class="form-select" asp-items="Model.UnitOptions"></select>
+                <span asp-validation-for="Material.Unit" class="text-danger"></span>
+            </div>
+
+            <button type="submit" class="btn btn-primary">حفظ التعديلات</button>
+            <a asp-page="./Index" class="btn btn-secondary">إلغاء</a>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

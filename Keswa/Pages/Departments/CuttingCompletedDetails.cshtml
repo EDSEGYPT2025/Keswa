@@ -1,0 +1,36 @@
+﻿@page "{workOrderId:int}"
+@model Keswa.Pages.Departments.CuttingCompletedDetailsModel
+@{
+    ViewData["Title"] = "تفاصيل بيان القص";
+}
+
+<h2 class="mb-3">تفاصيل أمر الشغل: @Model.WorkOrder?.WorkOrderNumber</h2>
+
+@if (Model.ProductsSummary == null || !Model.ProductsSummary.Any())
+{
+    <div class="alert alert-warning">لا توجد منتجات لهذا الأمر.</div>
+}
+else
+{
+    <table class="table table-bordered table-striped">
+        <thead class="table-light">
+            <tr>
+                <th>رقم أمر الشغل</th>
+                <th>المنتج</th>
+                <th>الكمية الفعلية</th>   <!-- ✅ تعديل العنوان -->
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.ProductsSummary)
+            {
+                <tr>
+                    <td>@Model.WorkOrder?.WorkOrderNumber</td>
+                    <td>@item.ProductName</td>
+                    <td>@item.TotalQuantity</td> <!-- ✅ هتظهر كـ الكمية الفعلية -->
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+<a asp-page="./CuttingCompleted" class="btn btn-secondary">رجوع</a>
