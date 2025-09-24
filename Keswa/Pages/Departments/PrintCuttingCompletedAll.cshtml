@@ -1,0 +1,84 @@
+﻿@page
+@model Keswa.Pages.Departments.PrintCuttingCompletedAllModel
+@{
+    Layout = "/Pages/Shared/_PrintLayout.cshtml";
+    ViewData["Title"] = "طباعة أوامر القص المكتملة";
+}
+
+<style>
+    .print-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+        .print-table th, .print-table td {
+            font-size: 13px;
+            border: 1px solid #444;
+            padding: 6px;
+            text-align: center;
+        }
+
+    .print-header, .print-footer {
+        text-align: center;
+        margin-bottom: 15px;
+    }
+
+        .print-header .logo img {
+            max-height: 80px;
+        }
+</style>
+
+<!-- زر الطباعة (يختفي عند الطباعة) -->
+<div class="no-print mb-3 text-center">
+    <button class="btn btn-primary" onclick="window.print()">
+        <i class="bi bi-printer me-1"></i> اطبع التقرير
+    </button>
+</div>
+
+<div class="print-container">
+    <div class="print-header">
+        <div class="logo">
+            <img src="~/images/logo.png" alt="شعار مصنع كسوة">
+        </div>
+        <div class="title">
+            <h1>تقرير أوامر القص المكتملة</h1>
+            <p>تاريخ الطباعة: @System.DateTime.Now.ToShortDateString()</p>
+        </div>
+    </div>
+
+    <div class="print-section">
+        <table class="print-table">
+            <thead>
+                <tr>
+                    <th>رقم أمر الشغل</th>
+                    <th>المنتج</th>
+                    <th>الكمية المطلوبة</th>
+                    <th>الكمية الفعلية المقصوصة</th>
+                    <th>الفارق</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var o in Model.FinishedOrders)
+                {
+                    <tr>
+                        <td>@o.WorkOrderNumber</td>
+                        <td>@o.ProductName</td>
+                        <td>@o.QuantityToProduce</td>
+                        <td>@o.TotalCut</td>
+                        <td>
+                            @{
+                                var difference = o.TotalCut - o.QuantityToProduce;
+                                var diffSign = difference > 0 ? "+" : "";
+                            }
+                            <span>@diffSign@difference</span>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <div class="print-footer mt-4">
+        <p>مصنع كسوة - نظام الإدارة المتكامل</p>
+    </div>
+</div>
