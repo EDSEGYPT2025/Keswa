@@ -51,7 +51,7 @@ namespace Keswa.Services
             }
 
             // 2. إنشاء مستخدم افتراضي بصلاحية Admin إذا لم يكن موجوداً
-            var adminEmail = "admin@yourapp.com";
+            var adminEmail = "admin@admin.com";
             if (await _userManager.FindByEmailAsync(adminEmail) == null)
             {
                 var adminUser = new ApplicationUser
@@ -62,7 +62,7 @@ namespace Keswa.Services
                     EmailConfirmed = true // تأكيد الإيميل مباشرة
                 };
 
-                var result = await _userManager.CreateAsync(adminUser, "Password123!");
+                var result = await _userManager.CreateAsync(adminUser, "Oe@123456");
                 if (result.Succeeded)
                 {
                     // تعيين صلاحية Admin للمستخدم الجديد
