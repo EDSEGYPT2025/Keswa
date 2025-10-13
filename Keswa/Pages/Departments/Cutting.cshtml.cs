@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -24,11 +23,10 @@ namespace Keswa.Pages.Departments
 
         public List<CuttingWorkOrderViewModel> WorkOrdersInCutting { get; set; } = new();
         public WorkOrder? SelectedWorkOrder { get; set; }
+        public Customer? SelectedCustomer { get; set; }
         public List<CuttingStatement>? CuttingStatements { get; set; }
         public SelectList? IssuedMaterialsList { get; set; }
-        public SelectList? ProductList { get; set; }
         public SelectList? WorkerList { get; set; }
-        public SelectList? CustomerList { get; set; }
 
         [BindProperty]
         public CuttingStatement NewCuttingStatement { get; set; } = new();
@@ -36,52 +34,56 @@ namespace Keswa.Pages.Departments
         public bool CanCreateStatement { get; set; } = false;
         public string PreRequisiteMessage { get; set; }
         public string MaterialStockJson { get; set; }
-
-        // --- تمت إضافة هذه الخاصية ---
         public string MaterialColorJson { get; set; }
-
 
         public async Task OnGetAsync(int? id)
         {
-            // اجمع الكميات اللي اتقصت فعلياً
-            var quantitiesCut = await _context.ProductionLogs
-                .Where(p => p.Department == Department.Cutting)
-                .GroupBy(p => p.WorkOrderId)
-                .Select(g => new { WorkOrderId = g.Key, TotalCut = g.Sum(p => p.QuantityProduced) })
-                .ToDictionaryAsync(x => x.WorkOrderId, x => x.TotalCut);
+            var workOrdersQuery = _context.WorkOrderRoutings
+                .Where(r => r.Department == Department.Cutting && r.Status != WorkOrderStageStatus.Completed)
+                .Select(r => r.WorkOrder);
 
-            // هات أوامر الشغل اللي لسه متقفلتش بالكامل
-            var allOpenWorkOrders = await _context.WorkOrders
-                .Include(wo => wo.Product)
-                .Where(wo => wo.Status != WorkOrderStatus.Completed)
+            WorkOrdersInCutting = await workOrdersQuery
                 .Select(wo => new CuttingWorkOrderViewModel
                 {
                     WorkOrderId = wo.Id,
                     WorkOrderNumber = wo.WorkOrderNumber,
                     ProductName = wo.Product.Name,
                     QuantityToProduce = wo.QuantityToProduce,
-                    QuantityCut = quantitiesCut.ContainsKey(wo.Id) ? quantitiesCut[wo.Id] : 0
+                    QuantityCut = _context.ProductionLogs
+                        .Where(p => p.WorkOrderId == wo.Id && p.Department == Department.Cutting)
+                        .Sum(p => p.QuantityProduced),
+                    TotalMaterialIssued = _context.MaterialIssuanceNoteDetails
+                        .Where(d => d.MaterialIssuanceNote.WorkOrderId == wo.Id)
+                        .Sum(d => d.Quantity),
+                    TotalMaterialConsumed = _context.CuttingStatements
+                        .Where(cs => cs.WorkOrderId == wo.Id)
+                        .Sum(cs => cs.Meterage)
                 })
-                .ToListAsync();
-
-            // حدد أوامر الشغل اللي مرحلة القص فيها لسه مش Completed
-            var cuttingInProgressIds = await _context.WorkOrderRoutings
-                .Where(r => r.Department == Department.Cutting && r.Status != WorkOrderStageStatus.Completed)
-                .Select(r => r.WorkOrderId)
-                .ToListAsync();
-
-            // اعرض فقط أوامر الشغل دي
-            WorkOrdersInCutting = allOpenWorkOrders
-                .Where(vm => cuttingInProgressIds.Contains(vm.WorkOrderId))
                 .OrderBy(vm => vm.WorkOrderId)
-                .ToList();
+                .ToListAsync();
 
-            // باقي الكود زي ما هو (تحميل تفاصيل أمر الشغل لو id.HasValue)
             if (id.HasValue)
             {
-                SelectedWorkOrder = await _context.WorkOrders.FindAsync(id.Value);
+                SelectedWorkOrder = await _context.WorkOrders
+                    .Include(wo => wo.Product)
+                    .FirstOrDefaultAsync(wo => wo.Id == id.Value);
+
                 if (SelectedWorkOrder != null)
                 {
+                    // *** تم تصحيح الكود هنا ***
+                    // ابحث عن تفصيلة أمر البيع التي ترتبط بأمر الشغل هذا
+                    var salesOrderDetail = await _context.SalesOrderDetails
+                        .Include(sod => sod.SalesOrder.Customer)
+                        .FirstOrDefaultAsync(sod => sod.WorkOrderId == SelectedWorkOrder.Id);
+
+                    if (salesOrderDetail?.SalesOrder?.Customer != null)
+                    {
+                        SelectedCustomer = salesOrderDetail.SalesOrder.Customer;
+                        NewCuttingStatement.CustomerId = SelectedCustomer.Id;
+                    }
+
+                    NewCuttingStatement.ProductId = SelectedWorkOrder.ProductId;
+
                     var issuedMaterialIds = await _context.MaterialIssuanceNoteDetails
                         .Where(d => d.MaterialIssuanceNote.WorkOrderId == id.Value)
                         .Select(d => d.MaterialId)
@@ -152,13 +154,10 @@ namespace Keswa.Pages.Departments
                             DisplayText = m.Name + (m.Color != null ? $" - {m.Color.Name}" : "")
                         }).ToList(), "Id", "DisplayText");
 
-                    ProductList = new SelectList(await _context.Products.OrderBy(p => p.Name).ToListAsync(), "Id", "Name");
                     WorkerList = new SelectList(workersInDepartment, "Id", "Name");
-                    CustomerList = new SelectList(await _context.Customers.OrderBy(c => c.Name).ToListAsync(), "Id", "Name");
                 }
             }
         }
-
 
         public async Task<IActionResult> OnPostAsync(int workOrderId)
         {
@@ -199,38 +198,26 @@ namespace Keswa.Pages.Departments
 
         public async Task<IActionResult> OnPostFinishCuttingAsync(int workOrderId)
         {
-            // 1. ابحث عن أمر الشغل باستخدام workOrderId
             var workOrder = await _context.WorkOrders.FindAsync(workOrderId);
             if (workOrder == null)
             {
                 return NotFound();
             }
 
-            // 2. ابحث عن مرحلة القص في مسار أمر الشغل
             var routingStage = await _context.WorkOrderRoutings
                 .FirstOrDefaultAsync(r => r.WorkOrderId == workOrderId && r.Department == Department.Cutting);
 
             if (routingStage != null)
             {
-                // 3. قم بتغيير حالة المرحلة إلى "مكتملة"
                 routingStage.Status = WorkOrderStageStatus.Completed;
-                // يمكنك أيضًا تحديث تاريخ الانتهاء الفعلي هنا
-                // routingStage.ActualEndDate = DateTime.Now;
             }
 
-            // (اختياري) يمكنك إضافة منطق هنا للتحقق مما إذا كان أمر الشغل بأكمله قد اكتمل
-            // وتغيير حالة أمر الشغل الرئيسي (workOrder.Status)
-
-            // 4. احفظ التغييرات في قاعدة البيانات
             await _context.SaveChangesAsync();
 
             TempData["SuccessMessage"] = $"تم إنهاء مرحلة القص لأمر الشغل {workOrder.WorkOrderNumber} بنجاح.";
 
-            // 5. أعد توجيه المستخدم إلى نفس الصفحة (أو صفحة أخرى)
-            // أمر الشغل هذا لن يظهر في القائمة بعد الآن لأنه اكتمل
             return RedirectToPage();
         }
-
     }
 
     public class CuttingWorkOrderViewModel
@@ -241,6 +228,8 @@ namespace Keswa.Pages.Departments
         public int QuantityToProduce { get; set; }
         public int QuantityCut { get; set; }
         public int RemainingToCut => QuantityToProduce - QuantityCut;
+        public double TotalMaterialIssued { get; set; }
+        public double TotalMaterialConsumed { get; set; }
+        public double TotalMaterialRemaining => TotalMaterialIssued - TotalMaterialConsumed;
     }
 }
-

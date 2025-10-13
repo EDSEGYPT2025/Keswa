@@ -1,0 +1,42 @@
+﻿@page
+@model Keswa.Pages.Administration.DeleteAllDataModel
+@{
+    ViewData["Title"] = "حذف كل البيانات";
+}
+
+<div class="container mt-5">
+    <div class="card border-danger">
+        <div class="card-header bg-danger text-white">
+            <h2 class="card-title mb-0">@ViewData["Title"]</h2>
+        </div>
+        <div class="card-body">
+            <div class="alert alert-danger" role="alert">
+                <h4 class="alert-heading">تحذير خطير!</h4>
+                <p>أنت على وشك حذف جميع البيانات من قاعدة البيانات بشكل دائم. هذا الإجراء لا يمكن التراجع عنه.</p>
+                <hr>
+                <p class="mb-0">سيتم حذف جميع بيانات العملاء، المبيعات، المشتريات، المخزون، وكل شيء آخر. يرجى التأكد من أنك قمت بعمل نسخة احتياطية من البيانات إذا كنت ستحتاجها في المستقبل.</p>
+            </div>
+
+            <form method="post">
+                <div class="form-check mb-3">
+                    <input type="checkbox" class="form-check-input" id="confirmation" name="confirmation" value="true" required>
+                    <label class="form-check-label" for="confirmation">أوافق وأؤكد أنني أريد حذف جميع البيانات بشكل دائم.</label>
+                </div>
+                <button type="submit" class="btn btn-danger btn-lg">
+                    <i class="fas fa-trash-alt"></i> حذف كل البيانات الآن
+                </button>
+            </form>
+
+            @if (!string.IsNullOrEmpty(Model.Message))
+            {
+                <div class="alert alert-success mt-4" role="alert">
+                    @Model.Message
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

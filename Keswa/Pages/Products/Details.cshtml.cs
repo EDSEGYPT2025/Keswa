@@ -18,6 +18,26 @@ namespace Keswa.Pages.Products
 
         public Product Product { get; set; }
 
+        //public async Task<IActionResult> OnGetAsync(int? id)
+        //{
+        //    if (id == null)
+        //    {
+        //        return NotFound();
+        //    }
+
+        //    // جلب بيانات الموديل مع تضمين قائمة مكوناته (BOM) وبيانات كل مادة خام
+        //    Product = await _context.Products
+        //        .Include(p => p.BillOfMaterialItems)
+        //            .ThenInclude(b => b.Material)
+        //        .FirstOrDefaultAsync(m => m.Id == id);
+
+        //    if (Product == null)
+        //    {
+        //        return NotFound();
+        //    }
+        //    return Page();
+        //}
+
         public async Task<IActionResult> OnGetAsync(int? id)
         {
             if (id == null)
@@ -25,10 +45,11 @@ namespace Keswa.Pages.Products
                 return NotFound();
             }
 
-            // جلب بيانات الموديل مع تضمين قائمة مكوناته (BOM) وبيانات كل مادة خام
+            // *** تم التعديل هنا: إضافة ThenInclude لجلب بيانات اللون ***
             Product = await _context.Products
                 .Include(p => p.BillOfMaterialItems)
                     .ThenInclude(b => b.Material)
+                        .ThenInclude(m => m.Color) // أضفنا هذا السطر لجلب اللون
                 .FirstOrDefaultAsync(m => m.Id == id);
 
             if (Product == null)

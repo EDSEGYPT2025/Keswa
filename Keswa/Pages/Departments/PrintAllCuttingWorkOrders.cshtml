@@ -1,0 +1,223 @@
+﻿@page
+@model Keswa.Pages.Departments.PrintAllCuttingWorkOrdersModel
+@{
+    Layout = "/Pages/Shared/_PrintLayout.cshtml";
+    ViewData["Title"] = "طباعة أوامر الشغل - قسم القص";
+}
+@using Keswa.Helpers
+
+<style>
+    @@page {
+        size: A4;
+        margin: 15mm;
+    }
+
+    body {
+        direction: rtl;
+        font-family: "Cairo", sans-serif;
+    }
+
+    .print-button-container {
+        position: fixed;
+        top: 20px;
+        left: 20px;
+        z-index: 1000;
+    }
+
+    @@media print {
+        .print-button-container {
+            display: none;
+        }
+    }
+
+    .report-container {
+        position: relative;
+        width: 100%;
+        padding: 0;
+    }
+
+        .report-container::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('/images/logo.png');
+            background-repeat: no-repeat;
+            background-position: center;
+            background-size: contain;
+            opacity: 0.08;
+            z-index: -1;
+        }
+
+    .report-header {
+        text-align: center;
+        margin-bottom: 25px;
+        border-bottom: 2px solid #333;
+        padding-bottom: 10px;
+    }
+
+        .report-header h1 {
+            margin: 0;
+            font-size: 26px;
+            font-weight: bold;
+        }
+
+        .report-header p {
+            margin: 5px 0 0;
+            font-size: 14px;
+            color: #555;
+        }
+
+    .work-order-card {
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        padding: 12px;
+        margin-bottom: 10px;
+        page-break-inside: avoid;
+        background-color: #fff;
+    }
+
+    .card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+    }
+
+        .card-header h5 {
+            margin: 0;
+            font-size: 18px;
+            font-weight: 600;
+            color: #0056b3;
+        }
+
+        .card-header span {
+            font-size: 15px;
+            font-weight: 500;
+            color: #333;
+        }
+
+    .card-body p, .card-footer div {
+        margin: 0 0 5px;
+        font-size: 15px;
+    }
+
+        .card-body p strong {
+            display: inline-block;
+            width: 110px; /* زيادة بسيطة لتنسيق أفضل */
+        }
+
+    .card-footer {
+        border-top: 1px solid #eee;
+        padding-top: 8px;
+        margin-top: 8px;
+        font-size: 14px;
+    }
+
+        .card-footer strong {
+            font-weight: 600;
+        }
+
+
+    .progress-container {
+        margin-top: 10px;
+    }
+
+    .progress {
+        height: 18px;
+        background-color: #e9ecef;
+        border-radius: .25rem;
+        overflow: hidden;
+        position: relative;
+    }
+
+    .progress-bar {
+        height: 100%;
+        color: #fff;
+        text-align: center;
+        white-space: nowrap;
+        background-color: #28a745;
+        transition: width .6s ease;
+    }
+
+    .progress-bar-danger {
+        background-color: #dc3545 !important;
+    }
+
+    .progress-label {
+        position: absolute;
+        width: 100%;
+        text-align: center;
+        line-height: 18px;
+        color: #000;
+        font-weight: bold;
+        font-size: 14px;
+    }
+</style>
+
+@{
+    var printTitle = $"تقرير اوامر الشغل - {DateTimeHelper.EgyptNow:yyyy-MM-dd hh-mm tt}";
+}
+
+<div class="print-button-container">
+    <button onclick="printReport('@printTitle')" class="btn btn-primary shadow">
+        <i class="bi bi-printer-fill me-2"></i> طباعة التقرير
+    </button>
+</div>
+
+<div class="report-container">
+    <div class="report-header">
+        <h1>تقرير أوامر الشغل</h1>
+        <p>قسم القص - @DateTimeHelper.EgyptNow.ToString("dddd، yyyy/MM/dd - hh:mm tt", new System.Globalization.CultureInfo("ar-EG"))</p>
+    </div>
+
+    @if (!Model.WorkOrdersToPrint.Any())
+    {
+        <div class="alert alert-info text-center">لا توجد أوامر شغل للطباعة في هذا القسم حالياً.</div>
+    }
+    else
+    {
+        @foreach (var wo in Model.WorkOrdersToPrint)
+        {
+            var percentage = wo.QuantityToProduce > 0 ? ((double)wo.QuantityCut / wo.QuantityToProduce * 100) : 0;
+            var displayPercentage = percentage > 100 ? 100 : percentage;
+            var barClass = wo.QuantityCut > wo.QuantityToProduce ? "progress-bar-danger" : "";
+
+            <div class="work-order-card">
+                <div class="card-header">
+                    <h5>@wo.WorkOrderNumber</h5>
+                    <span>@wo.ProductName</span>
+                </div>
+                <div class="card-body">
+                    <p><strong>الكمية المطلوبة:</strong> @wo.QuantityToProduce قطعة</p>
+                    <p><strong>تم قص:</strong> @wo.QuantityCut قطعة</p>
+                    <p><strong>الكمية المتبقية:</strong> @wo.RemainingToCut قطعة</p>
+                </div>
+                <div class="progress-container">
+                    <div class="progress">
+                        <div class="progress-label">@percentage.ToString("F1")%</div>
+                        <div class="progress-bar @barClass" role="progressbar" style="width: @displayPercentage%;" aria-valuenow="@wo.QuantityCut" aria-valuemin="0" aria-valuemax="@wo.QuantityToProduce"></div>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <div class="d-flex justify-content-between">
+                        <span><strong>الخامة المنصرفة:</strong> @wo.TotalMaterialIssued.ToString("F2") م</span>
+                        <span><strong>الخامة المستهلكة:</strong> @wo.TotalMaterialConsumed.ToString("F2") م</span>
+                        <span><strong>الخامة المتبقية:</strong> @wo.TotalMaterialRemaining.ToString("F2") م</span>
+                    </div>
+                </div>
+            </div>
+        }
+    }
+</div>
+
+@section Scripts {
+    <script>
+        function printReport(title) {
+            document.title = title;
+            window.print();
+        }
+    </script>
+}

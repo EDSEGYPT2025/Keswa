@@ -4,7 +4,6 @@
     ViewData["Title"] = $"تفاصيل موديل - {Model.Product.Name}";
 }
 
-<!-- Page Header -->
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
         <h1 class="h2 fw-bold">تفاصيل موديل</h1>
@@ -15,7 +14,6 @@
     </div>
 </div>
 
-<!-- Main Product Info -->
 <div class="card shadow-sm border-0 mb-4">
     <div class="card-body">
         <div class="row">
@@ -35,7 +33,6 @@
     </div>
 </div>
 
-<!-- Bill of Materials (BOM) Table -->
 <div class="card shadow-sm border-0">
     <div class="card-header bg-transparent">
         <h5 class="fw-bold mb-0">قائمة المواد (BOM)</h5>
@@ -54,7 +51,9 @@
                     @foreach (var item in Model.Product.BillOfMaterialItems)
                     {
                         <tr>
-                            <td><strong>@item.Material.Name</strong></td>
+                            <td>
+                                <strong>@(item.Material.Name + (item.Material.Color != null ? $" - {item.Material.Color.Name}" : ""))</strong>
+                            </td>
                             <td class="text-center">@item.Quantity</td>
                             <td class="text-center">@Html.DisplayFor(modelItem => item.Material.Unit)</td>
                         </tr>

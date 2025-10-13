@@ -323,7 +323,21 @@
                             <li><a asp-page="/Administration/AuditLog" class="nav-link"><span>سجل المراجعة</span></a></li>
                         </ul>
                     </div>
+
+                    <div class="collapse" id="adminMenu">
+                        <ul class="list-unstyled nested-menu">
+                            <li>
+                                <a class="nav-link text-dark" asp-area="" asp-page="/Administration/DeleteAllData">
+                                    <span>   حذف كل البيانات</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+
                 </li>
+
+
+
             </ul>
         </aside>
         <div class="sidebar-overlay" id="sidebar-overlay"></div>
@@ -418,11 +432,11 @@
     @if (!string.IsNullOrEmpty(TempData["SuccessMessage"] as string))
     {
         <script>toastr.success('@Html.Raw(TempData["SuccessMessage"])');</script>
-}
+    }
     @if (!string.IsNullOrEmpty(TempData["ErrorMessage"] as string))
     {
         <script>toastr.error('@Html.Raw(TempData["ErrorMessage"])');</script>
-}
+    }
 
     @await RenderSectionAsync("Scripts", required: false)
 </body>

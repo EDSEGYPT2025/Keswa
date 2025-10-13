@@ -29,7 +29,8 @@ namespace Keswa.Pages.Products
             var materialsForList = await _context.Materials
                 .Include(m => m.Color) // جلب بيانات اللون المرتبطة
                 .OrderBy(m => m.Name)
-                .Select(m => new {
+                .Select(m => new
+                {
                     m.Id,
                     // دمج الاسم مع اللون في نص واحد
                     DisplayText = m.Name + (m.Color != null ? $" - {m.Color.Name}" : "")
@@ -39,6 +40,21 @@ namespace Keswa.Pages.Products
             MaterialList = new SelectList(materialsForList, "Id", "DisplayText");
             return Page();
         }
+        // بدون لون الخامه 
+        //public async Task<IActionResult> OnGetAsync()
+        //{
+        //    // *** تم التعديل هنا: تجهيز القائمة لعرض اسم المادة فقط ***
+        //    var materialsForList = await _context.Materials
+        //        .OrderBy(m => m.Name)
+        //        .Select(m => new {
+        //            m.Id,
+        //            DisplayText = m.Name // تم تغييرها لتعرض الاسم فقط
+        //        })
+        //        .ToListAsync();
+
+        //    MaterialList = new SelectList(materialsForList, "Id", "DisplayText");
+        //    return Page();
+        //}
 
         public async Task<IActionResult> OnPostAsync()
         {

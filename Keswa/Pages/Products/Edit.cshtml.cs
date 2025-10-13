@@ -23,6 +23,30 @@ namespace Keswa.Pages.Products
 
         public SelectList MaterialList { get; set; }
 
+        //public async Task<IActionResult> OnGetAsync(int? id)
+        //{
+        //    if (id == null)
+        //    {
+        //        return NotFound();
+        //    }
+
+        //    // جلب الموديل مع قائمة مكوناته للتعديل
+
+        //    Product = await _context.Products
+        //        .Include(p => p.BillOfMaterialItems)
+        //        .FirstOrDefaultAsync(m => m.Id == id);
+
+        //    if (Product == null)
+        //    {
+        //        return NotFound();
+        //    }
+
+        //    // تجهيز قائمة المواد الخام
+        //    MaterialList = new SelectList(_context.Materials.OrderBy(m => m.Name), "Id", "Name");
+        //    return Page();
+        //}
+
+        // اظهار اللون مع الحامه 
         public async Task<IActionResult> OnGetAsync(int? id)
         {
             if (id == null)
@@ -40,8 +64,18 @@ namespace Keswa.Pages.Products
                 return NotFound();
             }
 
-            // تجهيز قائمة المواد الخام
-            MaterialList = new SelectList(_context.Materials.OrderBy(m => m.Name), "Id", "Name");
+            // *** تم التعديل هنا: تجهيز قائمة المواد الخام مع اللون ***
+            var materialsForList = await _context.Materials
+                .Include(m => m.Color) // جلب بيانات اللون المرتبطة
+                .OrderBy(m => m.Name)
+                .Select(m => new {
+                    m.Id,
+                    // دمج الاسم مع اللون في نص واحد
+                    DisplayText = m.Name + (m.Color != null ? $" - {m.Color.Name}" : "")
+                })
+                .ToListAsync();
+
+            MaterialList = new SelectList(materialsForList, "Id", "DisplayText");
             return Page();
         }
 

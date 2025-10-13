@@ -4,22 +4,23 @@
     ViewData["Title"] = "شاشة قسم القص";
 }
 
-<!-- Page Header -->
 <div class="mb-4">
     <h1 class="h2 fw-bold">@ViewData["Title"]</h1>
     <p class="text-muted">عرض أوامر الشغل الحالية وتسجيل بيانات القص.</p>
 </div>
 
 <div class="row g-4">
-    <!-- Left Panel: Work Order List -->
     <div class="col-lg-5">
         <div class="card shadow-sm border-0" style="max-height: 80vh; display: flex; flex-direction: column;">
-            <div class="card-header bg-transparent">
+
+            <div class="card-header bg-transparent d-flex justify-content-between align-items-center">
                 <h5 class="mb-0">أوامر الشغل في قسم القص</h5>
+                <a asp-page="./PrintAllCuttingWorkOrders" target="_blank" class="btn btn-sm btn-outline-secondary">
+                    <i class="bi bi-printer me-1"></i> طباعة الكل
+                </a>
             </div>
 
-
-            <div class="list-group list-group-flush overflow-auto">
+            <div class="list-group overflow-auto p-2">
                 @if (!Model.WorkOrdersInCutting.Any())
                 {
                     <div class="p-4 text-center text-muted">لا توجد أوامر شغل في هذا القسم حالياً.</div>
@@ -27,28 +28,22 @@
                 @foreach (var wo in Model.WorkOrdersInCutting)
                 {
                     var isActive = wo.WorkOrderId == Model.SelectedWorkOrder?.Id;
-
-                    var percentage = (double)wo.QuantityCut / wo.QuantityToProduce * 100;
+                    var percentage = wo.QuantityToProduce > 0 ? (double)wo.QuantityCut / wo.QuantityToProduce * 100 : 0;
                     var displayPercentage = percentage > 100 ? 100 : percentage;
                     var barClass = wo.QuantityCut > wo.QuantityToProduce ? "bg-danger" : "bg-success";
-                    var label = wo.QuantityCut > wo.QuantityToProduce
-                        ? $"{percentage:F1}% (زيادة) ⚠️"
-                        : $"{percentage:F1}%";
-
-                    var tooltip = wo.QuantityCut > wo.QuantityToProduce
-                        ? $"تم قص {wo.QuantityCut} من {wo.QuantityToProduce} (زيادة) ⚠️"
-                        : $"تم قص {wo.QuantityCut} من {wo.QuantityToProduce}";
+                    var label = wo.QuantityCut > wo.QuantityToProduce ? $"{percentage:F1}% (زيادة) ⚠️" : $"{percentage:F1}%";
+                    var tooltip = wo.QuantityCut > wo.QuantityToProduce ? $"تم قص {wo.QuantityCut} من {wo.QuantityToProduce} (زيادة) ⚠️" : $"تم قص {wo.QuantityCut} من {wo.QuantityToProduce}";
 
                     <a asp-page="/Departments/Cutting" asp-route-id="@wo.WorkOrderId"
-                       class="list-group-item list-group-item-action @(isActive ? "active" : "")">
+                       class="list-group-item list-group-item-action @(isActive ? "active" : "") mb-2" style="border-radius: .5rem;">
                         <div class="d-flex w-100 justify-content-between">
                             <h6 class="mb-1 fw-bold">@wo.WorkOrderNumber</h6>
                             <small>@wo.ProductName</small>
                         </div>
                         <p class="mb-1">
                             مطلوب: @wo.QuantityToProduce |
-                            <span class="text-success">تم قص: @wo.QuantityCut</span> |
-                            <span class="text-danger">متبقي: @wo.RemainingToCut</span>
+                            <span class="@(isActive ? "" : "text-success")">تم قص: @wo.QuantityCut</span> |
+                            <span class="@(isActive ? "" : "text-danger")">متبقي: @wo.RemainingToCut</span>
                         </p>
                         <div class="progress" style="height: 5px;" title="@tooltip">
                             <div class="progress-bar @barClass"
@@ -59,42 +54,31 @@
                                  aria-valuemax="@wo.QuantityToProduce">
                             </div>
                         </div>
-                        <small class="d-block mt-1 @(wo.QuantityCut > wo.QuantityToProduce ? "text-danger fw-bold" : "text-muted")">
+                        <small class="d-block mt-1 @(isActive ? "" : (wo.QuantityCut > wo.QuantityToProduce ? "text-danger fw-bold" : "text-muted"))">
                             @label
                         </small>
+
+                        <hr class="my-2">
+                        <div class="d-flex justify-content-between small">
+                            <span title="إجمالي الخامة المنصرفة لأمر الشغل">
+                                <i class="bi bi-box-arrow-down text-primary"></i>
+                                <strong>منصرف:</strong> @wo.TotalMaterialIssued.ToString("F2") م
+                            </span>
+                            <span title="إجمالي الخامة المستهلكة في القص">
+                                <i class="bi bi-scissors text-info"></i>
+                                <strong>مستهلك:</strong> @wo.TotalMaterialConsumed.ToString("F2") م
+                            </span>
+                            <span title="الكمية المتبقية من الخامة لدى القسم">
+                                <i class="bi bi-box-seam text-success"></i>
+                                <strong>متبقي:</strong> @wo.TotalMaterialRemaining.ToString("F2") م
+                            </span>
+                        </div>
                     </a>
                 }
             </div>
-
-            @*<div class="list-group list-group-flush overflow-auto">
-            @if (!Model.WorkOrdersInCutting.Any())
-            {
-                <div class="p-4 text-center text-muted">لا توجد أوامر شغل في هذا القسم حالياً.</div>
-            }
-            @foreach (var wo in Model.WorkOrdersInCutting)
-            {
-                var isActive = wo.WorkOrderId == Model.SelectedWorkOrder?.Id;
-                <a asp-page="/Departments/Cutting" asp-route-id="@wo.WorkOrderId" class="list-group-item list-group-item-action @(isActive ? "active" : "")">
-                    <div class="d-flex w-100 justify-content-between">
-                        <h6 class="mb-1 fw-bold">@wo.WorkOrderNumber</h6>
-                        <small>@wo.ProductName</small>
-                    </div>
-                    <p class="mb-1">
-                        مطلوب: @wo.QuantityToProduce |
-                        <span class="text-success">تم قص: @wo.QuantityCut</span> |
-                        <span class="text-danger">متبقي: @wo.RemainingToCut</span>
-                    </p>
-                    <div class="progress" style="height: 5px;">
-                        @{ var progress = wo.QuantityToProduce > 0 ? (int)((double)wo.QuantityCut * 100 / wo.QuantityToProduce) : 0; }
-                        <div class="progress-bar" role="progressbar" style="width: @progress%;" aria-valuenow="@progress" aria-valuemin="0" aria-valuemax="100"></div>
-                    </div>
-                </a>
-            }
-        </div>*@
         </div>
     </div>
 
-    <!-- Right Panel: Details and Logging -->
     <div class="col-lg-7">
         @if (Model.SelectedWorkOrder == null)
         {
@@ -109,7 +93,6 @@
         }
         else
         {
-            <!-- Finish Stage Card -->
             <div class="card shadow-sm border-0 mb-4">
                 <div class="card-body d-flex justify-content-between align-items-center">
                     <div>
@@ -129,7 +112,6 @@
 
             @if (Model.CanCreateStatement)
             {
-                <!-- New Cutting Statement Form -->
                 <div class="card shadow-sm border-0 mb-4">
                     <div class="card-header bg-transparent">
                         <h5 class="mb-0">إنشاء بيان قص جديد لأمر الشغل: @Model.SelectedWorkOrder.WorkOrderNumber</h5>
@@ -160,7 +142,7 @@
 
                                 <div class="col-md-6">
                                     <label asp-for="NewCuttingStatement.Meterage" class="form-label"></label>
-                                    <input asp-for="NewCuttingStatement.Meterage" class="form-control" type="number" step="any" min="0.01" />
+                                    <input asp-for="NewCuttingStatement.Meterage" id="meterage-input" class="form-control" type="number" step="any" min="0.01" />
                                     <span asp-validation-for="NewCuttingStatement.Meterage" class="text-danger"></span>
                                 </div>
 
@@ -170,11 +152,19 @@
                                     <span asp-validation-for="NewCuttingStatement.Count" class="text-danger"></span>
                                 </div>
 
+                                <div id="meterage-validation-warning" class="col-12" style="display: none;">
+                                    <div class="alert alert-danger d-flex align-items-center" role="alert">
+                                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                                        <div>
+                                            <strong>تحذير!</strong> الكمية المدخلة أكبر من الكمية المتبقية من الخامة.
+                                        </div>
+                                    </div>
+                                </div>
+
                                 <div class="col-md-4">
                                     <label asp-for="NewCuttingStatement.ProductId" class="form-label"></label>
-                                    <select asp-for="NewCuttingStatement.ProductId" class="form-select searchable-select" asp-items="Model.ProductList">
-                                        <option value="">-- اختر الموديل --</option>
-                                    </select>
+                                    <input type="hidden" asp-for="NewCuttingStatement.ProductId" />
+                                    <input type="text" class="form-control" value="@Model.SelectedWorkOrder.Product?.Name" readonly style="background-color: #e9ecef;" />
                                     <span asp-validation-for="NewCuttingStatement.ProductId" class="text-danger"></span>
                                 </div>
 
@@ -194,15 +184,14 @@
 
                                 <div class="col-md-12">
                                     <label asp-for="NewCuttingStatement.CustomerId" class="form-label"></label>
-                                    <select asp-for="NewCuttingStatement.CustomerId" class="form-select searchable-select" asp-items="Model.CustomerList">
-                                        <option value="">-- اختر العميل --</option>
-                                    </select>
+                                    <input type="hidden" asp-for="NewCuttingStatement.CustomerId" />
+                                    <input type="text" class="form-control" value="@Model.SelectedCustomer?.Name" readonly style="background-color: #e9ecef;" />
                                     <span asp-validation-for="NewCuttingStatement.CustomerId" class="text-danger"></span>
                                 </div>
                             </div>
 
                             <div class="text-end mt-4">
-                                <button type="submit" class="btn btn-success">حفظ البيان وتسجيل الإنتاج</button>
+                                <button type="submit" id="save-button" class="btn btn-success">حفظ البيان وتسجيل الإنتاج</button>
                             </div>
                         </form>
                     </div>
@@ -218,7 +207,6 @@
                 </div>
             }
 
-            <!-- Cutting Statements Table -->
             <div class="card shadow-sm border-0">
                 <div class="card-header bg-transparent d-flex justify-content-between align-items-center">
                     <h5 class="mb-0">بيانات القص السابقة لهذا الأمر</h5>
@@ -245,26 +233,29 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @if (!Model.CuttingStatements.Any())
+                                @if (Model.CuttingStatements == null || !Model.CuttingStatements.Any())
                                 {
                                     <tr><td colspan="10" class="text-center text-muted">لم يتم تسجيل أي بيانات قص.</td></tr>
                                 }
-                                @foreach (var log in Model.CuttingStatements)
+                                else
                                 {
-                                    <tr>
-                                        <td>
-                                            <a asp-page="./PrintCuttingStatement" asp-route-id="@log.Id" class="btn btn-sm btn-outline-secondary" target="_blank" title="طباعة البيان"><i class="bi bi-printer"></i></a>
-                                        </td>
-                                        <td><strong>@log.RunNumber</strong></td>
-                                        <td>@log.Material.Name - @log.Material.Color?.Name</td>
-                                        <td>@log.Meterage</td>
-                                        <td>@log.Product.Name</td>
-                                        <td>@log.Color</td>
-                                        <td>@log.Count</td>
-                                        <td>@log.Worker.Name</td>
-                                        <td>@log.Customer.Name</td>
-                                        <td>@log.StatementDate.ToString("yyyy/MM/dd")</td>
-                                    </tr>
+                                    @foreach (var log in Model.CuttingStatements)
+                                    {
+                                        <tr>
+                                            <td>
+                                                <a asp-page="./PrintCuttingStatement" asp-route-id="@log.Id" class="btn btn-sm btn-outline-secondary" target="_blank" title="طباعة البيان"><i class="bi bi-printer"></i></a>
+                                            </td>
+                                            <td><strong>@log.RunNumber</strong></td>
+                                            <td>@log.Material.Name - @log.Material.Color?.Name</td>
+                                            <td>@log.Meterage</td>
+                                            <td>@log.Product.Name</td>
+                                            <td>@log.Color</td>
+                                            <td>@log.Count</td>
+                                            <td>@log.Worker.Name</td>
+                                            <td>@log.Customer.Name</td>
+                                            <td>@log.StatementDate.ToString("yyyy/MM/dd")</td>
+                                        </tr>
+                                    }
                                 }
                             </tbody>
                         </table>
@@ -281,10 +272,38 @@
         $(document).ready(function () {
             const materialStockData = JSON.parse('@Html.Raw(Model.MaterialStockJson ?? "{}")');
 
+            const meterageInput = $('#meterage-input');
+            const remainingQtyInput = $('#remaining-quantity');
+            const saveButton = $('#save-button');
+            const validationWarning = $('#meterage-validation-warning');
+
+            function validateMeterage() {
+                const remainingQty = parseFloat(remainingQtyInput.val());
+                const currentMeterage = parseFloat(meterageInput.val());
+
+                if (isNaN(remainingQty) || isNaN(currentMeterage) || currentMeterage <= 0) {
+                    validationWarning.hide();
+                    meterageInput.removeClass('is-invalid');
+                    saveButton.prop('disabled', false);
+                    return;
+                }
+
+                if (currentMeterage > remainingQty) {
+                    validationWarning.show();
+                    meterageInput.addClass('is-invalid');
+                    saveButton.prop('disabled', true);
+                } else {
+                    validationWarning.hide();
+                    meterageInput.removeClass('is-invalid');
+                    saveButton.prop('disabled', false);
+                }
+            }
+
+            meterageInput.on('input', validateMeterage);
+
             $('#materialSelect').on('change', function () {
                 const materialId = $(this).val();
                 const issuedQtyInput = $('#issued-quantity');
-                const remainingQtyInput = $('#remaining-quantity');
                 const colorDisplay = $('#color-display');
 
                 if (materialId && materialStockData[materialId]) {
@@ -297,6 +316,8 @@
                     remainingQtyInput.val('');
                     colorDisplay.val('');
                 }
+
+                validateMeterage();
             });
         });
     </script>

@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+﻿using Keswa.Helpers;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using System.ComponentModel.DataAnnotations;
 
 namespace Keswa.Models
@@ -56,7 +57,8 @@ namespace Keswa.Models
         [ValidateNever]
         public Customer Customer { get; set; }
 
-        public DateTime StatementDate { get; set; } = DateTime.Now;
+        //public DateTime StatementDate { get; set; } = DateTime.Now;
+        public DateTime StatementDate { get; set; } = DateTimeHelper.EgyptNow;
     }
 }
 
