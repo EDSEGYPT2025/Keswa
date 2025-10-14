@@ -4,6 +4,12 @@ using Keswa.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.Linq;
+using System.Reflection;
+using System.Threading.Tasks;
 
 namespace Keswa.Pages.Departments
 {
@@ -16,8 +22,10 @@ namespace Keswa.Pages.Departments
         public int WorkOrderId { get; set; }
 
         public WorkOrder? WorkOrder { get; set; }
-
+        public Customer? Customer { get; set; }
         public List<ProductSummaryDto> ProductsSummary { get; set; } = new();
+        public List<CuttingStatement> CuttingStatements { get; set; } = new();
+        public MaterialReturnNote? MaterialReturnNote { get; set; }
 
         public async Task<IActionResult> OnGetAsync(int workOrderId)
         {
@@ -29,19 +37,54 @@ namespace Keswa.Pages.Departments
 
             if (WorkOrder == null) return NotFound();
 
-            // نجمع الكميات بالمنتج
-            ProductsSummary = await _context.CuttingStatements
-                .Include(cs => cs.Product)
+            var salesOrderDetail = await _context.SalesOrderDetails
+                .Include(sod => sod.SalesOrder.Customer)
+                .FirstOrDefaultAsync(sod => sod.WorkOrderId == workOrderId);
+
+            if (salesOrderDetail != null)
+            {
+                Customer = salesOrderDetail.SalesOrder.Customer;
+            }
+
+            MaterialReturnNote = await _context.MaterialReturnNotes
+                .Include(mrn => mrn.Details)
+                    .ThenInclude(d => d.Material)
+                        .ThenInclude(m => m.Color)
+                .FirstOrDefaultAsync(mrn => mrn.WorkOrderId == workOrderId);
+
+            CuttingStatements = await _context.CuttingStatements
                 .Where(cs => cs.WorkOrderId == workOrderId)
+                .Include(cs => cs.Material).ThenInclude(m => m.Color)
+                .Include(cs => cs.Product)
+                .Include(cs => cs.Worker)
+                .Include(cs => cs.Customer)
+                .OrderBy(cs => cs.RunNumber)
+                .ToListAsync();
+
+            ProductsSummary = CuttingStatements
                 .GroupBy(cs => cs.Product.Name)
                 .Select(g => new ProductSummaryDto
                 {
                     ProductName = g.Key,
                     TotalQuantity = g.Sum(x => x.Count)
                 })
-                .ToListAsync();
+                .ToList();
 
             return Page();
+        }
+
+        // *** تمت إضافة هذه الدالة الجديدة ***
+        public async Task<IActionResult> OnPostTransferToSewingAsync(int statementId)
+        {
+            var statement = await _context.CuttingStatements.FindAsync(statementId);
+            if (statement != null)
+            {
+                statement.Status = BatchStatus.Transferred;
+                await _context.SaveChangesAsync();
+                TempData["SuccessMessage"] = $"تم تحويل التشغيلة رقم {statement.RunNumber} إلى قسم الخياطة بنجاح.";
+            }
+
+            return RedirectToPage(new { workOrderId = statement?.WorkOrderId });
         }
     }
 
@@ -49,5 +92,17 @@ namespace Keswa.Pages.Departments
     {
         public string ProductName { get; set; }
         public int TotalQuantity { get; set; }
+    }
+
+    public static class EnumExtensions
+    {
+        public static string GetDisplayName(this Enum enumValue)
+        {
+            return enumValue.GetType()
+                            .GetMember(enumValue.ToString())
+                            .First()
+                            .GetCustomAttribute<DisplayAttribute>()
+                            ?.GetName() ?? enumValue.ToString();
+        }
     }
 }

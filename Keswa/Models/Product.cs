@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Keswa.Models
 {
@@ -21,5 +22,11 @@ namespace Keswa.Models
         [ValidateNever]
         // *** تم التعديل هنا: تغيير النوع من ICollection إلى List ***
         public List<BillOfMaterialItem> BillOfMaterialItems { get; set; } = new List<BillOfMaterialItem>();
+
+
+        [Display(Name = "سعر خياطة القطعة (فيا)")]
+        [Column(TypeName = "decimal(18, 2)")]
+        public decimal SewingRate { get; set; } = 0;
+
     }
 }

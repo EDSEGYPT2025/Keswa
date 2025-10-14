@@ -1,0 +1,53 @@
+﻿@page "{id:int}"
+@model Keswa.Pages.Departments.DeleteCuttingStatementModel
+@{
+    ViewData["Title"] = "حذف بيان قص";
+}
+
+<div class="mb-4">
+    <h1 class="h2 fw-bold">@ViewData["Title"]</h1>
+    <p class="text-muted">هل أنت متأكد أنك تريد حذف هذا البيان؟ لا يمكن التراجع عن هذا الإجراء.</p>
+</div>
+
+<div class="card shadow-sm border-danger">
+    <div class="card-header bg-danger text-white">
+        <h5>تفاصيل البيان المراد حذفه</h5>
+    </div>
+    <div class="card-body">
+        <dl class="row">
+            <dt class="col-sm-3">رقم التشغيل</dt>
+            <dd class="col-sm-9">@Model.CuttingStatement.RunNumber</dd>
+
+            <dt class="col-sm-3">أمر الشغل</dt>
+            <dd class="col-sm-9">@Model.CuttingStatement.WorkOrder.WorkOrderNumber</dd>
+
+            <dt class="col-sm-3">الخامة</dt>
+            <dd class="col-sm-9">@(Model.CuttingStatement.Material.Name + (Model.CuttingStatement.Material.Color != null ? $" - {Model.CuttingStatement.Material.Color.Name}" : ""))</dd>
+
+            <dt class="col-sm-3">المتراج المستهلك</dt>
+            <dd class="col-sm-9">@Model.CuttingStatement.Meterage</dd>
+
+            <dt class="col-sm-3">العدد المنتج</dt>
+            <dd class="col-sm-9">@Model.CuttingStatement.Count</dd>
+
+            <dt class="col-sm-3">العامل</dt>
+            <dd class="col-sm-9">@Model.CuttingStatement.Worker.Name</dd>
+
+            <dt class="col-sm-3">العميل</dt>
+            <dd class="col-sm-9">@Model.CuttingStatement.Customer.Name</dd>
+        </dl>
+
+        <div class="alert alert-warning mt-4">
+            <strong>انتبه:</strong> عند الحذف، سيتم خصم العدد المنتج (@Model.CuttingStatement.Count) من إجمالي الإنتاج، وستعود كمية المتراج (@Model.CuttingStatement.Meterage) إلى رصيد الخامة المتاح.
+        </div>
+
+        <form method="post">
+            <input type="hidden" asp-for="CuttingStatement.Id" />
+            <hr class="my-4" />
+            <div class="d-flex justify-content-end">
+                <a asp-page="/Departments/Cutting" asp-route-id="@Model.CuttingStatement.WorkOrderId" class="btn btn-outline-secondary me-2">إلغاء</a>
+                <button type="submit" class="btn btn-danger">تأكيد الحذف</button>
+            </div>
+        </form>
+    </div>
+</div>

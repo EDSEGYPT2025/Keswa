@@ -1,4 +1,5 @@
-﻿using Keswa.Helpers;
+﻿using Keswa.Enums;
+using Keswa.Helpers;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using System.ComponentModel.DataAnnotations;
 
@@ -59,6 +60,10 @@ namespace Keswa.Models
 
         //public DateTime StatementDate { get; set; } = DateTime.Now;
         public DateTime StatementDate { get; set; } = DateTimeHelper.EgyptNow;
+
+        // أضف هذا السطر داخل كلاس CuttingStatement
+        [Display(Name = "حالة التشغيلة")]
+        public BatchStatus Status { get; set; } = BatchStatus.PendingTransfer;
     }
 }
 

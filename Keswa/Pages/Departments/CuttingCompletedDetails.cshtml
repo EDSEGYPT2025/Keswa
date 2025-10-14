@@ -1,40 +1,140 @@
 ﻿@page "{workOrderId:int}"
+@using Keswa.Enums
+@using Keswa.Pages.Departments
+@using Keswa.Helpers
 @model Keswa.Pages.Departments.CuttingCompletedDetailsModel
 @{
-    ViewData["Title"] = "تفاصيل بيان القص المكتمل";
+    ViewData["Title"] = "تفاصيل القص المكتمل";
 }
 
-<!-- Page Header -->
-<div class="d-flex justify-content-between align-items-center mb-4">
+<style>
+    .info-card dt {
+        font-weight: 500;
+        color: #555;
+    }
+
+    .info-card dd {
+        font-weight: 600;
+        color: #000;
+    }
+
+    @@media print {
+        .no-print {
+            display: none !important;
+        }
+
+        body {
+            font-size: 10pt;
+        }
+
+        .card {
+            box-shadow: none !important;
+            border: 1px solid #ccc;
+            page-break-inside: avoid;
+        }
+    }
+</style>
+
+@{
+    var printTitle = $"تفاصيل قص امر شغل {Model.WorkOrder?.WorkOrderNumber} - {DateTimeHelper.EgyptNow:yyyy-MM-dd}";
+}
+<div class="print-button-container no-print" style="position: fixed; top: 80px; left: 20px; z-index: 1000;">
+    <button onclick="printReport('@printTitle')" class="btn btn-primary shadow-lg">
+        <i class="bi bi-printer-fill me-2"></i> طباعة التفاصيل
+    </button>
+</div>
+
+
+<div class="d-flex justify-content-between align-items-center mb-4 no-print">
     <div>
         <h1 class="h2 fw-bold">@ViewData["Title"]</h1>
-        <p class="text-muted">عرض ملخص الكميات الفعلية التي تم قصها لأمر الشغل المحدد.</p>
+        <p class="text-muted">عرض ملخص وتفاصيل الكميات التي تم قصها لأمر الشغل المحدد.</p>
     </div>
     <div>
         <a asp-page="./CuttingCompleted" class="btn btn-outline-secondary"><i class="bi bi-arrow-right me-2"></i>العودة للقائمة</a>
     </div>
 </div>
 
-<!-- Main Work Order Info -->
-<div class="card shadow-sm border-0 mb-4">
+<div class="card shadow-sm border-0 mb-4 info-card">
     <div class="card-body">
-        <dl class="row mb-0">
-            <dt class="col-sm-3">رقم أمر الشغل</dt>
-            <dd class="col-sm-9"><strong>@Model.WorkOrder?.WorkOrderNumber</strong></dd>
+        <div class="row">
+            <div class="col-md-6">
+                <dl class="row mb-0">
+                    <dt class="col-sm-4"><i class="bi bi-hash text-primary me-2"></i>رقم أمر الشغل</dt>
+                    <dd class="col-sm-8"><strong>@Model.WorkOrder?.WorkOrderNumber</strong></dd>
 
-            <dt class="col-sm-3">الموديل الرئيسي</dt>
-            <dd class="col-sm-9">@Model.WorkOrder?.Product.Name</dd>
+                    <dt class="col-sm-4"><i class="bi bi-person text-primary me-2"></i>العميل</dt>
+                    <dd class="col-sm-8">@Model.Customer?.Name</dd>
+                </dl>
+            </div>
+            <div class="col-md-6">
+                <dl class="row mb-0">
+                    <dt class="col-sm-4"><i class="bi bi-box-seam text-primary me-2"></i>الموديل الرئيسي</dt>
+                    <dd class="col-sm-8">@Model.WorkOrder?.Product.Name</dd>
 
-            <dt class="col-sm-3">الكمية المستهدفة</dt>
-            <dd class="col-sm-9">@Model.WorkOrder?.QuantityToProduce قطعة</dd>
-        </dl>
+                    <dt class="col-sm-4"><i class="bi bi-bullseye text-primary me-2"></i>الكمية المستهدفة</dt>
+                    <dd class="col-sm-8">@Model.WorkOrder?.QuantityToProduce قطعة</dd>
+                </dl>
+            </div>
+        </div>
     </div>
 </div>
 
-<!-- Products Summary Table -->
-<div class="card shadow-sm border-0">
-    <div class="card-header bg-transparent">
-        <h5 class="fw-bold mb-0">ملخص المنتجات المقصوصة</h5>
+<div class="card shadow-sm border-0 mb-4">
+    <div class="card-header bg-light">
+        <h5 class="fw-bold mb-0"><i class="bi bi-box-arrow-left me-2"></i>حالة المرتجعات للمخزن</h5>
+    </div>
+    <div class="card-body">
+        @if (Model.MaterialReturnNote != null)
+        {
+            var statusClass = "text-muted";
+            var statusName = Model.MaterialReturnNote.Status.GetDisplayName();
+            switch (Model.MaterialReturnNote.Status)
+            {
+                case RequisitionStatus.Approved: statusClass = "bg-success text-white"; break;
+                case RequisitionStatus.Rejected: statusClass = "bg-danger text-white"; break;
+                case RequisitionStatus.Pending: statusClass = "bg-warning text-dark"; break;
+            }
+
+            <dl class="row mb-3">
+                <dt class="col-sm-3">رقم سند المرتجع</dt>
+                <dd class="col-sm-9"><strong>@Model.MaterialReturnNote.ReturnNoteNumber</strong></dd>
+
+                <dt class="col-sm-3">الحالة</dt>
+                <dd class="col-sm-9"><span class="badge @statusClass">@statusName</span></dd>
+            </dl>
+
+            <h6 class="mt-4">تفاصيل المرتجع:</h6>
+            <table class="table table-sm table-bordered">
+                <thead class="table-light">
+                    <tr>
+                        <th>الصنف المرتجع</th>
+                        <th class="text-end">الكمية</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var detail in Model.MaterialReturnNote.Details)
+                    {
+                        <tr>
+                            <td>@(detail.Material.Name + (detail.Material.Color != null ? $" - {detail.Material.Color.Name}" : ""))</td>
+                            <td class="text-end">@detail.QuantityReturned.ToString("F2")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+        else
+        {
+            <div class="text-center text-muted py-3">
+                <p class="mb-0">لا توجد مرتجعات مسجلة لأمر الشغل هذا.</p>
+            </div>
+        }
+    </div>
+</div>
+
+<div class="card shadow-sm border-0 mb-4">
+    <div class="card-header bg-light">
+        <h5 class="fw-bold mb-0"><i class="bi bi-pie-chart-fill me-2"></i>ملخص المنتجات المقصوصة</h5>
     </div>
     <div class="card-body">
         <div class="table-responsive">
@@ -48,9 +148,7 @@
                 <tbody>
                     @if (Model.ProductsSummary == null || !Model.ProductsSummary.Any())
                     {
-                        <tr>
-                            <td colspan="2" class="text-center text-muted">لم يتم تسجيل أي بيانات قص لهذا الأمر.</td>
-                        </tr>
+                        <tr><td colspan="2" class="text-center text-muted py-3">لم يتم تسجيل أي بيانات قص لهذا الأمر.</td></tr>
                     }
                     else
                     {
@@ -67,3 +165,77 @@
         </div>
     </div>
 </div>
+
+<div class="card shadow-sm border-0">
+    <div class="card-header bg-light">
+        <h5 class="fw-bold mb-0"><i class="bi bi-table me-2"></i>بيانات القص التفصيلية</h5>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-striped table-sm">
+                <thead class="table-light">
+                    <tr>
+                        <th>رقم التشغيل</th>
+                        <th>الخامة</th>
+                        <th>المتراج</th>
+                        <th>العدد</th>
+                        <th>العامل</th>
+                        <th>التاريخ</th>
+                        <th>الحالة</th>
+                        <th class="no-print"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.CuttingStatements == null || !Model.CuttingStatements.Any())
+                    {
+                        <tr><td colspan="8" class="text-center text-muted py-3">لم يتم تسجيل أي بيانات قص.</td></tr>
+                    }
+                    else
+                    {
+                        @foreach (var log in Model.CuttingStatements)
+                        {
+                            <tr>
+                                <td><strong>@log.RunNumber</strong></td>
+                                <td>@(log.Material.Name + (log.Material.Color != null ? $" - {log.Material.Color.Name}" : ""))</td>
+                                <td>@log.Meterage</td>
+                                <td>@log.Count</td>
+                                <td>@log.Worker.Name</td>
+                                <td>@log.StatementDate.ToString("yyyy/MM/dd")</td>
+                                <td>
+                                    @if (log.Status == BatchStatus.Transferred)
+                                    {
+                                        <span class="badge bg-success">تم التحويل</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-info">جاهز للتحويل</span>
+                                    }
+                                </td>
+                                <td class="no-print">
+                                    @if (log.Status == BatchStatus.PendingTransfer)
+                                    {
+                                        <form method="post" asp-page-handler="TransferToSewing">
+                                            <input type="hidden" name="statementId" value="@log.Id" />
+                                            <button type="submit" class="btn btn-sm btn-success">
+                                                <i class="bi bi-send me-1"></i> تحويل
+                                            </button>
+                                        </form>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function printReport(title) {
+            document.title = title;
+            window.print();
+        }
+    </script>
+}

@@ -7,6 +7,12 @@ namespace Keswa.Enums
         [Display(Name = "معلق")]
         Pending,
 
+        [Display(Name = "تمت الموافقة")] // <-- تم التعديل
+        Approved,
+
+        [Display(Name = "مرفوض")] // <-- تم الإضافة
+        Rejected,
+
         [Display(Name = "تم الصرف")]
         Processed
     }

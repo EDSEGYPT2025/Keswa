@@ -1,0 +1,61 @@
+﻿@page "{id:int}"
+@model Keswa.Pages.Inventory.ProcessReturnModel
+@{
+    ViewData["Title"] = "معالجة سند مرتجع";
+}
+
+<div class="mb-4">
+    <h1 class="h2 fw-bold">@ViewData["Title"]</h1>
+    <p class="text-muted">مراجعة وتأكيد استلام الخامات المرتجعة من الأقسام.</p>
+</div>
+
+<div class="card shadow-sm border-0">
+    <div class="card-header">
+        <h5>تفاصيل السند: @Model.MaterialReturnNote.ReturnNoteNumber</h5>
+    </div>
+    <div class="card-body">
+        <dl class="row">
+            <dt class="col-sm-3">أمر الشغل</dt>
+            <dd class="col-sm-9">@Model.MaterialReturnNote.WorkOrder.WorkOrderNumber</dd>
+
+            <dt class="col-sm-3">القسم</dt>
+            <dd class="col-sm-9">@Model.MaterialReturnNote.Department</dd>
+
+            <dt class="col-sm-3">تاريخ الإرجاع</dt>
+            <dd class="col-sm-9">@Model.MaterialReturnNote.ReturnDate.ToShortDateString()</dd>
+        </dl>
+
+        <h5 class="mt-4">الخامات المرتجعة</h5>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>الخامة</th>
+                    <th class="text-center">الكمية المرتجعة</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var detail in Model.MaterialReturnNote.Details)
+                {
+                    <tr>
+                        <td>@(detail.Material.Name + (detail.Material.Color != null ? $" - {detail.Material.Color.Name}" : ""))</td>
+                        <td class="text-center">@detail.QuantityReturned.ToString("F2")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+        <hr />
+
+        <form method="post">
+            <div class="d-flex justify-content-end gap-2">
+                <a asp-page="./PendingReturns" class="btn btn-secondary">العودة للقائمة</a>
+                <button type="submit" asp-page-handler="Reject" class="btn btn-outline-danger" onclick="return confirm('هل أنت متأكد من رفض هذا السند؟')">
+                    <i class="bi bi-x-circle me-1"></i> رفض
+                </button>
+                <button type="submit" asp-page-handler="Approve" class="btn btn-success">
+                    <i class="bi bi-check2-circle me-1"></i> موافقة واستلام
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
