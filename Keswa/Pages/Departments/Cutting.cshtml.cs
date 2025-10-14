@@ -36,7 +36,7 @@ namespace Keswa.Pages.Departments
         public string MaterialStockJson { get; set; }
         public string MaterialColorJson { get; set; }
 
-        public async Task OnGetAsync(int? id)
+        public async Task<IActionResult> OnGetAsync(int? id)
         {
             var workOrdersQuery = _context.WorkOrderRoutings
                 .Where(r => r.Department == Department.Cutting && r.Status != WorkOrderStageStatus.Completed)
@@ -70,8 +70,6 @@ namespace Keswa.Pages.Departments
 
                 if (SelectedWorkOrder != null)
                 {
-                    // *** تم تصحيح الكود هنا ***
-                    // ابحث عن تفصيلة أمر البيع التي ترتبط بأمر الشغل هذا
                     var salesOrderDetail = await _context.SalesOrderDetails
                         .Include(sod => sod.SalesOrder.Customer)
                         .FirstOrDefaultAsync(sod => sod.WorkOrderId == SelectedWorkOrder.Id);
@@ -157,6 +155,7 @@ namespace Keswa.Pages.Departments
                     WorkerList = new SelectList(workersInDepartment, "Id", "Name");
                 }
             }
+            return Page();
         }
 
         public async Task<IActionResult> OnPostAsync(int workOrderId)
@@ -198,9 +197,12 @@ namespace Keswa.Pages.Departments
 
         public async Task<IActionResult> OnPostFinishCuttingAsync(int workOrderId)
         {
+            var workOrder = await _context.WorkOrders.FindAsync(workOrderId);
+            if (workOrder == null)
+            {
+                return NotFound();
+            }
 
-            // --- بداية الجزء الجديد ---
-            // حساب إجمالي الكميات المنصرفة والمستهلكة لتحديد المتبقي
             var totalIssued = await _context.MaterialIssuanceNoteDetails
                 .Where(d => d.MaterialIssuanceNote.WorkOrderId == workOrderId)
                 .GroupBy(d => d.MaterialId)
@@ -232,7 +234,6 @@ namespace Keswa.Pages.Departments
 
             if (materialsToReturn.Any())
             {
-                // إنشاء سند مرتجع جديد
                 var returnNote = new MaterialReturnNote
                 {
                     WorkOrderId = workOrderId,
@@ -241,18 +242,10 @@ namespace Keswa.Pages.Departments
                     Status = RequisitionStatus.Pending,
                     Details = materialsToReturn
                 };
-                // يمكنك إنشاء رقم تسلسلي فريد هنا
                 returnNote.ReturnNoteNumber = $"MRN-{returnNote.ReturnDate:yyyyMMdd}-{workOrderId}";
 
                 _context.MaterialReturnNotes.Add(returnNote);
                 TempData["InfoMessage"] = "تم إنشاء سند مرتجع بالكميات المتبقية وهو في انتظار موافقة أمين المخزن.";
-            }
-            // --- نهاية الجزء الجديد ---
-
-            var workOrder = await _context.WorkOrders.FindAsync(workOrderId);
-            if (workOrder == null)
-            {
-                return NotFound();
             }
 
             var routingStage = await _context.WorkOrderRoutings
@@ -264,24 +257,9 @@ namespace Keswa.Pages.Departments
             }
 
             await _context.SaveChangesAsync();
-
             TempData["SuccessMessage"] = $"تم إنهاء مرحلة القص لأمر الشغل {workOrder.WorkOrderNumber} بنجاح.";
 
             return RedirectToPage();
-        }
-
-        // أضف هذه الدالة الجديدة داخل كلاس CuttingModel
-        public async Task<IActionResult> OnPostTransferToSewingAsync(int statementId, int workOrderId)
-        {
-            var statement = await _context.CuttingStatements.FindAsync(statementId);
-            if (statement != null)
-            {
-                statement.Status = BatchStatus.Transferred;
-                await _context.SaveChangesAsync();
-                TempData["SuccessMessage"] = $"تم تحويل التشغيلة رقم {statement.RunNumber} إلى قسم الخياطة بنجاح.";
-            }
-
-            return RedirectToPage(new { id = workOrderId });
         }
     }
 

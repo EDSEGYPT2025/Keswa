@@ -1,0 +1,137 @@
+﻿@page
+@model Keswa.Pages.Departments.SewingModel
+@{
+    ViewData["Title"] = "شاشة قسم الخياطة";
+}
+
+<div class="mb-4">
+    <h1 class="h2 fw-bold">@ViewData["Title"]</h1>
+    <p class="text-muted">متابعة تشغيلات الخياطة وتوزيعها على العمال وتسجيل الإنتاج.</p>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-7">
+        <div class="card shadow-sm border-0 mb-4">
+            <div class="card-header bg-light">
+                <h5 class="mb-0 fw-bold"><i class="bi bi-box-arrow-in-down me-2"></i>تشغيلات مستلمة (جاهزة للتوزيع)</h5>
+            </div>
+            <div class="card-body">
+                <table class="table table-sm table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>رقم التشغيلة</th>
+                            <th>الموديل</th>
+                            <th class="text-center">الكمية</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var batch in Model.PendingBatches)
+                        {
+                            <tr>
+                                <td><strong>@batch.SewingBatchNumber</strong></td>
+                                <td>@batch.ProductName</td>
+                                <td class="text-center">@batch.Quantity</td>
+                                <td class="text-end">
+                                    <a href="/Departments/Sewing?handler=AssignBatchModal&sewingBatchId=@batch.SewingBatchId"
+                                       class="btn btn-sm btn-primary assign-btn">
+                                        <i class="bi bi-person-plus-fill me-1"></i> تسليم لعامل
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-light">
+                <h5 class="mb-0 fw-bold"><i class="bi bi-people-fill me-2"></i>تشغيلات قيد التنفيذ لدى العمال</h5>
+            </div>
+            <div class="card-body">
+                <table class="table table-sm table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>العامل</th>
+                            <th>رقم التشغيلة</th>
+                            <th class="text-center">متبقي لديه</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var assignment in Model.AssignmentsInProgress)
+                        {
+                            <tr>
+                                <td><strong>@assignment.WorkerName</strong></td>
+                                <td>@assignment.SewingBatchNumber</td>
+                                <td class="text-center text-danger fw-bold">@assignment.RemainingQuantity</td>
+                                <td class="text-end">
+                                    <button class="btn btn-sm btn-info">
+                                        <i class="bi bi-clipboard-check-fill me-1"></i> استلام إنتاج
+                                    </button>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-5">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-light">
+                <h5 class="mb-0 fw-bold"><i class="bi bi-send-check-fill me-2"></i>إنتاج جاهز للتحويل</h5>
+            </div>
+            <div class="card-body">
+                <table class="table table-sm table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>رقم التشغيلة</th>
+                            <th class="text-center">الكمية الجاهزة</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td colspan="3" class="text-center text-muted">سيتم تفعيل هذا الجزء لاحقاً.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="modal fade" id="mainModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+        </div>
+    </div>
+</div>
+
+
+@section Scripts {
+    <script>
+        $(function () {
+            var modalPlaceholder = $('#mainModal');
+
+            $('.assign-btn').click(function (event) {
+                event.preventDefault();
+                var url = $(this).attr('href');
+
+                // تحميل محتوى المودال من الرابط
+                modalPlaceholder.find('.modal-content').load(url, function () {
+                    modalPlaceholder.modal('show');
+                });
+            });
+
+            // لإفراغ المودال بعد إغلاقه لضمان تحميل البيانات الجديدة في كل مرة
+            modalPlaceholder.on('hidden.bs.modal', function () {
+                $(this).find('.modal-content').empty();
+            });
+        });
+    </script>
+}

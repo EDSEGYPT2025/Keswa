@@ -59,6 +59,8 @@ namespace Keswa.Data
         public DbSet<WorkerAssignment> WorkerAssignments { get; set; }
         public DbSet<ScrapLog> ScrapLogs { get; set; }
 
+        public DbSet<SewingProductionLog> SewingProductionLogs { get; set; }
+
 
 
         // *** تم إضافة هذه الوظيفة لحل مشكلة الحذف المتعدد ***

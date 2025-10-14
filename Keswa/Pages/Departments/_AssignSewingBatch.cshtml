@@ -1,0 +1,51 @@
+﻿@model Keswa.Pages.Departments.SewingModel
+
+<form method="post" asp-page="/Departments/Sewing" asp-page-handler="AssignBatch">
+    <div class="modal-header">
+        <h5 class="modal-title">تسليم تشغيلة خياطة لعامل</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+    </div>
+    <div class="modal-body">
+        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+        <input type="hidden" asp-for="AssignmentInput.SewingBatchId" />
+
+        <div class="alert alert-info">
+            <dl class="row mb-0">
+                <dt class="col-sm-4">رقم التشغيلة:</dt>
+                <dd class="col-sm-8">@Model.SelectedSewingBatch.SewingBatchNumber</dd>
+                <dt class="col-sm-4">الموديل:</dt>
+                <dd class="col-sm-8">@Model.SelectedSewingBatch.CuttingStatement.WorkOrder.Product.Name</dd>
+                <dt class="col-sm-4">الكمية المتبقية للتوزيع:</dt>
+                <dd class="col-sm-8 text-danger fw-bold">@Model.RemainingQuantityInBatch قطعة</dd>
+            </dl>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="AssignmentInput.WorkerId" class="form-label"></label>
+            <select asp-for="AssignmentInput.WorkerId" class="form-select" asp-items="Model.WorkerList">
+                <option value="">-- اختر عامل --</option>
+            </select>
+            <span asp-validation-for="AssignmentInput.WorkerId" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="AssignmentInput.AssignedQuantity" class="form-label"></label>
+            <input asp-for="AssignmentInput.AssignedQuantity" class="form-control" type="number" min="1" max="@Model.RemainingQuantityInBatch" />
+            <span asp-validation-for="AssignmentInput.AssignedQuantity" class="text-danger"></span>
+        </div>
+
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+        <button type="submit" class="btn btn-primary">حفظ وتسليم</button>
+    </div>
+</form>
+
+<script>
+    if ($.fn.select2) {
+        $('.form-select').select2({
+            theme: "bootstrap-5",
+            dropdownParent: $('#mainModal')
+        });
+    }
+</script>

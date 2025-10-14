@@ -73,18 +73,34 @@ namespace Keswa.Pages.Departments
             return Page();
         }
 
-        // *** تمت إضافة هذه الدالة الجديدة ***
+        // *** تم تحديث هذه الدالة بالكامل ***
         public async Task<IActionResult> OnPostTransferToSewingAsync(int statementId)
         {
             var statement = await _context.CuttingStatements.FindAsync(statementId);
-            if (statement != null)
+            if (statement == null)
             {
-                statement.Status = BatchStatus.Transferred;
-                await _context.SaveChangesAsync();
-                TempData["SuccessMessage"] = $"تم تحويل التشغيلة رقم {statement.RunNumber} إلى قسم الخياطة بنجاح.";
+                return NotFound();
             }
 
-            return RedirectToPage(new { workOrderId = statement?.WorkOrderId });
+            // 1. تحديث حالة بيان القص
+            statement.Status = BatchStatus.Transferred;
+
+            // 2. إنشاء تشغيلة خياطة جديدة
+            var sewingBatch = new SewingBatch
+            {
+                CuttingStatementId = statement.Id,
+                Quantity = statement.Count,
+                Status = BatchStatus.PendingTransfer, // جاهزة للظهور في شاشة الخياطة
+                SewingBatchNumber = $"{statement.RunNumber}-SEW" // رقم فريد للتشغيلة الجديدة
+            };
+
+            _context.SewingBatches.Add(sewingBatch);
+
+            await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = $"تم تحويل التشغيلة رقم {statement.RunNumber} إلى قسم الخياطة بنجاح.";
+
+            return RedirectToPage(new { workOrderId = statement.WorkOrderId });
         }
     }
 

@@ -228,14 +228,12 @@
                                     <th>العدد</th>
                                     <th>العامل</th>
                                     <th>التاريخ</th>
-                                    <th>الحالة</th>
-                                    <th></th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @if (Model.CuttingStatements == null || !Model.CuttingStatements.Any())
                                 {
-                                    <tr><td colspan="9" class="text-center text-muted">لم يتم تسجيل أي بيانات قص.</td></tr>
+                                    <tr><td colspan="7" class="text-center text-muted">لم يتم تسجيل أي بيانات قص.</td></tr>
                                 }
                                 else
                                 {
@@ -253,28 +251,6 @@
                                             <td>@log.Count</td>
                                             <td>@log.Worker.Name</td>
                                             <td>@log.StatementDate.ToString("yyyy/MM/dd")</td>
-                                            <td>
-                                                @if (log.Status == BatchStatus.Transferred)
-                                                {
-                                                    <span class="badge bg-success">تم التحويل</span>
-                                                }
-                                                else
-                                                {
-                                                    <span class="badge bg-info">جاهز للتحويل</span>
-                                                }
-                                            </td>
-                                            <td>
-                                                @if (log.Status == BatchStatus.PendingTransfer)
-                                                {
-                                                    <form method="post" asp-page-handler="TransferToSewing">
-                                                        <input type="hidden" name="statementId" value="@log.Id" />
-                                                        <input type="hidden" name="workOrderId" value="@Model.SelectedWorkOrder.Id" />
-                                                        <button type="submit" class="btn btn-sm btn-success">
-                                                            <i class="bi bi-send me-1"></i> تحويل
-                                                        </button>
-                                                    </form>
-                                                }
-                                            </td>
                                         </tr>
                                     }
                                 }
