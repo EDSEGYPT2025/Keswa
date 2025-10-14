@@ -1,4 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿// Keswa/Enums/BatchStatus.cs
+
+using System.ComponentModel.DataAnnotations;
 
 namespace Keswa.Enums
 {
@@ -6,6 +8,10 @@ namespace Keswa.Enums
     {
         [Display(Name = "جاهز للتحويل")]
         PendingTransfer,
+
+        // -- تعديل: تمت إضافة هذه الحالة الضرورية لتصحيح المنطق --
+        [Display(Name = "قيد التنفيذ")]
+        InProgress,
 
         [Display(Name = "تم التحويل")]
         Transferred

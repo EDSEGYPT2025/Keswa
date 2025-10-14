@@ -1,47 +1,56 @@
-﻿@page "{assignmentId:int}"
+﻿@page
 @model Keswa.Pages.Departments.ReceiveFromWorkerModalModel
 
 <form method="post">
     <div class="modal-header">
-        <h5 class="modal-title">استلام إنتاج من عامل</h5>
+        <h5 class="modal-title"><i class="bi bi-clipboard-check-fill me-2"></i>استلام إنتاج من عامل</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
     </div>
     <div class="modal-body">
         <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
         <input type="hidden" asp-for="Input.AssignmentId" />
 
-        <div class="alert alert-secondary">
-            <dl class="row mb-0">
-                <dt class="col-sm-4">العامل:</dt>
-                <dd class="col-sm-8">@Model.Assignment.Worker.Name</dd>
-                <dt class="col-sm-4">رقم التشغيلة:</dt>
-                <dd class="col-sm-8">@Model.Assignment.SewingBatch.SewingBatchNumber</dd>
-                <dt class="col-sm-4">المتبقي لديه:</dt>
-                <dd class="col-sm-8 text-danger fw-bold">@Model.Assignment.RemainingQuantity قطعة</dd>
+        <div class="alert alert-light border">
+            <h6 class="alert-heading">تفاصيل المهمة الحالية</h6>
+            <hr>
+            <dl class="row mb-0 small">
+                <dt class="col-sm-5">العامل:</dt>
+                <dd class="col-sm-7 fw-bold">@Model.Assignment.Worker.Name</dd>
+                <dt class="col-sm-5">رقم التشغيلة:</dt>
+                <dd class="col-sm-7">@Model.Assignment.SewingBatch.SewingBatchNumber</dd>
+                <dt class="col-sm-5">المتبقي لديه:</dt>
+                <dd class="col-sm-7 text-danger fw-bold">@Model.Assignment.RemainingQuantity قطعة</dd>
             </dl>
         </div>
 
-        <div class="mb-3">
-            <label asp-for="Input.ReceivedQuantity" class="form-label"></label>
-            <input asp-for="Input.ReceivedQuantity" class="form-control" type="number" min="0" />
-            <span asp-validation-for="Input.ReceivedQuantity" class="text-danger"></span>
+        <div class="row g-2">
+            <div class="col-md">
+                <div class="form-floating">
+                    <input asp-for="Input.ReceivedQuantity" class="form-control" type="number" min="0" placeholder="الكمية المستلمة" />
+                    <label asp-for="Input.ReceivedQuantity"></label>
+                </div>
+                <span asp-validation-for="Input.ReceivedQuantity" class="text-danger small"></span>
+            </div>
+            <div class="col-md">
+                <div class="form-floating">
+                    <input asp-for="Input.ScrappedQuantity" class="form-control" type="number" min="0" value="0" placeholder="الكمية التالفة" />
+                    <label asp-for="Input.ScrappedQuantity"></label>
+                </div>
+                <span asp-validation-for="Input.ScrappedQuantity" class="text-danger small"></span>
+            </div>
         </div>
 
-        <div class="mb-3">
-            <label asp-for="Input.ScrappedQuantity" class="form-label"></label>
-            <input asp-for="Input.ScrappedQuantity" class="form-control" type="number" min="0" value="0" />
-            <span asp-validation-for="Input.ScrappedQuantity" class="text-danger"></span>
+        <div class="form-floating mt-3">
+            <textarea asp-for="Input.ScrapReason" class="form-control" placeholder="سبب التالف" style="height: 80px"></textarea>
+            <label asp-for="Input.ScrapReason"></label>
+            <span asp-validation-for="Input.ScrapReason" class="text-danger small"></span>
         </div>
-
-        <div class="mb-3">
-            <label asp-for="Input.ScrapReason" class="form-label"></label>
-            <textarea asp-for="Input.ScrapReason" class="form-control" rows="2"></textarea>
-            <span asp-validation-for="Input.ScrapReason" class="text-danger"></span>
-        </div>
-
     </div>
     <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
-        <button type="submit" class="btn btn-primary">حفظ واستلام</button>
+        <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg me-1"></i> حفظ واستلام</button>
     </div>
 </form>
+
+<script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
+<script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>

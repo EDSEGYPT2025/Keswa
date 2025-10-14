@@ -41,7 +41,7 @@
             <table class="table table-hover align-middle">
                 <thead class="table-light">
                     <tr>
-                        <th>@Html.DisplayNameFor(model => model.Workers[0].WorkerCode)</th>
+                        <th>@Html.DisplayNameFor(model => model.Workers[0].Id)</th>
                         <th>@Html.DisplayNameFor(model => model.Workers[0].Name)</th>
                         <th>@Html.DisplayNameFor(model => model.Workers[0].Department)</th>
                         <th>@Html.DisplayNameFor(model => model.Workers[0].HireDate)</th>
@@ -52,7 +52,7 @@
                     @foreach (var item in Model.Workers)
                     {
                         <tr>
-                            <td><strong>@Html.DisplayFor(modelItem => item.WorkerCode)</strong></td>
+                            <td><strong>@Html.DisplayFor(modelItem => item.Id)</strong></td>
                             <td>@Html.DisplayFor(modelItem => item.Name)</td>
                             <td>@Html.DisplayFor(modelItem => item.Department)</td>
                             <td>@item.HireDate.ToShortDateString()</td>

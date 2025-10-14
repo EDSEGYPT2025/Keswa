@@ -1,51 +1,111 @@
-﻿@model Keswa.Pages.Departments.SewingModel
+﻿@page
+@model Keswa.Pages.Departments.AssignSewingBatchModel
+@* ===== قسم الأنماط (CSS) للتصميم الجديد ===== *@
+<style>
+    /* متغيرات الألوان لسهولة التعديل */
+    :root {
+        --modal-primary-color: #4a5568; /* أزرق رمادي داكن */
+        --modal-secondary-color: #718096; /* أزرق رمادي أفتح */
+        --modal-accent-color: #3b82f6; /* أزرق ساطع للتركيز */
+        --modal-bg-color: #f8f9fa; /* لون خلفية ناعم */
+    }
 
-<form method="post" asp-page="/Departments/Sewing" asp-page-handler="AssignBatch">
-    <div class="modal-header">
-        <h5 class="modal-title">تسليم تشغيلة خياطة لعامل</h5>
+    .custom-modal-header {
+        background: linear-gradient(135deg, var(--modal-primary-color), var(--modal-secondary-color));
+        color: white;
+        border-bottom: none;
+        padding: 0.8rem 1rem;
+    }
+
+        .custom-modal-header .modal-title {
+            font-size: 1rem;
+            font-weight: 600;
+        }
+
+        .custom-modal-header .btn-close {
+            filter: invert(1) grayscale(100%) brightness(200%);
+        }
+
+    .info-panel {
+        background-color: var(--modal-bg-color);
+        border: 1px solid #e2e8f0;
+        border-radius: 0.5rem;
+        padding: 0.8rem;
+        font-size: 0.85rem;
+    }
+
+        .info-panel dt {
+            color: var(--modal-secondary-color);
+        }
+
+        .info-panel dd {
+            font-weight: 500;
+            color: var(--modal-primary-color);
+        }
+
+    .modal-footer {
+        background-color: var(--modal-bg-color);
+        border-top: 1px solid #e2e8f0;
+    }
+
+    .btn-save-custom {
+        background-color: var(--modal-primary-color);
+        border-color: var(--modal-primary-color);
+        color: white;
+    }
+
+        .btn-save-custom:hover {
+            background-color: var(--modal-secondary-color);
+            border-color: var(--modal-secondary-color);
+        }
+</style>
+
+
+<form method="post">
+    @* ===== التصميم الجديد للشاشة المنبثقة ===== *@
+    <div class="modal-header custom-modal-header">
+        <h5 class="modal-title"><i class="bi bi-box-arrow-right me-2"></i>تسليم تشغيلة</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
     </div>
     <div class="modal-body">
-        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
-        <input type="hidden" asp-for="AssignmentInput.SewingBatchId" />
+        <div asp-validation-summary="ModelOnly" class="text-danger small mb-3"></div>
+        <input type="hidden" asp-for="Input.SewingBatchId" />
 
-        <div class="alert alert-info">
+        @* لوحة معلومات التشغيلة بتصميم جديد *@
+        <div class="info-panel mb-3">
             <dl class="row mb-0">
-                <dt class="col-sm-4">رقم التشغيلة:</dt>
-                <dd class="col-sm-8">@Model.SelectedSewingBatch.SewingBatchNumber</dd>
-                <dt class="col-sm-4">الموديل:</dt>
-                <dd class="col-sm-8">@Model.SelectedSewingBatch.CuttingStatement.WorkOrder.Product.Name</dd>
-                <dt class="col-sm-4">الكمية المتبقية للتوزيع:</dt>
-                <dd class="col-sm-8 text-danger fw-bold">@Model.RemainingQuantityInBatch قطعة</dd>
+                <dt class="col-4">التشغيلة:</dt>
+                <dd class="col-8">@Model.SewingBatch.SewingBatchNumber</dd>
+
+                <dt class="col-4">الموديل:</dt>
+                <dd class="col-8">@Model.SewingBatch.CuttingStatement.WorkOrder.Product.Name</dd>
+
+                <dt class="col-4">الكمية:</dt>
+                <dd class="col-8">@Model.SewingBatch.Quantity قطعة</dd>
             </dl>
         </div>
 
-        <div class="mb-3">
-            <label asp-for="AssignmentInput.WorkerId" class="form-label"></label>
-            <select asp-for="AssignmentInput.WorkerId" class="form-select" asp-items="Model.WorkerList">
-                <option value="">-- اختر عامل --</option>
+        @* حقول الإدخال *@
+        <div class="form-floating mb-3">
+            <select asp-for="Input.WorkerId" class="form-select" asp-items="@Model.WorkerSelectList">
+                <option value="" selected disabled>اختر عامل...</option>
             </select>
-            <span asp-validation-for="AssignmentInput.WorkerId" class="text-danger"></span>
+            <label asp-for="Input.WorkerId"></label>
+            <span asp-validation-for="Input.WorkerId" class="text-danger small"></span>
         </div>
 
-        <div class="mb-3">
-            <label asp-for="AssignmentInput.AssignedQuantity" class="form-label"></label>
-            <input asp-for="AssignmentInput.AssignedQuantity" class="form-control" type="number" min="1" max="@Model.RemainingQuantityInBatch" />
-            <span asp-validation-for="AssignmentInput.AssignedQuantity" class="text-danger"></span>
+        <div class="form-floating">
+            <input asp-for="Input.AssignedQuantity" class="form-control" type="number" min="1" placeholder="الكمية المسندة" />
+            <label asp-for="Input.AssignedQuantity"></label>
+            <span asp-validation-for="Input.AssignedQuantity" class="text-danger small"></span>
         </div>
-
     </div>
     <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
-        <button type="submit" class="btn btn-primary">حفظ وتسليم</button>
+        <button type="button" class="btn btn-light" data-bs-dismiss="modal">إلغاء</button>
+        <button type="submit" class="btn btn-save-custom"><i class="bi bi-check-lg me-1"></i> حفظ وتسليم</button>
     </div>
 </form>
 
-<script>
-    if ($.fn.select2) {
-        $('.form-select').select2({
-            theme: "bootstrap-5",
-            dropdownParent: $('#mainModal')
-        });
-    }
-</script>
+@* هذا السكريبت ضروري لضمان عمل التحقق من الصحة (validation) داخل الشاشة المنبثقة *@
+<script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
+<script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
