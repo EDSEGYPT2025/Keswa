@@ -1,0 +1,66 @@
+﻿@page "{sewingBatchId:int}"
+@model Keswa.Pages.Departments.AssignBatchModel
+@{
+    ViewData["Title"] = "تسليم تشغيلة لعامل";
+}
+
+<div class="mb-4">
+    <h1 class="h2 fw-bold">@ViewData["Title"]</h1>
+    <p class="text-muted">اختر العامل والكمية المراد تسليمها من التشغيلة.</p>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card shadow-sm border-0">
+            <div class="card-body">
+                <form method="post">
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+                    <input type="hidden" asp-for="Input.SewingBatchId" />
+
+                    <div class="alert alert-light border">
+                        <dl class="row mb-0">
+                            <dt class="col-sm-4">رقم التشغيلة:</dt>
+                            <dd class="col-sm-8"><strong>@Model.SewingBatch.SewingBatchNumber</strong></dd>
+                            <dt class="col-sm-4">الموديل:</dt>
+                            <dd class="col-sm-8">@Model.SewingBatch.CuttingStatement.WorkOrder.Product.Name</dd>
+                            <dt class="col-sm-4">الكمية المتاحة للتوزيع:</dt>
+                            <dd class="col-sm-8 text-danger fw-bold">@Model.RemainingQuantityInBatch قطعة</dd>
+                        </dl>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Input.WorkerId" class="form-label"></label>
+                        <select asp-for="Input.WorkerId" class="form-select" asp-items="Model.WorkerSelectList">
+                            <option value="">-- اختر عامل --</option>
+                        </select>
+                        <span asp-validation-for="Input.WorkerId" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Input.AssignedQuantity" class="form-label"></label>
+                        <input asp-for="Input.AssignedQuantity" class="form-control" type="number" min="1" max="@Model.RemainingQuantityInBatch" />
+                        <span asp-validation-for="Input.AssignedQuantity" class="text-danger"></span>
+                    </div>
+
+                    <hr class="my-4" />
+
+                    <div class="d-flex justify-content-end">
+                        <a asp-page="/Departments/Sewing" class="btn btn-outline-secondary me-2">إلغاء</a>
+                        <button type="submit" class="btn btn-primary">حفظ وتسليم</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        $(document).ready(function() {
+            $('.form-select').select2({
+                theme: 'bootstrap-5'
+            });
+        });
+    </script>
+}

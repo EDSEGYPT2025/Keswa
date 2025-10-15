@@ -27,13 +27,14 @@ namespace Keswa.Pages.Departments
         public List<WorkerAssignmentViewModel> AssignmentsInProgress { get; set; } = new();
         public List<CompletedAssignmentViewModel> CompletedAssignments { get; set; } = new();
 
-        // خصائص خاصة بالمودال
+        // خصائص خاصة بالشاشة المنبثقة (Modal)
         [BindProperty]
         public AssignmentInputModel AssignmentInput { get; set; }
         public SewingBatch SelectedSewingBatch { get; set; }
         public SelectList WorkerList { get; set; }
         public int RemainingQuantityInBatch { get; set; }
 
+        // نموذج لإدخال البيانات من المودال
         public class AssignmentInputModel
         {
             [Required]
@@ -98,6 +99,7 @@ namespace Keswa.Pages.Departments
             WorkerList = new SelectList(workers, "Id", "Name");
             AssignmentInput = new AssignmentInputModel { SewingBatchId = sewingBatchId };
 
+            // إرجاع الواجهة الجزئية مع البيانات
             return Partial("_AssignSewingBatch", this);
         }
 
@@ -106,7 +108,6 @@ namespace Keswa.Pages.Departments
         {
             if (!ModelState.IsValid)
             {
-                // في حالة الخطأ، من الصعب إعادة فتح المودال بنفس الحالة، الأفضل إظهار رسالة خطأ عامة
                 TempData["ErrorMessage"] = "حدث خطأ في البيانات المدخلة. يرجى المحاولة مرة أخرى.";
                 return RedirectToPage();
             }
