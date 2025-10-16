@@ -68,6 +68,10 @@ namespace Keswa.Pages.Departments
             return Page();
         }
 
+
+
+        // Keswa/Pages/Departments/AssignBatch.cshtml.cs
+
         public async Task<IActionResult> OnPostAsync()
         {
             if (!ModelState.IsValid)
@@ -79,26 +83,35 @@ namespace Keswa.Pages.Departments
             var sewingBatch = await _context.SewingBatches.FindAsync(Input.SewingBatchId);
             if (sewingBatch == null) return NotFound();
 
-            var totalAssigned = await _context.WorkerAssignments
-                .Where(wa => wa.SewingBatchId == Input.SewingBatchId)
-                .SumAsync(wa => wa.AssignedQuantity);
+            // --- بداية المنطق الجديد والمبسط ---
 
-            if (Input.AssignedQuantity > (sewingBatch.Quantity - totalAssigned))
+            // 1. التحقق من أن هذه التشغيلة لم يتم تسليمها لأي عامل من قبل
+            var isAlreadyAssigned = await _context.WorkerAssignments
+                .AnyAsync(wa => wa.SewingBatchId == Input.SewingBatchId);
+
+            if (isAlreadyAssigned)
             {
-                ModelState.AddModelError("Input.AssignedQuantity", "الكمية المسلمة أكبر من الكمية المتبقية.");
+                ModelState.AddModelError("", "خطأ: هذه التشغيلة تم تسليمها بالفعل.");
                 await OnGetAsync(Input.SewingBatchId);
                 return Page();
             }
 
-            var existingAssignmentsCount = await _context.WorkerAssignments
-                .CountAsync(wa => wa.SewingBatchId == Input.SewingBatchId);
+            // 2. التحقق من أن الكمية المسلمة هي كامل كمية التشغيلة
+            if (Input.AssignedQuantity != sewingBatch.Quantity)
+            {
+                ModelState.AddModelError("Input.AssignedQuantity", "خطأ! يجب تسليم كامل كمية التشغيلة.");
+                await OnGetAsync(Input.SewingBatchId);
+                return Page();
+            }
 
-            var newSubSequence = (existingAssignmentsCount + 1).ToString("D3");
-            var newAssignmentNumber = $"{sewingBatch.SewingBatchNumber}-{newSubSequence}";
+            // 3. الرقم الداخلي للعامل هو نفس رقم تشغيلة الخياطة الرئيسية
+            var newAssignmentNumber = sewingBatch.SewingBatchNumber;
+
+            // --- نهاية المنطق الجديد والمبسط ---
 
             var newAssignment = new WorkerAssignment
             {
-                AssignmentNumber = newAssignmentNumber,
+                AssignmentNumber = newAssignmentNumber, // <-- استخدام الرقم الجديد
                 SewingBatchId = Input.SewingBatchId,
                 WorkerId = Input.WorkerId,
                 AssignedQuantity = Input.AssignedQuantity,
@@ -110,7 +123,7 @@ namespace Keswa.Pages.Departments
             sewingBatch.Status = BatchStatus.Transferred;
             await _context.SaveChangesAsync();
 
-            TempData["SuccessMessage"] = "تم تسليم التشغيلة للعامل بنجاح.";
+            TempData["SuccessMessage"] = "تم تسليم كامل التشغيلة للعامل بنجاح.";
             return RedirectToPage("/Departments/Sewing");
         }
     }

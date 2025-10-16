@@ -23,6 +23,8 @@ namespace Keswa.Models
 
         [Display(Name = "الحالة")]
         public BatchStatus Status { get; set; } = BatchStatus.PendingTransfer; // سنستخدم نفس الـ Enum
+        [Display(Name = "تاريخ الإنشاء")]
+        public DateTime CreationDate { get; set; }
 
         // هذا السطر يعرف أن كل تشغيلة خياطة رئيسية يمكن أن تحتوي على
         // مجموعة من التشغيلات الفرعية المسلمة للعمال

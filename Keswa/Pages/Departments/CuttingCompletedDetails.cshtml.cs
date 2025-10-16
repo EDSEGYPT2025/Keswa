@@ -73,6 +73,7 @@ namespace Keswa.Pages.Departments
             return Page();
         }
 
+
         // Keswa/Pages/Departments/CuttingCompletedDetails.cshtml.cs
 
         public async Task<IActionResult> OnPostTransferToSewingAsync(int statementId)
@@ -90,20 +91,34 @@ namespace Keswa.Pages.Departments
                 return RedirectToPage(new { workOrderId = statement.WorkOrderId });
             }
 
-            // --- هذا هو المنطق النهائي والمؤكد للعد ---
-            // 1. نحصل على قائمة IDs لكل بيانات القص التابعة لنفس أمر الشغل
-            var relatedCuttingStatementIds = await _context.CuttingStatements
-                .Where(cs => cs.WorkOrderId == workOrder.Id)
-                .Select(cs => cs.Id)
+            // --- بداية الحل القاطع ---
+
+            // 1. نبحث عن كل أرقام تشغيلات الخياطة الحالية التابعة لنفس أمر الشغل
+            var existingSewingBatchNumbers = await _context.SewingBatches
+                .Where(sb => sb.CuttingStatement.WorkOrderId == workOrder.Id)
+                .Select(sb => sb.SewingBatchNumber)
                 .ToListAsync();
 
-            // 2. نعد تشغيلات الخياطة التي تم إنشاؤها من قائمة IDs هذه
-            var existingSewingBatchesCount = await _context.SewingBatches
-                .CountAsync(sb => relatedCuttingStatementIds.Contains(sb.CuttingStatementId));
+            int maxSequence = 0;
+            foreach (var number in existingSewingBatchNumbers)
+            {
+                // 2. نستخرج الرقم التسلسلي من كل رقم موجود (مثال: من "WO-2025-2-001-SEW" نستخرج "001")
+                var parts = number.Split('-');
+                // نتأكد أن الرقم يحتوي على 4 أجزاء على الأقل قبل محاولة استخراج الرقم
+                if (parts.Length >= 4 && int.TryParse(parts[2], out int currentSequence))
+                {
+                    if (currentSequence > maxSequence)
+                    {
+                        maxSequence = currentSequence; // 3. نحدد أعلى رقم تسلسلي تم استخدامه
+                    }
+                }
+            }
 
-            // 3. ننشئ الرقم التسلسلي الجديد والفريد
-            var newSequence = (existingSewingBatchesCount + 1).ToString("D3");
-            var newSewingBatchNumber = $"{workOrder.WorkOrderNumber}-{newSequence}-SEW";
+            // 4. الرقم التسلسلي الجديد هو أعلى رقم + 1
+            var nextSequence = maxSequence + 1;
+            var newSewingBatchNumber = $"{workOrder.WorkOrderNumber}-{nextSequence:D3}-SEW";
+
+            // --- نهاية الحل القاطع ---
 
             var sewingBatch = new SewingBatch
             {
@@ -111,7 +126,7 @@ namespace Keswa.Pages.Departments
                 CuttingStatementId = statement.Id,
                 Quantity = statement.Count,
                 Status = BatchStatus.PendingTransfer,
-               
+                CreationDate = Helpers.DateTimeHelper.EgyptNow
             };
             _context.SewingBatches.Add(sewingBatch);
 
