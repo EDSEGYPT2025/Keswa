@@ -111,7 +111,7 @@ namespace Keswa.Pages.Departments
                 CuttingStatementId = statement.Id,
                 Quantity = statement.Count,
                 Status = BatchStatus.PendingTransfer,
-                //CreationDate = Helpers.DateTimeHelper.EgyptNow
+               
             };
             _context.SewingBatches.Add(sewingBatch);
 
