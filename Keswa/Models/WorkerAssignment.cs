@@ -10,6 +10,11 @@ namespace Keswa.Models
     {
         public int Id { get; set; }
 
+        // ================== بداية الإضافة ==================
+        [Display(Name = "رقم التشغيلة الداخلية")]
+        public string AssignmentNumber { get; set; }
+        // ================== نهاية الإضافة ===================
+
         [Display(Name = "تشغيلة الخياطة")]
         public int SewingBatchId { get; set; }
         [ValidateNever]

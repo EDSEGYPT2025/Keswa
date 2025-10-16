@@ -7,6 +7,12 @@ namespace Keswa.Models
 {
     public class CuttingStatement
     {
+        public CuttingStatement()
+        {
+            // هذا السطر يضمن أن المجموعة لن تكون فارغة أبداً ويحل مشكلة الحفظ
+            SewingBatches = new HashSet<SewingBatch>();
+        }
+
         public int Id { get; set; }
 
         [Required]
@@ -64,6 +70,8 @@ namespace Keswa.Models
         // أضف هذا السطر داخل كلاس CuttingStatement
         [Display(Name = "حالة التشغيلة")]
         public BatchStatus Status { get; set; } = BatchStatus.PendingTransfer;
+
+        public virtual ICollection<SewingBatch> SewingBatches { get; set; }
     }
 }
 

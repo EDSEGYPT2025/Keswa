@@ -38,7 +38,7 @@
 
                     <div class="mb-3">
                         <label asp-for="Input.AssignedQuantity" class="form-label"></label>
-                        <input asp-for="Input.AssignedQuantity" class="form-control" type="number" min="1" max="@Model.RemainingQuantityInBatch" />
+                        <input asp-for="Input.AssignedQuantity" class="form-control" type="number" min="1" max="@Model.RemainingQuantityInBatch" readonly />
                         <span asp-validation-for="Input.AssignedQuantity" class="text-danger"></span>
                     </div>
 

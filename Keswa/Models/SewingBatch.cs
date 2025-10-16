@@ -23,5 +23,9 @@ namespace Keswa.Models
 
         [Display(Name = "الحالة")]
         public BatchStatus Status { get; set; } = BatchStatus.PendingTransfer; // سنستخدم نفس الـ Enum
+
+        // هذا السطر يعرف أن كل تشغيلة خياطة رئيسية يمكن أن تحتوي على
+        // مجموعة من التشغيلات الفرعية المسلمة للعمال
+        public virtual ICollection<WorkerAssignment> WorkerAssignments { get; set; }
     }
 }

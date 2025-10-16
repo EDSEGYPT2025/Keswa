@@ -57,14 +57,13 @@ namespace Keswa.Pages.Departments
             RemainingQuantityInBatch = SewingBatch.Quantity - totalAssigned;
 
             var workers = await _context.Workers
-                .Where(w => w.Department == Department.Sewing)
                 .OrderBy(w => w.Name)
                 .ToListAsync();
 
             WorkerSelectList = new SelectList(workers, "Id", "Name");
 
             Input.SewingBatchId = sewingBatchId;
-            Input.AssignedQuantity = RemainingQuantityInBatch; // اقتراح الكمية المتبقية تلقائياً
+            Input.AssignedQuantity = RemainingQuantityInBatch;
 
             return Page();
         }
@@ -73,7 +72,6 @@ namespace Keswa.Pages.Departments
         {
             if (!ModelState.IsValid)
             {
-                // في حالة الخطأ، أعد تحميل البيانات اللازمة لعرض الصفحة مرة أخرى
                 await OnGetAsync(Input.SewingBatchId);
                 return Page();
             }
@@ -87,13 +85,20 @@ namespace Keswa.Pages.Departments
 
             if (Input.AssignedQuantity > (sewingBatch.Quantity - totalAssigned))
             {
-                ModelState.AddModelError("Input.AssignedQuantity", "الكمية المسلمة أكبر من الكمية المتبقية في التشغيلة.");
+                ModelState.AddModelError("Input.AssignedQuantity", "الكمية المسلمة أكبر من الكمية المتبقية.");
                 await OnGetAsync(Input.SewingBatchId);
                 return Page();
             }
 
+            var existingAssignmentsCount = await _context.WorkerAssignments
+                .CountAsync(wa => wa.SewingBatchId == Input.SewingBatchId);
+
+            var newSubSequence = (existingAssignmentsCount + 1).ToString("D3");
+            var newAssignmentNumber = $"{sewingBatch.SewingBatchNumber}-{newSubSequence}";
+
             var newAssignment = new WorkerAssignment
             {
+                AssignmentNumber = newAssignmentNumber,
                 SewingBatchId = Input.SewingBatchId,
                 WorkerId = Input.WorkerId,
                 AssignedQuantity = Input.AssignedQuantity,
@@ -102,12 +107,7 @@ namespace Keswa.Pages.Departments
             };
             _context.WorkerAssignments.Add(newAssignment);
 
-            // تحديث حالة التشغيلة الرئيسية إذا تم توزيعها بالكامل أو جزء منها
-            if ((totalAssigned + Input.AssignedQuantity) > 0)
-            {
-                sewingBatch.Status = BatchStatus.Transferred; // تعني أنها قيد التنفيذ
-            }
-
+            sewingBatch.Status = BatchStatus.Transferred;
             await _context.SaveChangesAsync();
 
             TempData["SuccessMessage"] = "تم تسليم التشغيلة للعامل بنجاح.";

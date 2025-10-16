@@ -1,0 +1,59 @@
+﻿@page "{assignmentId:int}"
+@model Keswa.Pages.Departments.ReceiveProductionModel
+@{
+    ViewData["Title"] = "استلام إنتاج من عامل";
+}
+
+<div class="mb-4">
+    <h1 class="h2 fw-bold">@ViewData["Title"]</h1>
+    <p class="text-muted">أدخل الكميات السليمة والهالكة المستلمة من العامل.</p>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card shadow-sm border-0">
+            <div class="card-body">
+                <form method="post">
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+                    <input type="hidden" asp-for="Input.WorkerAssignmentId" />
+
+                    <div class="alert alert-light border">
+                        <dl class="row mb-0">
+                            <dt class="col-sm-4">رقم التشغيلة الداخلية:</dt>
+                            <dd class="col-sm-8"><strong>@Model.WorkerAssignment.AssignmentNumber</strong></dd>
+                            <dt class="col-sm-4">العامل:</dt>
+                            <dd class="col-sm-8">@Model.WorkerAssignment.Worker.Name</dd>
+                            <dt class="col-sm-4">الموديل:</dt>
+                            <dd class="col-sm-8">@Model.WorkerAssignment.SewingBatch.CuttingStatement.WorkOrder.Product.Name</dd>
+                            <dt class="col-sm-4">الكمية المسلمة له:</dt>
+                            <dd class="col-sm-8 text-primary fw-bold">@Model.WorkerAssignment.AssignedQuantity قطعة</dd>
+                        </dl>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Input.ReceivedQuantity" class="form-label"></label>
+                        <input asp-for="Input.ReceivedQuantity" class="form-control" type="number" min="0" max="@Model.WorkerAssignment.AssignedQuantity" />
+                        <span asp-validation-for="Input.ReceivedQuantity" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Input.ScrappedQuantity" class="form-label"></label>
+                        <input asp-for="Input.ScrappedQuantity" class="form-control" type="number" min="0" max="@Model.WorkerAssignment.AssignedQuantity" />
+                        <span asp-validation-for="Input.ScrappedQuantity" class="text-danger"></span>
+                    </div>
+
+                    <hr class="my-4" />
+
+                    <div class="d-flex justify-content-end">
+                        <a asp-page="/Departments/Sewing" class="btn btn-outline-secondary me-2">إلغاء</a>
+                        <button type="submit" class="btn btn-success">حفظ واستلام</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

@@ -1,17 +1,75 @@
-﻿@page
+﻿@* Keswa/Pages/Index.cshtml *@
+@page
 @model IndexModel
 @{
-    ViewData["Title"] = "لوحة التحكم";
+    ViewData["Title"] = "لوحة التحكم الرئيسية";
 }
 
-<!-- Logo فقط في منتصف الصفحة -->
-<div class="d-flex justify-content-center align-items-center vh-100">
-    <img src="~/images/logo.png" alt="Logo" style="max-width: 500px; height: auto;">
+<div class="row">
+    <div class="col-md-4 mb-4">
+        <div class="card text-white bg-primary shadow-sm">
+            <div class="card-body">
+                <h5 class="card-title"><i class="bi bi-diagram-3"></i> أوامر شغل مفتوحة</h5>
+                <p class="card-text display-4 fw-bold" id="activeWorkOrders">0</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4 mb-4">
+        <div class="card text-white bg-warning shadow-sm">
+            <div class="card-body">
+                <h5 class="card-title"><i class="bi bi-scissors"></i> قطع قيد الخياطة</h5>
+                <p class="card-text display-4 fw-bold" id="itemsInSewing">0</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4 mb-4">
+        <div class="card text-white bg-success shadow-sm">
+            <div class="card-body">
+                <h5 class="card-title"><i class="bi bi-check-all"></i> إنتاج اليوم (قطعة)</h5>
+                <p class="card-text display-4 fw-bold" id="producedToday">0</p>
+            </div>
+        </div>
+    </div>
 </div>
 
-<style>
-    body {
-        margin: 0;
-        padding: 0;
-    }
-</style>
+@section Scripts {
+    <script src="~/lib/microsoft/signalr/dist/browser/signalr.min.js"></script>
+
+    <script>
+        $(document).ready(function () {
+            // إنشاء اتصال مع الـ Hub
+            const connection = new signalR.HubConnectionBuilder()
+                .withUrl("/dashboardHub")
+                .build();
+
+            // دالة لتحديث القيمة مع إضافة حركة
+            function updateValue(elementId, newValue) {
+                const element = $("#" + elementId);
+                const currentValue = parseInt(element.text());
+
+                if (currentValue !== newValue) {
+                    // إضافة كلاس لإحداث وميض ثم إزالته
+                    element.addClass('flash-update');
+                    element.text(newValue);
+                    setTimeout(() => {
+                        element.removeClass('flash-update');
+                    }, 700); // مدة الأنيميشن
+                }
+            }
+
+            // هذه الدالة سيتم استدعاؤها من الخادم عند وجود تحديث
+            connection.on("ReceiveDashboardUpdate", function (data) {
+                updateValue("activeWorkOrders", data.activeWorkOrders);
+                updateValue("itemsInSewing", data.itemsInSewing);
+                updateValue("producedToday", data.producedToday);
+            });
+
+            // بدء الاتصال
+            connection.start().catch(function (err) {
+                return console.error(err.toString());
+            });
+        });
+    </script>
+}

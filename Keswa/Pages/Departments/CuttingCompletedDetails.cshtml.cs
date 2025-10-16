@@ -73,33 +73,52 @@ namespace Keswa.Pages.Departments
             return Page();
         }
 
-        // *** تم تحديث هذه الدالة بالكامل ***
+        // Keswa/Pages/Departments/CuttingCompletedDetails.cshtml.cs
+
         public async Task<IActionResult> OnPostTransferToSewingAsync(int statementId)
         {
-            var statement = await _context.CuttingStatements.FindAsync(statementId);
-            if (statement == null)
+            var statement = await _context.CuttingStatements
+                .Include(cs => cs.WorkOrder)
+                .FirstOrDefaultAsync(cs => cs.Id == statementId);
+
+            if (statement == null) return NotFound();
+
+            var workOrder = statement.WorkOrder;
+            if (workOrder == null)
             {
-                return NotFound();
+                TempData["ErrorMessage"] = "خطأ: بيان القص غير مرتبط بأمر شغل.";
+                return RedirectToPage(new { workOrderId = statement.WorkOrderId });
             }
 
-            // 1. تحديث حالة بيان القص
-            statement.Status = BatchStatus.Transferred;
+            // --- هذا هو المنطق النهائي والمؤكد للعد ---
+            // 1. نحصل على قائمة IDs لكل بيانات القص التابعة لنفس أمر الشغل
+            var relatedCuttingStatementIds = await _context.CuttingStatements
+                .Where(cs => cs.WorkOrderId == workOrder.Id)
+                .Select(cs => cs.Id)
+                .ToListAsync();
 
-            // 2. إنشاء تشغيلة خياطة جديدة
+            // 2. نعد تشغيلات الخياطة التي تم إنشاؤها من قائمة IDs هذه
+            var existingSewingBatchesCount = await _context.SewingBatches
+                .CountAsync(sb => relatedCuttingStatementIds.Contains(sb.CuttingStatementId));
+
+            // 3. ننشئ الرقم التسلسلي الجديد والفريد
+            var newSequence = (existingSewingBatchesCount + 1).ToString("D3");
+            var newSewingBatchNumber = $"{workOrder.WorkOrderNumber}-{newSequence}-SEW";
+
             var sewingBatch = new SewingBatch
             {
+                SewingBatchNumber = newSewingBatchNumber,
                 CuttingStatementId = statement.Id,
                 Quantity = statement.Count,
-                Status = BatchStatus.PendingTransfer, // جاهزة للظهور في شاشة الخياطة
-                SewingBatchNumber = $"{statement.RunNumber}-SEW" // رقم فريد للتشغيلة الجديدة
+                Status = BatchStatus.PendingTransfer,
+                //CreationDate = Helpers.DateTimeHelper.EgyptNow
             };
-
             _context.SewingBatches.Add(sewingBatch);
 
+            statement.Status = BatchStatus.Transferred;
             await _context.SaveChangesAsync();
 
-            TempData["SuccessMessage"] = $"تم تحويل التشغيلة رقم {statement.RunNumber} إلى قسم الخياطة بنجاح.";
-
+            TempData["SuccessMessage"] = $"تم تحويل التشغيلة بنجاح. الرقم الجديد هو: {newSewingBatchNumber}";
             return RedirectToPage(new { workOrderId = statement.WorkOrderId });
         }
     }

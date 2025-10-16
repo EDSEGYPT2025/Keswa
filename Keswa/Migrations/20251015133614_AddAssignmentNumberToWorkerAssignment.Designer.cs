@@ -4,6 +4,7 @@ using Keswa.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Keswa.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251015133614_AddAssignmentNumberToWorkerAssignment")]
+    partial class AddAssignmentNumberToWorkerAssignment
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -121,7 +124,7 @@ namespace Keswa.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("AuditLogs", (string)null);
+                    b.ToTable("AuditLogs");
                 });
 
             modelBuilder.Entity("Keswa.Models.BillOfMaterialItem", b =>
@@ -147,7 +150,7 @@ namespace Keswa.Migrations
 
                     b.HasIndex("ProductId");
 
-                    b.ToTable("BillOfMaterialItems", (string)null);
+                    b.ToTable("BillOfMaterialItems");
                 });
 
             modelBuilder.Entity("Keswa.Models.Color", b =>
@@ -164,7 +167,7 @@ namespace Keswa.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Colors", (string)null);
+                    b.ToTable("Colors");
                 });
 
             modelBuilder.Entity("Keswa.Models.Customer", b =>
@@ -187,7 +190,7 @@ namespace Keswa.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Customers", (string)null);
+                    b.ToTable("Customers");
                 });
 
             modelBuilder.Entity("Keswa.Models.CustomerTransaction", b =>
@@ -221,7 +224,7 @@ namespace Keswa.Migrations
 
                     b.HasIndex("CustomerId");
 
-                    b.ToTable("CustomerTransactions", (string)null);
+                    b.ToTable("CustomerTransactions");
                 });
 
             modelBuilder.Entity("Keswa.Models.CuttingStatement", b =>
@@ -281,7 +284,7 @@ namespace Keswa.Migrations
 
                     b.HasIndex("WorkerId");
 
-                    b.ToTable("CuttingStatements", (string)null);
+                    b.ToTable("CuttingStatements");
                 });
 
             modelBuilder.Entity("Keswa.Models.DepartmentCost", b =>
@@ -300,7 +303,7 @@ namespace Keswa.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("DepartmentCosts", (string)null);
+                    b.ToTable("DepartmentCosts");
                 });
 
             modelBuilder.Entity("Keswa.Models.GoodsReceiptNote", b =>
@@ -330,7 +333,7 @@ namespace Keswa.Migrations
 
                     b.HasIndex("WarehouseId");
 
-                    b.ToTable("GoodsReceiptNotes", (string)null);
+                    b.ToTable("GoodsReceiptNotes");
                 });
 
             modelBuilder.Entity("Keswa.Models.GoodsReceiptNoteDetail", b =>
@@ -359,7 +362,7 @@ namespace Keswa.Migrations
 
                     b.HasIndex("MaterialId");
 
-                    b.ToTable("GoodsReceiptNoteDetails", (string)null);
+                    b.ToTable("GoodsReceiptNoteDetails");
                 });
 
             modelBuilder.Entity("Keswa.Models.InventoryItem", b =>
@@ -393,7 +396,7 @@ namespace Keswa.Migrations
 
                     b.HasIndex("WarehouseId");
 
-                    b.ToTable("InventoryItems", (string)null);
+                    b.ToTable("InventoryItems");
                 });
 
             modelBuilder.Entity("Keswa.Models.Material", b =>
@@ -419,7 +422,7 @@ namespace Keswa.Migrations
 
                     b.HasIndex("ColorId");
 
-                    b.ToTable("Materials", (string)null);
+                    b.ToTable("Materials");
                 });
 
             modelBuilder.Entity("Keswa.Models.MaterialIssuanceNote", b =>
@@ -451,7 +454,7 @@ namespace Keswa.Migrations
 
                     b.HasIndex("WorkOrderId");
 
-                    b.ToTable("MaterialIssuanceNotes", (string)null);
+                    b.ToTable("MaterialIssuanceNotes");
                 });
 
             modelBuilder.Entity("Keswa.Models.MaterialIssuanceNoteDetail", b =>
@@ -477,7 +480,7 @@ namespace Keswa.Migrations
 
                     b.HasIndex("MaterialIssuanceNoteId");
 
-                    b.ToTable("MaterialIssuanceNoteDetails", (string)null);
+                    b.ToTable("MaterialIssuanceNoteDetails");
                 });
 
             modelBuilder.Entity("Keswa.Models.MaterialRequisition", b =>
@@ -504,7 +507,7 @@ namespace Keswa.Migrations
 
                     b.HasIndex("WorkOrderId");
 
-                    b.ToTable("MaterialRequisitions", (string)null);
+                    b.ToTable("MaterialRequisitions");
                 });
 
             modelBuilder.Entity("Keswa.Models.MaterialRequisitionDetail", b =>
@@ -530,7 +533,7 @@ namespace Keswa.Migrations
 
                     b.HasIndex("MaterialRequisitionId");
 
-                    b.ToTable("MaterialRequisitionDetails", (string)null);
+                    b.ToTable("MaterialRequisitionDetails");
                 });
 
             modelBuilder.Entity("Keswa.Models.MaterialReturnNote", b =>
@@ -564,7 +567,7 @@ namespace Keswa.Migrations
 
                     b.HasIndex("WorkOrderId");
 
-                    b.ToTable("MaterialReturnNotes", (string)null);
+                    b.ToTable("MaterialReturnNotes");
                 });
 
             modelBuilder.Entity("Keswa.Models.MaterialReturnNoteDetail", b =>
@@ -590,7 +593,7 @@ namespace Keswa.Migrations
 
                     b.HasIndex("MaterialReturnNoteId");
 
-                    b.ToTable("MaterialReturnNoteDetails", (string)null);
+                    b.ToTable("MaterialReturnNoteDetails");
                 });
 
             modelBuilder.Entity("Keswa.Models.Product", b =>
@@ -616,7 +619,7 @@ namespace Keswa.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Products", (string)null);
+                    b.ToTable("Products");
                 });
 
             modelBuilder.Entity("Keswa.Models.ProductionLog", b =>
@@ -648,7 +651,7 @@ namespace Keswa.Migrations
 
                     b.HasIndex("WorkerId");
 
-                    b.ToTable("ProductionLogs", (string)null);
+                    b.ToTable("ProductionLogs");
                 });
 
             modelBuilder.Entity("Keswa.Models.ProductionReceiptLog", b =>
@@ -689,7 +692,7 @@ namespace Keswa.Migrations
 
                     b.HasIndex("WorkOrderId");
 
-                    b.ToTable("ProductionReceiptLogs", (string)null);
+                    b.ToTable("ProductionReceiptLogs");
                 });
 
             modelBuilder.Entity("Keswa.Models.PurchaseOrder", b =>
@@ -719,7 +722,7 @@ namespace Keswa.Migrations
 
                     b.HasIndex("WorkOrderId");
 
-                    b.ToTable("PurchaseOrders", (string)null);
+                    b.ToTable("PurchaseOrders");
                 });
 
             modelBuilder.Entity("Keswa.Models.PurchaseOrderDetail", b =>
@@ -745,7 +748,7 @@ namespace Keswa.Migrations
 
                     b.HasIndex("PurchaseOrderId");
 
-                    b.ToTable("PurchaseOrderDetails", (string)null);
+                    b.ToTable("PurchaseOrderDetails");
                 });
 
             modelBuilder.Entity("Keswa.Models.SalesOrder", b =>
@@ -772,7 +775,7 @@ namespace Keswa.Migrations
 
                     b.HasIndex("CustomerId");
 
-                    b.ToTable("SalesOrders", (string)null);
+                    b.ToTable("SalesOrders");
                 });
 
             modelBuilder.Entity("Keswa.Models.SalesOrderDetail", b =>
@@ -806,7 +809,7 @@ namespace Keswa.Migrations
 
                     b.HasIndex("WorkOrderId");
 
-                    b.ToTable("SalesOrderDetails", (string)null);
+                    b.ToTable("SalesOrderDetails");
                 });
 
             modelBuilder.Entity("Keswa.Models.ScrapLog", b =>
@@ -833,7 +836,7 @@ namespace Keswa.Migrations
 
                     b.HasIndex("WorkerAssignmentId");
 
-                    b.ToTable("ScrapLogs", (string)null);
+                    b.ToTable("ScrapLogs");
                 });
 
             modelBuilder.Entity("Keswa.Models.SewingBatch", b =>
@@ -861,7 +864,7 @@ namespace Keswa.Migrations
 
                     b.HasIndex("CuttingStatementId");
 
-                    b.ToTable("SewingBatches", (string)null);
+                    b.ToTable("SewingBatches");
                 });
 
             modelBuilder.Entity("Keswa.Models.SewingProductionLog", b =>
@@ -901,7 +904,7 @@ namespace Keswa.Migrations
 
                     b.HasIndex("WorkerId");
 
-                    b.ToTable("SewingProductionLogs", (string)null);
+                    b.ToTable("SewingProductionLogs");
                 });
 
             modelBuilder.Entity("Keswa.Models.Warehouse", b =>
@@ -924,7 +927,7 @@ namespace Keswa.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Warehouses", (string)null);
+                    b.ToTable("Warehouses");
                 });
 
             modelBuilder.Entity("Keswa.Models.WorkOrder", b =>
@@ -966,7 +969,7 @@ namespace Keswa.Migrations
 
                     b.HasIndex("ProductId");
 
-                    b.ToTable("WorkOrders", (string)null);
+                    b.ToTable("WorkOrders");
                 });
 
             modelBuilder.Entity("Keswa.Models.WorkOrderRouting", b =>
@@ -1002,7 +1005,7 @@ namespace Keswa.Migrations
 
                     b.HasIndex("WorkOrderId");
 
-                    b.ToTable("WorkOrderRoutings", (string)null);
+                    b.ToTable("WorkOrderRoutings");
                 });
 
             modelBuilder.Entity("Keswa.Models.Worker", b =>
@@ -1029,7 +1032,7 @@ namespace Keswa.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Workers", (string)null);
+                    b.ToTable("Workers");
                 });
 
             modelBuilder.Entity("Keswa.Models.WorkerAssignment", b =>
@@ -1071,7 +1074,7 @@ namespace Keswa.Migrations
 
                     b.HasIndex("WorkerId");
 
-                    b.ToTable("WorkerAssignments", (string)null);
+                    b.ToTable("WorkerAssignments");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>

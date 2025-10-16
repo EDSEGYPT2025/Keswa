@@ -14,6 +14,10 @@ namespace Keswa.Enums
         InProgress,
 
         [Display(Name = "تم التحويل")]
-        Transferred
+        Transferred ,
+        [Display(Name = "مكتمل")]
+        Completed
+
+
     }
 }

@@ -34,6 +34,12 @@ builder.Services.AddRazorPages();
 // 4. تسجيل خدمة تهيئة قاعدة البيانات (لإنشاء الصلاحيات والمستخدم الافتراضي)
 builder.Services.AddScoped<IDbInitializer, DbInitializer>();
 
+
+
+
+builder.Services.AddSignalR();
+builder.Services.AddHostedService<DashboardUpdateService>();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

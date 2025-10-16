@@ -57,7 +57,7 @@
                     <thead class="table-light">
                         <tr>
                             <th>العامل</th>
-                            <th>رقم التشغيلة</th>
+                            <th>رقم التشغيلة الداخلية</th>
                             <th class="text-center">متبقي لديه</th>
                             <th></th>
                         </tr>
@@ -74,9 +74,9 @@
                                 <td>@assignment.SewingBatchNumber</td>
                                 <td class="text-center text-danger fw-bold">@assignment.RemainingQuantity</td>
                                 <td class="text-end">
-                                    <button class="btn btn-sm btn-info">
+                                    <a asp-page="./ReceiveProduction" asp-route-assignmentId="@assignment.AssignmentId" class="btn btn-sm btn-success">
                                         <i class="bi bi-clipboard-check-fill me-1"></i> استلام إنتاج
-                                    </button>
+                                    </a>
                                 </td>
                             </tr>
                         }
@@ -101,9 +101,24 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr>
-                            <td colspan="3" class="text-center text-muted">سيتم تفعيل هذا الجزء لاحقاً.</td>
-                        </tr>
+                        @if (!Model.ReadyBatches.Any())
+                        {
+                            <tr>
+                                <td colspan="3" class="text-center text-muted">لا يوجد إنتاج جاهز للتحويل.</td>
+                            </tr>
+                        }
+                        @foreach (var batch in Model.ReadyBatches)
+                        {
+                            <tr>
+                                <td><strong>@batch.SewingBatchNumber</strong></td>
+                                <td class="text-center text-success fw-bold">@batch.ReadyQuantity</td>
+                                <td class="text-end">
+                                    <a href="#" class="btn btn-sm btn-warning disabled">
+                                        <i class="bi bi-box-arrow-up-right me-1"></i> تحويل
+                                    </a>
+                                </td>
+                            </tr>
+                        }
                     </tbody>
                 </table>
             </div>
