@@ -10,6 +10,10 @@ namespace Keswa.Models
         public int Id { get; set; }
 
         [Required]
+        [Display(Name = "رقم طلب الصرف")]
+        public string MaterialRequisitionNumber { get; set; }
+
+        [Required]
         public int WorkOrderId { get; set; }
         [ValidateNever]
         public WorkOrder WorkOrder { get; set; }

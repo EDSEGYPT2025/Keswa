@@ -24,9 +24,9 @@ namespace Keswa.Models
         public List<BillOfMaterialItem> BillOfMaterialItems { get; set; } = new List<BillOfMaterialItem>();
 
 
-        [Display(Name = "سعر خياطة القطعة (فيا)")]
-        [Column(TypeName = "decimal(18, 2)")]
-        public decimal SewingRate { get; set; } = 0;
+        [Display(Name = "قيمة الفيه (أجر القطعة)")]
+        [Column(TypeName = "decimal(18,2)")]
+        public decimal SewingFee { get; set; } = 0;
 
     }
 }

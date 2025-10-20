@@ -70,9 +70,7 @@ namespace Keswa.Pages.MaterialRequisitions
 
             if (requisition == null) return NotFound();
 
-            var issuanceDetails = new List<MaterialIssuanceNoteDetail>();
-
-            // التحقق من الأرصدة قبل الحفظ
+            // ... (كود التحقق من الأرصدة يبقى كما هو) ...
             foreach (var item in ProcessDetails)
             {
                 if (item.IssuedQuantity > 0)
@@ -99,15 +97,34 @@ namespace Keswa.Pages.MaterialRequisitions
                 return Page();
             }
 
-            // إنشاء إذن الصرف
+            // --- بداية التعديل المطلوب ---
+
+            // 1. تحديد المخزن الذي سيتم الصرف منه (من أول مادة لها كمية ومخزن)
+            var sourceWarehouseId = ProcessDetails
+                .FirstOrDefault(d => d.IssuedQuantity > 0 && d.WarehouseId.HasValue)?.WarehouseId;
+
+            if (!sourceWarehouseId.HasValue)
+            {
+                TempData["ErrorMessage"] = "لم يتم صرف أي كميات. لم يتم إنشاء سند صرف.";
+                return RedirectToPage("./Index");
+            }
+
+            // 2. إنشاء إذن الصرف مع إضافة رقم طلب الصرف ورقم المخزن
             var issuanceNote = new MaterialIssuanceNote
             {
+                MaterialRequisitionId = requisition.Id, // <-- هذا هو السطر الأهم في الحل
                 WorkOrderId = requisition.WorkOrderId,
+                WarehouseId = sourceWarehouseId.Value, // <-- إضافة مهمة لحل الخطأ التالي
                 IssuanceDate = System.DateTime.Today,
                 Notes = Notes,
             };
 
-            // **هذا هو الجزء المسؤول عن خصم الكمية من المخزون**
+            _context.MaterialIssuanceNotes.Add(issuanceNote);
+
+            // --- نهاية التعديل المطلوب ---
+
+
+            // خصم الكميات من المخزون وإضافة التفاصيل لسند الصرف
             foreach (var item in ProcessDetails)
             {
                 if (item.IssuedQuantity > 0)
@@ -115,10 +132,8 @@ namespace Keswa.Pages.MaterialRequisitions
                     var materialId = requisition.Details.First(d => d.Id == item.DetailId).MaterialId;
                     var stockItem = await _context.InventoryItems.FirstAsync(i => i.MaterialId == materialId && i.WarehouseId == item.WarehouseId.Value);
 
-                    // خصم الكمية من الرصيد
                     stockItem.StockLevel -= item.IssuedQuantity;
 
-                    // إضافة التفاصيل لإذن الصرف
                     issuanceNote.Details.Add(new MaterialIssuanceNoteDetail
                     {
                         MaterialId = materialId,
@@ -127,23 +142,10 @@ namespace Keswa.Pages.MaterialRequisitions
                 }
             }
 
-            if (issuanceNote.Details.Any())
-            {
-                issuanceNote.WarehouseId = ProcessDetails.First(d => d.WarehouseId.HasValue).WarehouseId.Value;
-                _context.MaterialIssuanceNotes.Add(issuanceNote);
-            }
-
             // تحديث حالة طلب الصرف
             requisition.Status = Enums.RequisitionStatus.Processed;
 
             await _context.SaveChangesAsync();
-
-            // توليد رقم إذن الصرف
-            if (issuanceNote.Details.Any())
-            {
-                issuanceNote.IssuanceNumber = $"ISS-{issuanceNote.IssuanceDate.Year}-{issuanceNote.Id}";
-                await _context.SaveChangesAsync();
-            }
 
             TempData["SuccessMessage"] = "تم صرف المواد وتحديث الأرصدة بنجاح.";
             return RedirectToPage("./Index");

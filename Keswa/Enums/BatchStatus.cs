@@ -1,23 +1,23 @@
-﻿// Keswa/Enums/BatchStatus.cs
-
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace Keswa.Enums
 {
     public enum BatchStatus
     {
+        [Display(Name = "قيد الانتظار")]
+        Pending,
+
         [Display(Name = "جاهز للتحويل")]
         PendingTransfer,
 
-        // -- تعديل: تمت إضافة هذه الحالة الضرورية لتصحيح المنطق --
-        [Display(Name = "قيد التنفيذ")]
-        InProgress,
-
         [Display(Name = "تم التحويل")]
-        Transferred ,
+        Transferred,
+
         [Display(Name = "مكتمل")]
-        Completed
+        Completed,
 
-
+        // --- تمت إضافة هذه الحالة ---
+        [Display(Name = "مؤرشف")]
+        Archived
     }
 }

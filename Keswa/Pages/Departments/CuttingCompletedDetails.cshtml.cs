@@ -74,55 +74,27 @@ namespace Keswa.Pages.Departments
         }
 
 
-        // Keswa/Pages/Departments/CuttingCompletedDetails.cshtml.cs
-
         public async Task<IActionResult> OnPostTransferToSewingAsync(int statementId)
         {
             var statement = await _context.CuttingStatements
                 .Include(cs => cs.WorkOrder)
                 .FirstOrDefaultAsync(cs => cs.Id == statementId);
 
-            if (statement == null) return NotFound();
-
-            var workOrder = statement.WorkOrder;
-            if (workOrder == null)
+            if (statement == null)
             {
-                TempData["ErrorMessage"] = "خطأ: بيان القص غير مرتبط بأمر شغل.";
-                return RedirectToPage(new { workOrderId = statement.WorkOrderId });
+                return NotFound();
             }
 
-            // --- بداية الحل القاطع ---
+            // --- بداية التعديل المطلوب ---
 
-            // 1. نبحث عن كل أرقام تشغيلات الخياطة الحالية التابعة لنفس أمر الشغل
-            var existingSewingBatchNumbers = await _context.SewingBatches
-                .Where(sb => sb.CuttingStatement.WorkOrderId == workOrder.Id)
-                .Select(sb => sb.SewingBatchNumber)
-                .ToListAsync();
+            // 1. الرقم الجديد لتشغيلة الخياطة هو نفسه رقم تشغيلة القص
+            var newSewingBatchNumber = statement.RunNumber;
 
-            int maxSequence = 0;
-            foreach (var number in existingSewingBatchNumbers)
-            {
-                // 2. نستخرج الرقم التسلسلي من كل رقم موجود (مثال: من "WO-2025-2-001-SEW" نستخرج "001")
-                var parts = number.Split('-');
-                // نتأكد أن الرقم يحتوي على 4 أجزاء على الأقل قبل محاولة استخراج الرقم
-                if (parts.Length >= 4 && int.TryParse(parts[2], out int currentSequence))
-                {
-                    if (currentSequence > maxSequence)
-                    {
-                        maxSequence = currentSequence; // 3. نحدد أعلى رقم تسلسلي تم استخدامه
-                    }
-                }
-            }
-
-            // 4. الرقم التسلسلي الجديد هو أعلى رقم + 1
-            var nextSequence = maxSequence + 1;
-            var newSewingBatchNumber = $"{workOrder.WorkOrderNumber}-{nextSequence:D3}-SEW";
-
-            // --- نهاية الحل القاطع ---
+            // --- نهاية التعديل المطلوب ---
 
             var sewingBatch = new SewingBatch
             {
-                SewingBatchNumber = newSewingBatchNumber,
+                SewingBatchNumber = newSewingBatchNumber, // <-- استخدام الرقم المباشر
                 CuttingStatementId = statement.Id,
                 Quantity = statement.Count,
                 Status = BatchStatus.PendingTransfer,
@@ -133,7 +105,7 @@ namespace Keswa.Pages.Departments
             statement.Status = BatchStatus.Transferred;
             await _context.SaveChangesAsync();
 
-            TempData["SuccessMessage"] = $"تم تحويل التشغيلة بنجاح. الرقم الجديد هو: {newSewingBatchNumber}";
+            TempData["SuccessMessage"] = $"تم تحويل التشغيلة رقم {statement.RunNumber} إلى قسم الخياطة بنجاح.";
             return RedirectToPage(new { workOrderId = statement.WorkOrderId });
         }
     }

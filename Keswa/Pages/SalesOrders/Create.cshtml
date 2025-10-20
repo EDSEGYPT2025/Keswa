@@ -4,14 +4,12 @@
     ViewData["Title"] = "إنشاء طلبية جديدة";
 }
 
-<!-- Page Header -->
 <div class="mb-4">
     <h1 class="h2 fw-bold">@ViewData["Title"]</h1>
     <p class="text-muted">أدخل بيانات الطلبية والموديلات المطلوبة.</p>
 </div>
 
 <form method="post">
-    <!-- Main Document Info -->
     <div class="card shadow-sm border-0 mb-4">
         <div class="card-body">
             <div asp-validation-summary="ModelOnly" class="text-danger mb-3" role="alert"></div>
@@ -37,7 +35,6 @@
         </div>
     </div>
 
-    <!-- Document Details -->
     <div class="card shadow-sm border-0">
         <div class="card-header bg-transparent d-flex justify-content-between align-items-center">
             <h5 class="fw-bold mb-0">تفاصيل الموديلات</h5>
@@ -51,8 +48,8 @@
                 <thead class="table-light">
                     <tr>
                         <th style="width: 60%;">الموديل</th>
-                        <th style="width: 30%;">الكمية المطلوبة</th>
-                        <th style="width: 10%;"></th>
+                        <th style="width: 35%;">الكمية المطلوبة</th>
+                        <th style="width: 5%;"></th>
                     </tr>
                 </thead>
                 <tbody id="items-container">
@@ -61,7 +58,7 @@
                     </tr>
                 </tbody>
             </table>
-            <div class="text-end mt-3">
+            <div class="text-end mt-3 fs-5">
                 <strong>إجمالي الكميات: <span id="totalQuantity">0</span></strong>
             </div>
         </div>
@@ -74,7 +71,6 @@
     </div>
 </form>
 
-<!-- Template for new item row (hidden) -->
 <table style="display: none;">
     <tbody id="item-template">
         <tr>
@@ -100,15 +96,8 @@
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
     <script>
+        // هذا هو نفس كود الجافاسكريبت السابق ولكن تم تبسيطه ليعمل بدون سعر الوحدة
         $(document).ready(function () {
-            // تحسين شكل الجدول
-            $(".table tbody").on("mouseenter", "tr", function () {
-                $(this).css("background-color", "#f9f9f9");
-            }).on("mouseleave", "tr", function () {
-                $(this).css("background-color", "");
-            });
-
-            // تفعيل Select2 للـ select الثابتة فقط (العملاء مثلاً)
             $('select[name="SalesOrder.CustomerId"]').select2({
                 theme: "bootstrap-5",
                 dir: "rtl",
@@ -118,37 +107,27 @@
 
             const templateRow = $('#item-template tr').first();
 
-            // إعادة الترتيب
             function reindexItems() {
                 let currentIndex = 0;
                 $('#items-container tr').each(function () {
                     $(this).find('select, input').each(function () {
-                        if (this.name && this.name.indexOf("Details[") !== -1) {
+                        if (this.name) {
                             this.name = this.name.replace(/Details\[\d+\]/g, 'Details[' + currentIndex + ']');
-                        }
-                        if (this.id && this.id.indexOf("Details_") !== -1) {
-                            this.id = this.id.replace(/Details_\d+__/g, 'Details_' + currentIndex + '__');
                         }
                     });
                     currentIndex++;
                 });
             }
 
-            // عرض رسالة الجدول الفاضي
             function toggleNoItemsMessage() {
                 if ($('#items-container tr').length === 0) {
-                    $('#items-container').append(`
-                            <tr class="no-items">
-                                <td colspan="3" class="text-center text-muted">لم يتم إضافة أي موديل بعد</td>
-                            </tr>
-                        `);
+                    $('#items-container').html(`<tr class="no-items"><td colspan="3" class="text-center text-muted">لم يتم إضافة أي موديل بعد</td></tr>`);
                 } else {
                     $('#items-container .no-items').remove();
                 }
                 calculateTotalQuantity();
             }
 
-            // حساب إجمالي الكمية
             function calculateTotalQuantity() {
                 let total = 0;
                 $('#items-container .item-quantity').each(function () {
@@ -157,12 +136,10 @@
                 $('#totalQuantity').text(total);
             }
 
-            // إضافة صف جديد
             function addItemRow() {
                 let newRow = templateRow.clone();
                 $('#items-container').append(newRow);
 
-                // تفعيل Select2 للـ select الجديد
                 newRow.find('.searchable-select').select2({
                     theme: "bootstrap-5",
                     dir: "rtl",
@@ -174,10 +151,8 @@
                 toggleNoItemsMessage();
             }
 
-            // زر إضافة موديل
             $('#add-item-btn').click(addItemRow);
 
-            // حذف صف
             $('#items-container').on('click', '.remove-item-btn', function () {
                 $(this).closest('tr').find('.searchable-select').select2('destroy');
                 $(this).closest('tr').remove();
@@ -185,21 +160,9 @@
                 toggleNoItemsMessage();
             });
 
-            // إضافة صف جديد عند الضغط على Enter في الكمية
-            $('#items-container').on('keypress', '.item-quantity', function (e) {
-                if (e.which === 13) {
-                    e.preventDefault();
-                    $('#add-item-btn').click();
-                }
-            });
-
-            // حساب الإجمالي عند تعديل الكمية
             $('#items-container').on('input', '.item-quantity', calculateTotalQuantity);
 
-            // استدعاء مبدئي
             toggleNoItemsMessage();
-
-            // ✅ إضافة صف أول بشكل تلقائي
             addItemRow();
         });
     </script>

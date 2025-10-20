@@ -1,13 +1,12 @@
 ﻿using Keswa.Data;
-using Keswa.Enums;
 using Keswa.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations; // <-- تأكد من وجود هذا السطر
 using System.Linq;
+using System.Reflection; // <-- تأكد من وجود هذا السطر
 using System.Threading.Tasks;
 
 namespace Keswa.Pages.Reports
@@ -22,139 +21,120 @@ namespace Keswa.Pages.Reports
         }
 
         [BindProperty(SupportsGet = true)]
-        public int? SelectedWorkOrderId { get; set; }
+        public CostingMethod SelectedCostingMethod { get; set; } = CostingMethod.Average;
 
-        public SelectList WorkOrderList { get; set; }
-        public CostingReportViewModel? Report { get; set; }
+        public WorkOrder WorkOrder { get; set; }
+        public SalesOrder SalesOrder { get; set; }
+        public CostingSummaryViewModel CostSummary { get; set; }
 
-        public async Task OnGetAsync()
+        // --- تمت إضافة هذه الخاصية ---
+        public string SelectedCostingMethodDisplayName { get; set; }
+
+        public async Task<IActionResult> OnGetAsync(int workOrderId)
         {
-            WorkOrderList = new SelectList(await _context.WorkOrders
-                .OrderByDescending(wo => wo.CreationDate)
-                .ToListAsync(), "Id", "WorkOrderNumber");
+            WorkOrder = await _context.WorkOrders.Include(wo => wo.Product).FirstOrDefaultAsync(wo => wo.Id == workOrderId);
+            if (WorkOrder == null) return NotFound();
 
-            if (SelectedWorkOrderId.HasValue)
+            // --- تمت إضافة هذا السطر لجلب الاسم العربي ---
+            SelectedCostingMethodDisplayName = SelectedCostingMethod.GetDisplayName();
+
+            var salesOrderDetail = await _context.SalesOrderDetails
+                .Include(sod => sod.SalesOrder.Customer)
+                .FirstOrDefaultAsync(sod => sod.WorkOrderId == workOrderId);
+
+            if (salesOrderDetail != null)
             {
-                await GenerateReport(SelectedWorkOrderId.Value);
+                SalesOrder = salesOrderDetail.SalesOrder;
             }
-        }
 
-        private async Task GenerateReport(int workOrderId)
-        {
-            var workOrder = await _context.WorkOrders
-                .Include(wo => wo.Product)
-                .AsNoTracking()
-                .FirstOrDefaultAsync(wo => wo.Id == workOrderId);
-
-            if (workOrder == null) return;
-
-            Report = new CostingReportViewModel
-            {
-                WorkOrderNumber = workOrder.WorkOrderNumber,
-                ProductName = workOrder.Product.Name,
-                QuantityToProduce = workOrder.QuantityToProduce
-            };
-
-            // 1. حساب تكلفة المواد الخام
+            decimal totalMaterialCost = 0;
             var issuedMaterials = await _context.MaterialIssuanceNoteDetails
                 .Where(d => d.MaterialIssuanceNote.WorkOrderId == workOrderId)
                 .Include(d => d.Material)
                 .ToListAsync();
 
-            foreach (var item in issuedMaterials)
+            foreach (var issuedMaterial in issuedMaterials)
             {
-                var avgCost = await GetAverageMaterialCost(item.MaterialId);
-                var materialCost = new MaterialCostDetail
+                var materialId = issuedMaterial.MaterialId;
+                var issuedQuantity = issuedMaterial.Quantity;
+
+                var purchasePrices = await _context.GoodsReceiptNoteDetails
+                    .Where(d => d.MaterialId == materialId && d.UnitPrice > 0)
+                    .Select(d => d.UnitPrice)
+                    .ToListAsync();
+
+                if (purchasePrices.Any())
                 {
-                    MaterialName = item.Material.Name,
-                    QuantityIssued = item.Quantity,
-                    Unit = item.Material.Unit,
-                    AverageUnitCost = avgCost,
-                    TotalCost = (decimal)item.Quantity * avgCost
-                };
-                Report.MaterialCosts.Add(materialCost);
+                    decimal unitCost = 0;
+                    switch (SelectedCostingMethod)
+                    {
+                        case CostingMethod.Average:
+                            unitCost = purchasePrices.Average();
+                            break;
+                        case CostingMethod.Min:
+                            unitCost = purchasePrices.Min();
+                            break;
+                        case CostingMethod.Max:
+                            unitCost = purchasePrices.Max();
+                            break;
+                        case CostingMethod.Last:
+                            var lastReceipt = await _context.GoodsReceiptNoteDetails
+                                .Where(d => d.MaterialId == materialId && d.UnitPrice > 0)
+                                .OrderByDescending(d => d.GoodsReceiptNote.ReceiptDate)
+                                .FirstOrDefaultAsync();
+                            unitCost = lastReceipt?.UnitPrice ?? 0;
+                            break;
+                    }
+                    totalMaterialCost += unitCost * (decimal)issuedQuantity;
+                }
             }
 
-            // 2. حساب تكلفة الأجور المباشرة
-            var productionLogs = await _context.ProductionLogs
-                .Where(p => p.WorkOrderId == workOrderId)
-                .ToListAsync();
+            var laborCost = await _context.WorkerAssignments.Where(wa => wa.SewingBatch.CuttingStatement.WorkOrderId == workOrderId).SumAsync(wa => wa.Earnings);
+            decimal revenue = 0;
 
-            var departmentCosts = await _context.DepartmentCosts.ToDictionaryAsync(dc => dc.Department, dc => dc.CostPerUnit);
-
-            Report.LaborCosts = productionLogs
-                .GroupBy(p => p.Department)
-                .Select(g => new LaborCostDetail
-                {
-                    Department = g.Key,
-                    TotalQuantityProduced = g.Sum(p => p.QuantityProduced),
-                    CostPerUnit = departmentCosts.GetValueOrDefault(g.Key, 0),
-                    TotalCost = g.Sum(p => p.QuantityProduced) * departmentCosts.GetValueOrDefault(g.Key, 0)
-                })
-                .ToList();
-
-            // 3. حساب الإجماليات
-            Report.CalculateTotals();
-        }
-
-        private async Task<decimal> GetAverageMaterialCost(int materialId)
-        {
-            var receipts = await _context.GoodsReceiptNoteDetails
-                .Where(d => d.MaterialId == materialId && d.UnitPrice > 0 && d.Quantity > 0)
-                .ToListAsync();
-
-            if (!receipts.Any()) return 0;
-
-            // *** تم التعديل هنا: تحويل الكمية إلى decimal قبل الضرب ***
-            var totalCost = receipts.Sum(d => (decimal)d.Quantity * d.UnitPrice);
-            var totalQuantity = receipts.Sum(d => d.Quantity);
-
-            // التحقق من أن الكمية ليست صفراً لتجنب القسمة على صفر
-            if (totalQuantity == 0) return 0;
-
-            return totalCost / (decimal)totalQuantity;
-        }
-    }
-
-    // ViewModels for the report
-    public class CostingReportViewModel
-    {
-        public string WorkOrderNumber { get; set; }
-        public string ProductName { get; set; }
-        public int QuantityToProduce { get; set; }
-        public List<MaterialCostDetail> MaterialCosts { get; set; } = new();
-        public List<LaborCostDetail> LaborCosts { get; set; } = new();
-        public decimal TotalMaterialCost { get; private set; }
-        public decimal TotalLaborCost { get; private set; }
-        public decimal TotalDirectCost { get; private set; }
-        public decimal CostPerUnit { get; private set; }
-
-        public void CalculateTotals()
-        {
-            TotalMaterialCost = MaterialCosts.Sum(m => m.TotalCost);
-            TotalLaborCost = LaborCosts.Sum(l => l.TotalCost);
-            TotalDirectCost = TotalMaterialCost + TotalLaborCost;
-            if (QuantityToProduce > 0)
+            CostSummary = new CostingSummaryViewModel
             {
-                CostPerUnit = TotalDirectCost / QuantityToProduce;
-            }
+                MaterialCost = totalMaterialCost,
+                LaborCost = laborCost,
+                Revenue = revenue
+            };
+
+            return Page();
         }
     }
 
-    public class MaterialCostDetail
+    public enum CostingMethod
     {
-        public string MaterialName { get; set; }
-        public double QuantityIssued { get; set; }
-        public UnitOfMeasure Unit { get; set; }
-        public decimal AverageUnitCost { get; set; }
-        public decimal TotalCost { get; set; }
+        [Display(Name = "متوسط التكلفة")]
+        Average,
+        [Display(Name = "أقل سعر شراء")]
+        Min,
+        [Display(Name = "أعلى سعر شراء")]
+        Max,
+        [Display(Name = "آخر سعر شراء")]
+        Last
     }
 
-    public class LaborCostDetail
+    public class CostingSummaryViewModel
     {
-        public Department Department { get; set; }
-        public int TotalQuantityProduced { get; set; }
-        public decimal CostPerUnit { get; set; }
-        public decimal TotalCost { get; set; }
+        public decimal MaterialCost { get; set; }
+        public decimal LaborCost { get; set; }
+        public decimal TotalDirectCost => MaterialCost + LaborCost;
+        public decimal Revenue { get; set; }
+        public decimal GrossProfit => Revenue - TotalDirectCost;
+        public decimal GrossProfitMargin => Revenue > 0 ? (GrossProfit / Revenue) * 100 : 0;
+    }
+
+    // --- تمت إضافة هذه الفئة المساعدة ---
+    public static class EnumExtensions
+    {
+        public static string GetDisplayName(this System.Enum enumValue)
+        {
+            return enumValue.GetType()
+                .GetMember(enumValue.ToString())
+                .First()
+                .GetCustomAttribute<DisplayAttribute>()
+                ?.GetName() ?? enumValue.ToString();
+        }
     }
 }

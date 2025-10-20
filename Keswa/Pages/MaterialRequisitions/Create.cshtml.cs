@@ -55,11 +55,24 @@ namespace Keswa.Pages.MaterialRequisitions
             // إزالة أي صفوف فارغة
             MaterialRequisition.Details.RemoveAll(d => d.MaterialId == 0 || d.Quantity <= 0);
 
+            // --- بداية الحل القاطع ---
+
+            // 1. نقوم بإزالة خطأ التحقق الخاص برقم طلب الصرف من ModelState
+            //    لأننا سنقوم بإنشائه هنا في الكود
+            ModelState.Remove("MaterialRequisition.MaterialRequisitionNumber");
+
+            // 2. نقوم بإنشاء وتعيين رقم فريد لطلب الصرف (يمكنك استخدام أي نظام ترقيم تفضله)
+            //    هنا سنستخدم نظامًا يعتمد على تاريخ ووقت الإنشاء لضمان تفرده
+            MaterialRequisition.MaterialRequisitionNumber = $"REQ-{DateTime.Now:yyyyMMddHHmmss}";
+
+            // --- نهاية الحل القاطع ---
+
             if (MaterialRequisition.Details.Count == 0)
             {
                 ModelState.AddModelError("", "يجب إضافة مادة خام واحدة على الأقل للطلب.");
             }
 
+            // التحقق النهائي من صحة باقي البيانات
             if (!ModelState.IsValid)
             {
                 // إعادة تحميل البيانات في حالة الخطأ
@@ -70,7 +83,7 @@ namespace Keswa.Pages.MaterialRequisitions
             _context.MaterialRequisitions.Add(MaterialRequisition);
             await _context.SaveChangesAsync();
 
-            TempData["SuccessMessage"] = $"تم إرسال طلب الصرف رقم {MaterialRequisition.Id} بنجاح.";
+            TempData["SuccessMessage"] = $"تم إرسال طلب الصرف رقم {MaterialRequisition.MaterialRequisitionNumber} بنجاح.";
             return RedirectToPage("/WorkOrders/Details", new { id = MaterialRequisition.WorkOrderId });
         }
     }

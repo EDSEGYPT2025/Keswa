@@ -61,7 +61,7 @@ namespace Keswa.Data
 
         public DbSet<SewingProductionLog> SewingProductionLogs { get; set; }
 
-
+        public DbSet<WorkerPayment> WorkerPayments { get; set; }
 
         // *** تم إضافة هذه الوظيفة لحل مشكلة الحذف المتعدد ***
         protected override void OnModelCreating(ModelBuilder builder)

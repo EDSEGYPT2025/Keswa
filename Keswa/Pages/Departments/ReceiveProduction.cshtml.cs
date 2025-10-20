@@ -56,7 +56,6 @@ namespace Keswa.Pages.Departments
 
         public async Task<IActionResult> OnPostAsync()
         {
-            // --- (الكود الحالي لجلب البيانات والتحقق من المدخلات يبقى كما هو) ---
             if (!ModelState.IsValid)
             {
                 // يجب إعادة تحميل البيانات اللازمة للعرض في حالة وجود خطأ
@@ -67,8 +66,9 @@ namespace Keswa.Pages.Departments
                 return Page();
             }
 
+            // --- تم تعديل هذا الجزء لجلب كل البيانات المطلوبة مرة واحدة ---
             var workerAssignment = await _context.WorkerAssignments
-                .Include(wa => wa.SewingBatch) // مهم جداً لتضمين التشغيلة الرئيسية
+                .Include(wa => wa.SewingBatch.CuttingStatement.WorkOrder.Product) // <-- مهم جدًا لجلب المنتج وقيمة الفيه
                 .FirstOrDefaultAsync(wa => wa.Id == Input.WorkerAssignmentId);
 
             if (workerAssignment == null) return NotFound();
@@ -84,20 +84,28 @@ namespace Keswa.Pages.Departments
                 return Page();
             }
 
-            // 1. تحديث بيانات تشغيلة العامل
+            // ================== بداية الكود الجديد لحساب الفيه ==================
+
+            // 1. الحصول على قيمة "الفيه" من الموديل المرتبط بالتشغيلة
+            var sewingFee = workerAssignment.SewingBatch.CuttingStatement.WorkOrder.Product.SewingFee;
+
+            // 2. حساب المبلغ المستحق (يُحسب فقط على الكمية السليمة)
+            var earnings = Input.ReceivedQuantity * sewingFee;
+
+            // ================== نهاية الكود الجديد =============================
+
+            // 3. تحديث بيانات تشغيلة العامل بالبيانات الجديدة
             workerAssignment.ReceivedQuantity = Input.ReceivedQuantity;
             workerAssignment.ScrappedQuantity = Input.ScrappedQuantity;
             workerAssignment.Status = AssignmentStatus.Completed;
+            workerAssignment.Earnings = earnings; // <-- حفظ المبلغ المستحق للعامل
 
-            // ================== بداية الكود الجديد ==================
-
-            // 2. التحقق مما إذا كانت التشغيلة الرئيسية قد اكتملت
+            // 4. التحقق مما إذا كانت التشغيلة الرئيسية قد اكتملت (يبقى كما هو)
             var sewingBatch = workerAssignment.SewingBatch;
             var allAssignmentsForBatch = await _context.WorkerAssignments
                 .Where(wa => wa.SewingBatchId == sewingBatch.Id)
                 .ToListAsync();
 
-            // نتأكد أن كل التشغيلات الفرعية التابعة للتشغيلة الرئيسية قد اكتملت
             var isBatchComplete = allAssignmentsForBatch.All(a => a.Status == AssignmentStatus.Completed);
 
             if (isBatchComplete)
@@ -106,11 +114,11 @@ namespace Keswa.Pages.Departments
                 sewingBatch.Status = BatchStatus.Completed;
             }
 
-            // ================== نهاية الكود الجديد ==================
-
             await _context.SaveChangesAsync();
 
-            TempData["SuccessMessage"] = "تم استلام الإنتاج من العامل بنجاح.";
+            // --- تم تعديل رسالة النجاح ---
+
+            TempData["SuccessMessage"] = $"تم استلام الإنتاج بنجاح. المبلغ المستحق للعامل هو: {earnings.ToString("N2")} ج.م";
             return RedirectToPage("/Departments/Sewing");
         }
     }

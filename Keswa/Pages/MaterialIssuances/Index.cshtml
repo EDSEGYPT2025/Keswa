@@ -1,0 +1,48 @@
+﻿@page
+@model Keswa.Pages.MaterialIssuances.IndexModel
+@{
+    ViewData["Title"] = "سندات الصرف";
+}
+
+<div class="mb-4 d-flex justify-content-between align-items-center">
+    <div>
+        <h1 class="h2 fw-bold">@ViewData["Title"]</h1>
+        <p class="text-muted">قائمة بكل سندات صرف المواد الخام من المخزن إلى الإنتاج.</p>
+    </div>
+</div>
+
+<div class="card shadow-sm border-0">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>رقم السند</th>
+                        <th>تاريخ الصرف</th>
+                        <th>رقم الطلبية</th>
+                        <th>أمر الشغل</th>
+                        <th>العميل</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model.IssuanceNotes)
+                    {
+                        <tr>
+                            <td><strong>@item.IssuanceNoteNumber</strong></td>
+                            <td>@item.IssuanceDate.ToShortDateString()</td>
+                            <td>@item.SalesOrderNumber</td>
+                            <td>@item.WorkOrderNumber</td>
+                            <td>@item.CustomerName</td>
+                            <td class="text-end">
+                                <a asp-page="./Details" asp-route-id="@item.Id" class="btn btn-sm btn-outline-primary" target="_blank">
+                                    <i class="bi bi-printer-fill"></i> طباعة
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

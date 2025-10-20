@@ -11,7 +11,7 @@
         <p class="text-muted">عرض وتتبع جميع أوامر الشغل في النظام.</p>
     </div>
     <div>
-        <a asp-page="Create" class="btn btn-primary"><i class="bi bi-plus-circle me-2"></i>إنشاء أمر شغل جديد</a>
+        @*<a asp-page="Create" class="btn btn-primary"><i class="bi bi-plus-circle me-2"></i>إنشاء أمر شغل جديد</a>*@
     </div>
 </div>
 
@@ -85,6 +85,14 @@
                                 <a asp-page="./Details" asp-route-id="@item.Id" class="btn btn-sm btn-outline-secondary"><i class="bi bi-eye me-1"></i> عرض</a>
                                 <a asp-page="./Edit" asp-route-id="@item.Id" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil-square"></i> تعديل</a>
                                 <a asp-page="./Delete" asp-route-id="@item.Id" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></a>
+                                <a asp-page="/Tracking/WorkOrderLifecycle" asp-route-workOrderId="@item.Id" class="btn btn-sm btn-info">
+                                    <i class="bi bi-binoculars"></i> تتبع
+
+                                    <a asp-page="/Reports/WorkOrderCosting" asp-route-workOrderId="@item.Id" class="btn btn-sm btn-warning">
+                                        <i class="bi bi-currency-dollar"></i> التكلفة
+                                    </a>
+
+                                </a>
                             </td>
                         </tr>
                     }

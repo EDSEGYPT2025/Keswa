@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
-using System.ComponentModel.DataAnnotations;
 using System.Collections.Generic; // <-- إضافة مهمة
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Keswa.Models
 {
@@ -10,6 +11,13 @@ namespace Keswa.Models
 
         [Display(Name = "رقم الإذن")]
         public string? IssuanceNumber { get; set; }
+
+        [Required]
+        [Display(Name = "طلب الصرف")]
+        public int MaterialRequisitionId { get; set; }
+
+        [ForeignKey("MaterialRequisitionId")]
+        public MaterialRequisition MaterialRequisition { get; set; }
 
         [Required]
         [Display(Name = "أمر الشغل")]

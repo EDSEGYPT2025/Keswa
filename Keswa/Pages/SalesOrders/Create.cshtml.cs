@@ -4,6 +4,9 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using System;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Keswa.Pages.SalesOrders
 {
@@ -32,10 +35,21 @@ namespace Keswa.Pages.SalesOrders
 
         public async Task<IActionResult> OnPostAsync()
         {
-            // إزالة أي صفوف فارغة
-            SalesOrder.Details.RemoveAll(d => d.ProductId == 0 && d.Quantity == 0);
+            // إزالة أي صفوف فارغة أضافها المستخدم
+            SalesOrder.Details.RemoveAll(d => d.ProductId == 0 || d.Quantity == 0);
 
-            // التحقق من وجود تفاصيل
+            // --- بداية الحل القاطع ---
+
+            // 1. نقوم بإزالة خطأ التحقق الخاص برقم الطلبية من ModelState
+            //    لأننا سنقوم بإنشائه هنا في الكود
+            ModelState.Remove("SalesOrder.OrderNumber");
+
+            // 2. نقوم بإنشاء وتعيين رقم الطلبية الفريد (GUID)
+            SalesOrder.OrderNumber = Guid.NewGuid().ToString("N").Substring(0, 8).ToUpper();
+
+            // --- نهاية الحل القاطع ---
+
+            // 3. الآن نقوم بالتحقق من صحة باقي البيانات
             if (SalesOrder.Details == null || SalesOrder.Details.Count == 0)
             {
                 ModelState.AddModelError("SalesOrder.Details", "يجب إضافة موديل واحد على الأقل للطلبية.");
@@ -52,6 +66,7 @@ namespace Keswa.Pages.SalesOrders
                 }
             }
 
+            // 4. التحقق النهائي من ModelState بعد إزالة الخطأ الأول
             if (!ModelState.IsValid)
             {
                 await PopulateSelectListsAsync();
@@ -67,6 +82,7 @@ namespace Keswa.Pages.SalesOrders
             _context.SalesOrders.Add(SalesOrder);
             await _context.SaveChangesAsync();
 
+            TempData["SuccessMessage"] = $"تم إنشاء الطلبية بنجاح برقم: {SalesOrder.OrderNumber}";
             return RedirectToPage("./Index");
         }
 

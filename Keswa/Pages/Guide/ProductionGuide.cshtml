@@ -1,0 +1,63 @@
+﻿@page
+@model Keswa.Pages.Guide.ProductionGuideModel
+@{
+    ViewData["Title"] = "شرح قسم إدارة الإنتاج";
+}
+
+<div class="mb-4">
+    <h1 class="h2 fw-bold"><i class="bi bi-cpu-fill text-primary me-2"></i> @ViewData["Title"]</h1>
+    <p class="text-muted">
+        هذا القسم هو المسؤول عن تعريف المنتجات (الموديلات) التي يصنعها المصنع، وإنشاء أوامر الشغل اللازمة لإنتاجها.
+    </p>
+</div>
+
+<div class="accordion" id="productionGuideAccordion">
+
+    <div class="accordion-item">
+        <h2 class="accordion-header">
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne">
+                <strong>1. شاشة إدارة الموديلات (المنتجات)</strong>
+            </button>
+        </h2>
+        <div id="collapseOne" class="accordion-collapse collapse" data-bs-parent="#productionGuideAccordion">
+            <div class="accordion-body">
+                <h5><i class="bi bi-info-circle-fill me-1"></i> الغرض من الشاشة</h5>
+                <p>تستخدم هذه الشاشة لإنشاء وتعديل كافة الموديلات التي ينتجها المصنع. كل موديل يتم تعريفه هنا يصبح متاحًا للاستخدام في أوامر الشغل والمبيعات.</p>
+                <hr>
+                <h5><i class="bi bi-arrow-down-up me-1"></i> خطوات العمل</h5>
+                <ol>
+                    <li>لإضافة موديل جديد، اضغط على <strong>"إنشاء موديل جديد"</strong>.</li>
+                    <li>أدخل "اسم الموديل" و "وصفه".</li>
+                    <li><strong>الأهم:</strong> أدخل "قيمة الفيه (أجر القطعة)" الخاصة بخياطة هذا الموديل. هذا الرقم هو أساس حساب مستحقات العمال.</li>
+                    <li>اضغط "حفظ".</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+
+    <div class="accordion-item">
+        <h2 class="accordion-header">
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo">
+                <strong>2. شاشة أوامر الشغل</strong>
+            </button>
+        </h2>
+        <div id="collapseTwo" class="accordion-collapse collapse" data-bs-parent="#productionGuideAccordion">
+            <div class="accordion-body">
+                <h5><i class="bi bi-info-circle-fill me-1"></i> الغرض من الشاشة</h5>
+                <p>أمر الشغل هو أمر داخلي لبدء إنتاج كمية محددة من موديل معين. هذه الشاشة هي المحرك الرئيسي لخط الإنتاج.</p>
+                <hr>
+                <h5><i class="bi bi-arrow-down-up me-1"></i> خطوات العمل</h5>
+                <ol>
+                    <li>لإنشاء أمر جديد، اضغط على <strong>"إنشاء أمر شغل"</strong>.</li>
+                    <li>اختر "الموديل" المطلوب إنتاجه من القائمة.</li>
+                    <li>حدد "الكمية المطلوبة" للإنتاج.</li>
+                    <li>بعد الحفظ، سيتم إنشاء أمر شغل بحالة "قيد الانتظار" ويظهر في قسم القص لبدء العمل عليه.</li>
+                </ol>
+                <div class="alert alert-light border mt-3">
+                    <strong><i class="bi bi-lightbulb-fill"></i> نصيحة احترافية:</strong> يمكنك تتبع دورة حياة أي أمر شغل بالكامل بالضغط على زر <strong>"تتبع"</strong> <i class="bi bi-binoculars"></i> بجانب كل أمر.
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>

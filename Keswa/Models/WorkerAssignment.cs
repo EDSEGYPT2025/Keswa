@@ -44,5 +44,18 @@ namespace Keswa.Models
 
         [Display(Name = "الحالة")]
         public AssignmentStatus Status { get; set; } = AssignmentStatus.InProgress;
+
+        [Display(Name = "المبلغ المستحق")]
+        [Column(TypeName = "decimal(18,2)")]
+        public decimal Earnings { get; set; } = 0;
+
+
+        [Display(Name = "هل تم الدفع؟")]
+        public bool IsPaid { get; set; } = false; // القيمة الافتراضية "لم يتم الدفع"
+
+        // لربط هذا المستحق بسجل الدفع الخاص به
+        public int? WorkerPaymentId { get; set; }
+        [ForeignKey("WorkerPaymentId")]
+        public WorkerPayment WorkerPayment { get; set; }
     }
 }

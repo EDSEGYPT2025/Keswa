@@ -10,7 +10,7 @@
         <h1 class="h2 fw-bold">@ViewData["Title"]</h1>
         <p class="text-muted">عرض التفاصيل الكاملة لأمر الشغل رقم: @Model.WorkOrder.WorkOrderNumber</p>
     </div>
-    <div>
+    @*<div>
         @if (Model.WorkOrder.Status != Keswa.Enums.WorkOrderStatus.Completed)
         {
             <a asp-page="./Receive" asp-route-id="@Model.WorkOrder.Id" class="btn btn-success"><i class="bi bi-check2-circle me-2"></i>إكمال واستلام المنتج</a>
@@ -20,7 +20,7 @@
             <a asp-page="./PrintLabels" asp-route-id="@Model.WorkOrder.Id" class="btn btn-info" target="_blank"><i class="bi bi-qr-code me-2"></i>طباعة ملصقات QR</a>
         }
         <a asp-page="./Index" class="btn btn-outline-secondary"><i class="bi bi-arrow-right me-2"></i>العودة للقائمة</a>
-    </div>
+    </div>*@
 </div>
 
 <!-- Main Work Order Info -->

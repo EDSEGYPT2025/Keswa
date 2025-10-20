@@ -1,0 +1,88 @@
+﻿@page
+@model Keswa.Pages.Reports.WorkerStatementModel
+@{
+    ViewData["Title"] = "كشف حساب عامل";
+}
+
+<div class="mb-4">
+    <h1 class="h2 fw-bold">@ViewData["Title"]</h1>
+    <p class="text-muted">عرض كشف حساب تفصيلي للمستحقات والمدفوعات لعامل محدد.</p>
+</div>
+
+<div class="card shadow-sm border-0 mb-4">
+    <div class="card-body">
+        <form method="get">
+            <div class="row g-3 align-items-end">
+                <div class="col-md-4">
+                    <label asp-for="WorkerId" class="form-label">العامل</label>
+                    <select asp-for="WorkerId" class="form-select" asp-items="Model.WorkersList" onchange="this.form.submit()">
+                        <option value="">-- اختر عامل --</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label asp-for="FromDate" class="form-label">من تاريخ</label>
+                    <input asp-for="FromDate" type="date" class="form-control" />
+                </div>
+                <div class="col-md-3">
+                    <label asp-for="ToDate" class="form-label">إلى تاريخ</label>
+                    <input asp-for="ToDate" type="date" class="form-control" />
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary w-100">عرض التقرير</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+@if (Model.Worker != null)
+{
+    <div class="card shadow-sm border-0">
+        <div class="card-header bg-light">
+            <h5 class="mb-0 fw-bold">كشف حساب للعامل: @Model.Worker.Name</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover table-bordered">
+                    <thead class="table-light text-center">
+                        <tr>
+                            <th>التاريخ</th>
+                            <th>البيان</th>
+                            <th>له (مستحقات)</th>
+                            <th>عليه (مدفوعات)</th>
+                            <th>الرصيد</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="table-secondary">
+                            <td colspan="4" class="fw-bold">رصيد افتتاحي...</td>
+                            <td class="text-end fw-bold">@Model.StartingBalance.ToString("N2") ج.م</td>
+                        </tr>
+                        @foreach (var item in Model.Transactions)
+                        {
+                            <tr>
+                                <td>@item.Date.ToString("yyyy/MM/dd")</td>
+                                <td>@item.Description</td>
+                                <td class="text-end text-success">@(item.Credit > 0 ? item.Credit.ToString("N2") : "-")</td>
+                                <td class="text-end text-danger">@(item.Debit > 0 ? item.Debit.ToString("N2") : "-")</td>
+                                <td class="text-end fw-bold">@item.Balance.ToString("N2") ج.م</td>
+                            </tr>
+                        }
+                    </tbody>
+                    <tfoot class="table-light fw-bold fs-5">
+                        <tr>
+                            <td colspan="2">الإجماليات</td>
+                            <td class="text-end text-success">@Model.TotalEarnings.ToString("N2")</td>
+                            <td class="text-end text-danger">@Model.TotalPayments.ToString("N2")</td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td colspan="4" class="text-center">الرصيد النهائي المستحق للعامل</td>
+                            <td class="text-end bg-primary text-white">@Model.FinalBalance.ToString("N2") ج.م</td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+}

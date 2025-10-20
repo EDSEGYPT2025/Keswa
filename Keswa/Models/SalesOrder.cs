@@ -9,6 +9,12 @@ namespace Keswa.Models
     {
         public int Id { get; set; }
 
+        [Required(ErrorMessage = "يجب إدخال رقم الطلبية.")]
+        [Display(Name = "رقم الطلبية")]
+        public string OrderNumber { get; set; } 
+
+
+
         [Required(ErrorMessage = "يجب اختيار العميل.")]
         [Display(Name = "العميل")]
         public int CustomerId { get; set; }

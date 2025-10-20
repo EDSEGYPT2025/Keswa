@@ -1,0 +1,68 @@
+﻿@page
+@model Keswa.Pages.Reports.WorkerEarningsModel
+@{
+    ViewData["Title"] = "تقرير مستحقات العمال";
+}
+
+<div class="mb-4">
+    <h1 class="h2 fw-bold">@ViewData["Title"]</h1>
+    <p class="text-muted">عرض تفاصيل مستحقات عمال الخياطة خلال فترة محددة.</p>
+</div>
+
+<div class="card shadow-sm border-0 mb-4">
+    <div class="card-body">
+        <form method="get">
+            <div class="row g-3 align-items-end">
+                <div class="col-md-4">
+                    <label asp-for="WorkerId" class="form-label">العامل</label>
+                    <select asp-for="WorkerId" class="form-select" asp-items="Model.WorkersList">
+                        <option value="">-- كل العمال --</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label asp-for="FromDate" class="form-label">من تاريخ</label>
+                    <input asp-for="FromDate" type="date" class="form-control" />
+                </div>
+                <div class="col-md-3">
+                    <label asp-for="ToDate" class="form-label">إلى تاريخ</label>
+                    <input asp-for="ToDate" type="date" class="form-control" />
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary w-100">بحث</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card shadow-sm border-0">
+    <div class="card-header bg-light d-flex justify-content-between align-items-center">
+        <h5 class="mb-0 fw-bold">نتائج البحث</h5>
+        <h5 class="mb-0 fw-bold">إجمالي المستحقات: <span class="text-success">@Model.TotalEarnings.ToString("C")</span></h5>
+    </div>
+    <div class="card-body">
+        <table class="table table-hover">
+            <thead class="table-light">
+                <tr>
+                    <th>العامل</th>
+                    <th>رقم التشغيلة</th>
+                    <th>تاريخ الإنجاز</th>
+                    <th class="text-center">الكمية السليمة</th>
+                    <th class="text-end">المبلغ المستحق</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model.Assignments)
+                {
+                    <tr>
+                        <td>@item.Worker.Name</td>
+                        <td>@item.AssignmentNumber</td>
+                        <td>@item.AssignedDate.ToString("yyyy/MM/dd")</td>
+                        <td class="text-center">@item.ReceivedQuantity</td>
+                        <td class="text-end">@item.Earnings.ToString("C")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

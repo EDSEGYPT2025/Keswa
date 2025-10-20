@@ -1,0 +1,32 @@
+﻿@page
+@model Keswa.Pages.Guide.HrGuideModel
+@{
+    ViewData["Title"] = "شرح قسم الموارد البشرية";
+}
+<div class="mb-4">
+    <h1 class="h2 fw-bold"><i class="bi bi-people-fill text-primary me-2"></i> @ViewData["Title"]</h1>
+</div>
+
+<div class="accordion" id="hrGuideAccordion">
+    <div class="accordion-item">
+        <h2 class="accordion-header">
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne">
+                <strong>1. شاشة تسوية الحسابات</strong>
+            </button>
+        </h2>
+        <div id="collapseOne" class="accordion-collapse collapse" data-bs-parent="#hrGuideAccordion">
+            <div class="accordion-body">
+                <h5><i class="bi bi-info-circle-fill me-1"></i> الغرض من الشاشة</h5>
+                <p>هذه الشاشة هي الأداة المالية لمحاسبة العمال. تمكنك من معرفة الرصيد المستحق لكل عامل وتسجيل الدفعات (الجزئية أو الكاملة) التي يتم صرفها لهم.</p>
+                <hr>
+                <h5><i class="bi bi-arrow-down-up me-1"></i> خطوات العمل</h5>
+                <ol>
+                    <li>اختر اسم العامل من القائمة المنسدلة.</li>
+                    <li>سيقوم النظام بعرض كشف حساب مختصر يوضح: إجمالي المستحقات، إجمالي المدفوعات السابقة، والرصيد النهائي المستحق له حاليًا.</li>
+                    <li>لتسجيل دفعة جديدة، أدخل "المبلغ المدفوع" في الحقل المخصص.</li>
+                    <li>اضغط <strong>"تسجيل الدفعة"</strong>. سيقوم النظام بتسجيل الدفعة وتحديث رصيد العامل تلقائيًا.</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>

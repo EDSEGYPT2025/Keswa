@@ -1,10 +1,11 @@
-﻿// --- FILENAME: Services/DbInitializer.cs ---
-// التنفيذ الفعلي لخدمة تهيئة قاعدة البيانات (إنشاء الصلاحيات والمستخدم الافتراضي)
-
-using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Keswa.Data;
 using Keswa.Models;
+using System.Threading.Tasks; // <-- تأكد من وجود هذا السطر
+using System.Linq; // <-- تأكد من وجود هذا السطر
+using System.Collections.Generic; // <-- تأكد من وجود هذا السطر
+using System; // <-- تأكد من وجود هذا السطر
 
 namespace Keswa.Services
 {
@@ -69,6 +70,40 @@ namespace Keswa.Services
                     await _userManager.AddToRoleAsync(adminUser, "Admin");
                 }
             }
+
+            // ================== بداية الكود الجديد ==================
+            // 3. استدعاء دالة إضافة الألوان الأساسية
+            await SeedColorsAsync();
+            // ================== نهاية الكود الجديد ===================
+        }
+
+        // --- تمت إضافة هذه الدالة بالكامل ---
+        private async Task SeedColorsAsync()
+        {
+            // نتأكد أولاً أن جدول الألوان فارغ
+            if (await _context.Colors.AnyAsync())
+            {
+                return; // إذا كان يحتوي على بيانات، نخرج من الدالة
+            }
+
+            // إذا كان الجدول فارغًا، نقوم بإنشاء قائمة بالألوان الأساسية
+            var colors = new List<Color>
+            {
+                new() { Name = "أبيض" },
+                new() { Name = "أسود" },
+                new() { Name = "أحمر" },
+                new() { Name = "أزرق" },
+                new() { Name = "أخضر" },
+                new() { Name = "أصفر" },
+                new() { Name = "بني" },
+                new() { Name = "برتقالي" },
+                new() { Name = "بنفسجي" },
+                new() { Name = "رمادي" }
+            };
+
+            // نضيف القائمة إلى قاعدة البيانات ونحفظ التغييرات
+            await _context.Colors.AddRangeAsync(colors);
+            await _context.SaveChangesAsync();
         }
     }
 }

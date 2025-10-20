@@ -1,129 +1,102 @@
-﻿@page
+﻿@page "{workOrderId:int}"
+@using Keswa.Pages.Reports
 @model Keswa.Pages.Reports.WorkOrderCostingModel
 @{
     ViewData["Title"] = "تقرير تكلفة أمر الشغل";
-    var egyptianCulture = new System.Globalization.CultureInfo("ar-EG");
 }
 
-<!-- Page Header -->
 <div class="mb-4">
-    <h1 class="h2 fw-bold">@ViewData["Title"]</h1>
-    <p class="text-muted">تحليل تفصيلي لتكاليف المواد الخام والأجور المباشرة لكل أمر شغل.</p>
+    <h1 class="h2 fw-bold">@ViewData["Title"]: @Model.WorkOrder.WorkOrderNumber</h1>
 </div>
 
-<!-- Filters Card -->
+<div class="card shadow-sm border-0 mb-4">
+    <div class="card-body">
+        <div class="row pt-3">
+            <div class="col-md-6">
+                <h6 class="text-muted">بيانات الطلبية</h6>
+                <dl class="row">
+                    <dt class="col-sm-4">رقم الطلبية</dt>
+                    @* --- هذا هو السطر الذي تم تصحيحه --- *@
+                    <dd class="col-sm-8"><strong>@(Model.SalesOrder?.OrderNumber ?? "غير مرتبط بطلبية")</strong></dd>
+
+                    <dt class="col-sm-4">العميل</dt>
+                    <dd class="col-sm-8">@(Model.SalesOrder?.Customer?.Name ?? "-")</dd>
+
+                    <dt class="col-sm-4">تاريخ الطلبية</dt>
+                    <dd class="col-sm-8">@(Model.SalesOrder?.OrderDate.ToShortDateString() ?? "-")</dd>
+                </dl>
+            </div>
+            <div class="col-md-6">
+                <h6 class="text-muted">ملخص أمر الشغل</h6>
+                <dl class="row">
+                    <dt class="col-sm-4">الموديل</dt>
+                    <dd class="col-sm-8">@Model.WorkOrder.Product.Name</dd>
+
+                    <dt class="col-sm-4">الكمية المطلوبة</dt>
+                    <dd class="col-sm-8">@Model.WorkOrder.QuantityToProduce قطعة</dd>
+                </dl>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="card shadow-sm border-0 mb-4">
     <div class="card-body">
         <form method="get">
+            <input type="hidden" name="workOrderId" value="@Model.WorkOrder.Id" />
             <div class="row g-3 align-items-end">
-                <div class="col-md-10">
-                    <label class="form-label">اختر أمر الشغل</label>
-                    <select asp-for="SelectedWorkOrderId" class="form-select searchable-select" asp-items="Model.WorkOrderList">
-                        <option value="">-- اختر لعرض التقرير --</option>
-                    </select>
+                <div class="col-md-9">
+                    <label class="form-label">اختر طريقة حساب تكلفة المواد الخام</label>
+                    <select asp-for="SelectedCostingMethod" asp-items="Html.GetEnumSelectList<CostingMethod>()" class="form-select"></select>
                 </div>
-                <div class="col-md-2">
-                    <button type="submit" class="btn btn-primary w-100">عرض التقرير</button>
+                <div class="col-md-3">
+                    <button type="submit" class="btn btn-primary w-100">تحديث التقرير</button>
                 </div>
             </div>
         </form>
     </div>
 </div>
 
-@if (Model.Report != null)
-{
-    <!-- Report Results -->
-    <div class="card shadow-lg border-0 report-card">
-        <div class="card-header report-header">
-            <h5 class="fw-bold mb-0 text-white">نتائج التقرير لأمر الشغل: @Model.Report.WorkOrderNumber</h5>
-        </div>
-        <div class="card-body p-4">
-            <!-- Summary -->
-            <div class="row g-3 mb-4">
-                <div class="col-md-4">
-                    <div class="summary-card">
-                        <h6 class="text-muted">التكلفة الإجمالية المباشرة</h6>
-                        <h3 class="fw-bold">@Model.Report.TotalDirectCost.ToString("C", egyptianCulture)</h3>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="summary-card">
-                        <h6 class="text-muted">تكلفة القطعة الواحدة</h6>
-                        <h3 class="fw-bold">@Model.Report.CostPerUnit.ToString("C", egyptianCulture)</h3>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="summary-card">
-                        <h6 class="text-muted">الكمية المستهدفة</h6>
-                        <h3 class="fw-bold">@Model.Report.QuantityToProduce <small>قطعة</small></h3>
-                    </div>
-                </div>
+<div class="row">
+    <div class="col-lg-7">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-light">
+                <h5 class="mb-0 fw-bold"><i class="bi bi-calculator-fill me-2"></i>ملخص التكاليف والربحية (@Model.SelectedCostingMethodDisplayName)</h5>
             </div>
-
-            <!-- Material Costs -->
-            <h6 class="fw-bold report-section-title">1. تكلفة المواد الخام</h6>
-            <div class="table-responsive mb-4">
-                <table class="table table-bordered">
-                    <thead class="table-light">
-                        <tr>
-                            <th>المادة الخام</th>
-                            <th class="text-center">الكمية المصروفة</th>
-                            <th class="text-center">متوسط تكلفة الوحدة</th>
-                            <th class="text-end">الإجمالي</th>
-                        </tr>
-                    </thead>
+            <div class="card-body p-4">
+                <table class="table table-bordered fs-5">
                     <tbody>
-                        @foreach (var item in Model.Report.MaterialCosts)
-                        {
-                            <tr>
-                                <td>@item.MaterialName</td>
-                                <td class="text-center">@item.QuantityIssued.ToString("0.##") @item.Unit</td>
-                                <td class="text-center">@item.AverageUnitCost.ToString("C", egyptianCulture)</td>
-                                <td class="text-end">@item.TotalCost.ToString("C", egyptianCulture)</td>
-                            </tr>
-                        }
-                    </tbody>
-                    <tfoot class="table-group-divider">
-                        <tr class="table-total-row">
-                            <th colspan="3" class="text-start">إجمالي تكلفة المواد</th>
-                            <th class="text-end">@Model.Report.TotalMaterialCost.ToString("C", egyptianCulture)</th>
-                        </tr>
-                    </tfoot>
-                </table>
-            </div>
-
-            <!-- Labor Costs -->
-            <h6 class="fw-bold report-section-title">2. تكلفة الأجور المباشرة</h6>
-            <div class="table-responsive">
-                <table class="table table-bordered">
-                    <thead class="table-light">
                         <tr>
-                            <th>القسم</th>
-                            <th class="text-center">الكمية المنتجة</th>
-                            <th class="text-center">تكلفة القطعة</th>
-                            <th class="text-end">الإجمالي</th>
+                            <td class="w-50"><i class="bi bi-box-seam me-2"></i>تكلفة المواد الخام</td>
+                            <td class="text-end fw-bold">@Model.CostSummary.MaterialCost.ToString("N2") ج.م</td>
                         </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var item in Model.Report.LaborCosts)
-                        {
-                            <tr>
-                                <td>@Html.DisplayFor(modelItem => item.Department)</td>
-                                <td class="text-center">@item.TotalQuantityProduced</td>
-                                <td class="text-center">@item.CostPerUnit.ToString("C", egyptianCulture)</td>
-                                <td class="text-end">@item.TotalCost.ToString("C", egyptianCulture)</td>
-                            </tr>
-                        }
+                        <tr>
+                            <td><i class="bi bi-people-fill me-2"></i>تكلفة أجور الخياطة (الفيه)</td>
+                            <td class="text-end fw-bold">@Model.CostSummary.LaborCost.ToString("N2") ج.م</td>
+                        </tr>
+                        <tr class="table-secondary">
+                            <td class="fw-bolder">إجمالي التكاليف المباشرة</td>
+                            <td class="text-end fw-bolder">@Model.CostSummary.TotalDirectCost.ToString("N2") ج.م</td>
+                        </tr>
+                        <tr>
+                            <td><i class="bi bi-cash-stack me-2"></i>الإيرادات (من طلبية البيع)</td>
+                            <td class="text-end fw-bold text-success">@Model.CostSummary.Revenue.ToString("N2") ج.م</td>
+                        </tr>
+                        <tr class="table-primary">
+                            <td class="fw-bolder">هامش الربح الإجمالي</td>
+                            <td class="text-end fw-bolder">@Model.CostSummary.GrossProfit.ToString("N2") ج.م</td>
+                        </tr>
                     </tbody>
-                    <tfoot class="table-group-divider">
-                        <tr class="table-total-row">
-                            <th colspan="3" class="text-start">إجمالي تكلفة الأجور</th>
-                            <th class="text-end">@Model.Report.TotalLaborCost.ToString("C", egyptianCulture)</th>
-                        </tr>
-                    </tfoot>
                 </table>
-            </div>
 
+                <div class="mt-4 text-center">
+                    <h6 class="text-muted">نسبة هامش الربح</h6>
+                    @{
+                        var profitMarginClass = Model.CostSummary.GrossProfitMargin >= 0 ? "text-success" : "text-danger";
+                    }
+                    <h2 class="display-5 fw-bold @profitMarginClass">@Model.CostSummary.GrossProfitMargin.ToString("F1")%</h2>
+                </div>
+            </div>
         </div>
     </div>
-}
+</div>

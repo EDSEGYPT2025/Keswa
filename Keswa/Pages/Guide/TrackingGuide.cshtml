@@ -1,0 +1,61 @@
+﻿@page
+@model Keswa.Pages.Guide.TrackingGuideModel
+@{
+    ViewData["Title"] = "شرح قسم متابعة الإنتاج";
+}
+
+<div class="mb-4">
+    <h1 class="h2 fw-bold"><i class="bi bi-binoculars-fill text-primary me-2"></i> @ViewData["Title"]</h1>
+    <p class="text-muted">
+        هنا تتم متابعة حركة التشغيلات عبر الأقسام المختلفة، بدءًا من القص وانتهاءً بالخياطة.
+    </p>
+</div>
+
+<div class="accordion" id="trackingGuideAccordion">
+
+    <div class="accordion-item">
+        <h2 class="accordion-header">
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne">
+                <strong>1. شاشة قسم القص</strong>
+            </button>
+        </h2>
+        <div id="collapseOne" class="accordion-collapse collapse" data-bs-parent="#trackingGuideAccordion">
+            <div class="accordion-body">
+                <h5><i class="bi bi-info-circle-fill me-1"></i> الغرض من الشاشة</h5>
+                <p>هذه الشاشة مخصصة لمدير قسم القص. تعرض أوامر الشغل المفتوحة، وتسمح له بتسجيل "بيانات القص" التي تتم لكل أمر.</p>
+                <hr>
+                <h5><i class="bi bi-arrow-down-up me-1"></i> خطوات العمل</h5>
+                <ol>
+                    <li>اختر أمر الشغل المطلوب من القائمة.</li>
+                    <li>اضغط على <strong>"إضافة بيان قص"</strong> لتسجيل عملية قص جديدة (تشغيلة).</li>
+                    <li>أدخل تفاصيل التشغيلة مثل الخامة المستخدمة، الكمية المقصوصة، واسم العامل.</li>
+                    <li>بعد اكتمال القص لأمر الشغل، يمكنك الذهاب إلى شاشة "القص المكتمل" لتحويل التشغيلات إلى قسم الخياطة.</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+
+    <div class="accordion-item">
+        <h2 class="accordion-header">
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo">
+                <strong>2. شاشة قسم الخياطة</strong>
+            </button>
+        </h2>
+        <div id="collapseTwo" class="accordion-collapse collapse" data-bs-parent="#trackingGuideAccordion">
+            <div class="accordion-body">
+                <h5><i class="bi bi-info-circle-fill me-1"></i> الغرض من الشاشة</h5>
+                <p>هذه هي شاشة مدير قسم الخياطة، وتعرض ثلاث مراحل رئيسية: التشغيلات الجاهزة للتوزيع على العمال، التشغيلات قيد التنفيذ حاليًا، والإنتاج الجاهز للتحويل للمرحلة التالية.</p>
+                <hr>
+                <h5><i class="bi bi-arrow-down-up me-1"></i> خطوات العمل</h5>
+                <ol>
+                    <li>من جدول "تشغيلات جاهزة للتوزيع"، اضغط على <strong>"تسليم لعامل"</strong>.</li>
+                    <li>في الشاشة التالية، اختر العامل. النظام سيفرض تسليم كامل كمية التشغيلة.</li>
+                    <li>بعد التسليم، ستنتقل التشغيلة إلى جدول "قيد التنفيذ لدى العمال".</li>
+                    <li>لاستلام الإنتاج من العامل، اضغط على <strong>"استلام إنتاج"</strong>.</li>
+                    <li>أدخل الكمية "السليمة" و "الهالكة". سيقوم النظام تلقائيًا بحساب مستحقات العامل (الفيه).</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+
+</div>
