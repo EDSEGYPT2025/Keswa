@@ -1,8 +1,10 @@
 ﻿using Keswa.Enums;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Linq; // <-- أضف هذا السطر
 
 namespace Keswa.Models
 {
@@ -10,52 +12,50 @@ namespace Keswa.Models
     {
         public int Id { get; set; }
 
-        // ================== بداية الإضافة ==================
-        [Display(Name = "رقم التشغيلة الداخلية")]
-        public string AssignmentNumber { get; set; }
-        // ================== نهاية الإضافة ===================
-
         [Display(Name = "تشغيلة الخياطة")]
         public int SewingBatchId { get; set; }
-        [ValidateNever]
         [ForeignKey("SewingBatchId")]
+        [ValidateNever]
         public SewingBatch SewingBatch { get; set; }
 
         [Display(Name = "العامل")]
         public int WorkerId { get; set; }
-        [ValidateNever]
         [ForeignKey("WorkerId")]
+        [ValidateNever]
         public Worker Worker { get; set; }
 
-        [Display(Name = "تاريخ التسليم للعامل")]
-        public DateTime AssignedDate { get; set; }
+        [Display(Name = "رقم التشغيلة الداخلية")]
+        public string AssignmentNumber { get; set; }
 
-        [Display(Name = "الكمية المسلمة للعامل")]
+        [Display(Name = "الكمية المسلمة")]
         public int AssignedQuantity { get; set; }
 
-        [Display(Name = "الكمية المستلمة (سليم)")]
+        [Display(Name = "الكمية المستلمة (سليمة)")]
         public int ReceivedQuantity { get; set; } = 0;
 
-        [Display(Name = "الكمية الهالكة")]
-        public int ScrappedQuantity { get; set; } = 0;
+        [Display(Name = "إجمالي الهالك")]
+        public int TotalScrapped { get; set; } = 0;
 
         [NotMapped]
-        public int RemainingQuantity => AssignedQuantity - (ReceivedQuantity + ScrappedQuantity);
+        [Display(Name = "الكمية المتبقية")]
+        public int RemainingQuantity => AssignedQuantity - (ReceivedQuantity + TotalScrapped);
 
         [Display(Name = "الحالة")]
         public AssignmentStatus Status { get; set; } = AssignmentStatus.InProgress;
 
-        [Display(Name = "المبلغ المستحق")]
-        [Column(TypeName = "decimal(18,2)")]
-        public decimal Earnings { get; set; } = 0;
+        // -- BEGIN CORRECTION 1: Rename Property --
+        [Display(Name = "تاريخ التسليم")]
+        public DateTime AssignedDate { get; set; } = DateTime.Now; // تم تغيير الاسم
+        // -- END CORRECTION 1 --
 
+        [ValidateNever]
+        public ICollection<SewingProductionLog> SewingProductionLogs { get; set; }
 
-        [Display(Name = "هل تم الدفع؟")]
-        public bool IsPaid { get; set; } = false; // القيمة الافتراضية "لم يتم الدفع"
-
-        // لربط هذا المستحق بسجل الدفع الخاص به
-        public int? WorkerPaymentId { get; set; }
-        [ForeignKey("WorkerPaymentId")]
-        public WorkerPayment WorkerPayment { get; set; }
+        // -- BEGIN CORRECTION 2: Add Calculated Earnings --
+        [NotMapped]
+        [Display(Name = "إجمالي المستحقات")]
+        [Column(TypeName = "decimal(18, 2)")]
+        public decimal Earnings => SewingProductionLogs?.Sum(log => log.TotalPay) ?? 0;
+        // -- END CORRECTION 2 --
     }
 }

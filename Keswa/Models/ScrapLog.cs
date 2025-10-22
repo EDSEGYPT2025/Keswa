@@ -10,19 +10,36 @@ namespace Keswa.Models
     {
         public int Id { get; set; }
 
-        [Display(Name = "عهدة العامل")]
-        public int WorkerAssignmentId { get; set; }
+        // -- BEGIN MODIFICATION --
+
+        [Display(Name = "أمر الشغل")]
+        public int WorkOrderId { get; set; }
         [ValidateNever]
-        [ForeignKey("WorkerAssignmentId")]
-        public WorkerAssignment WorkerAssignment { get; set; }
+        [ForeignKey("WorkOrderId")]
+        public WorkOrder WorkOrder { get; set; }
+
+        [Display(Name = "العامل")]
+        public int WorkerId { get; set; }
+        [ValidateNever]
+        [ForeignKey("WorkerId")]
+        public Worker Worker { get; set; }
+
+        [Display(Name = "القسم")]
+        public Department Department { get; set; }
 
         [Display(Name = "الكمية الهالكة")]
-        public int ScrappedQuantity { get; set; }
+        public int Quantity { get; set; } // تم تغيير الاسم من ScrappedQuantity
 
         [Display(Name = "سبب الهالك")]
         public string? Reason { get; set; }
 
         [Display(Name = "تاريخ تسجيل الهالك")]
-        public DateTime LogDate { get; set; }
+        public DateTime LogDate { get; set; } = DateTime.Now;
+
+        // -- تم حذف الحقول القديمة --
+        // public int WorkerAssignmentId { get; set; }
+        // public WorkerAssignment WorkerAssignment { get; set; }
+
+        // -- END MODIFICATION --
     }
 }

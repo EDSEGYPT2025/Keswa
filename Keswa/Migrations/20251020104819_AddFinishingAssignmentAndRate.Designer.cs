@@ -4,6 +4,7 @@ using Keswa.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Keswa.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251020104819_AddFinishingAssignmentAndRate")]
+    partial class AddFinishingAssignmentAndRate
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -378,36 +381,6 @@ namespace Keswa.Migrations
                     b.HasIndex("WorkOrderId");
 
                     b.ToTable("FinishingBatches");
-                });
-
-            modelBuilder.Entity("Keswa.Models.FinishingProductionLog", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("FinishingAssignmentId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("LogDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("QuantityProduced")
-                        .HasColumnType("int");
-
-                    b.Property<decimal>("Rate")
-                        .HasColumnType("decimal(18, 2)");
-
-                    b.Property<decimal>("TotalPay")
-                        .HasColumnType("decimal(18, 2)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("FinishingAssignmentId");
-
-                    b.ToTable("FinishingProductionLogs");
                 });
 
             modelBuilder.Entity("Keswa.Models.GoodsReceiptNote", b =>
@@ -940,29 +913,21 @@ namespace Keswa.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("Department")
-                        .HasColumnType("int");
-
                     b.Property<DateTime>("LogDate")
                         .HasColumnType("datetime2");
-
-                    b.Property<int>("Quantity")
-                        .HasColumnType("int");
 
                     b.Property<string>("Reason")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("WorkOrderId")
+                    b.Property<int>("ScrappedQuantity")
                         .HasColumnType("int");
 
-                    b.Property<int>("WorkerId")
+                    b.Property<int>("WorkerAssignmentId")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("WorkOrderId");
-
-                    b.HasIndex("WorkerId");
+                    b.HasIndex("WorkerAssignmentId");
 
                     b.ToTable("ScrapLogs");
                 });
@@ -1184,16 +1149,22 @@ namespace Keswa.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<decimal>("Earnings")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<bool>("IsPaid")
+                        .HasColumnType("bit");
+
                     b.Property<int>("ReceivedQuantity")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ScrappedQuantity")
                         .HasColumnType("int");
 
                     b.Property<int>("SewingBatchId")
                         .HasColumnType("int");
 
                     b.Property<int>("Status")
-                        .HasColumnType("int");
-
-                    b.Property<int>("TotalScrapped")
                         .HasColumnType("int");
 
                     b.Property<int>("WorkerId")
@@ -1450,7 +1421,7 @@ namespace Keswa.Migrations
             modelBuilder.Entity("Keswa.Models.FinishingAssignment", b =>
                 {
                     b.HasOne("Keswa.Models.FinishingBatch", "FinishingBatch")
-                        .WithMany("FinishingAssignments")
+                        .WithMany()
                         .HasForeignKey("FinishingBatchId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
@@ -1483,17 +1454,6 @@ namespace Keswa.Migrations
                     b.Navigation("SewingBatch");
 
                     b.Navigation("WorkOrder");
-                });
-
-            modelBuilder.Entity("Keswa.Models.FinishingProductionLog", b =>
-                {
-                    b.HasOne("Keswa.Models.FinishingAssignment", "FinishingAssignment")
-                        .WithMany("FinishingProductionLogs")
-                        .HasForeignKey("FinishingAssignmentId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("FinishingAssignment");
                 });
 
             modelBuilder.Entity("Keswa.Models.GoodsReceiptNote", b =>
@@ -1781,21 +1741,13 @@ namespace Keswa.Migrations
 
             modelBuilder.Entity("Keswa.Models.ScrapLog", b =>
                 {
-                    b.HasOne("Keswa.Models.WorkOrder", "WorkOrder")
+                    b.HasOne("Keswa.Models.WorkerAssignment", "WorkerAssignment")
                         .WithMany()
-                        .HasForeignKey("WorkOrderId")
+                        .HasForeignKey("WorkerAssignmentId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("Keswa.Models.Worker", "Worker")
-                        .WithMany()
-                        .HasForeignKey("WorkerId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("WorkOrder");
-
-                    b.Navigation("Worker");
+                    b.Navigation("WorkerAssignment");
                 });
 
             modelBuilder.Entity("Keswa.Models.SewingBatch", b =>
@@ -1818,7 +1770,7 @@ namespace Keswa.Migrations
                         .IsRequired();
 
                     b.HasOne("Keswa.Models.WorkerAssignment", "WorkerAssignment")
-                        .WithMany("SewingProductionLogs")
+                        .WithMany()
                         .HasForeignKey("WorkerAssignmentId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
@@ -1872,7 +1824,7 @@ namespace Keswa.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("Keswa.Models.WorkerPayment", null)
+                    b.HasOne("Keswa.Models.WorkerPayment", "WorkerPayment")
                         .WithMany("PaidAssignments")
                         .HasForeignKey("WorkerPaymentId")
                         .OnDelete(DeleteBehavior.Restrict);
@@ -1880,6 +1832,8 @@ namespace Keswa.Migrations
                     b.Navigation("SewingBatch");
 
                     b.Navigation("Worker");
+
+                    b.Navigation("WorkerPayment");
                 });
 
             modelBuilder.Entity("Keswa.Models.WorkerPayment", b =>
@@ -1954,16 +1908,6 @@ namespace Keswa.Migrations
                     b.Navigation("SewingBatches");
                 });
 
-            modelBuilder.Entity("Keswa.Models.FinishingAssignment", b =>
-                {
-                    b.Navigation("FinishingProductionLogs");
-                });
-
-            modelBuilder.Entity("Keswa.Models.FinishingBatch", b =>
-                {
-                    b.Navigation("FinishingAssignments");
-                });
-
             modelBuilder.Entity("Keswa.Models.GoodsReceiptNote", b =>
                 {
                     b.Navigation("Details");
@@ -2012,11 +1956,6 @@ namespace Keswa.Migrations
             modelBuilder.Entity("Keswa.Models.Warehouse", b =>
                 {
                     b.Navigation("InventoryItems");
-                });
-
-            modelBuilder.Entity("Keswa.Models.WorkerAssignment", b =>
-                {
-                    b.Navigation("SewingProductionLogs");
                 });
 
             modelBuilder.Entity("Keswa.Models.WorkerPayment", b =>

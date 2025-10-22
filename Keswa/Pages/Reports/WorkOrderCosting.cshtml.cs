@@ -1,12 +1,12 @@
 ﻿using Keswa.Data;
+using Keswa.Enums;
 using Keswa.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations; // <-- تأكد من وجود هذا السطر
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
-using System.Reflection; // <-- تأكد من وجود هذا السطر
+using System.Reflection; // <-- ضروري لجلب الاسم العربي
 using System.Threading.Tasks;
 
 namespace Keswa.Pages.Reports
@@ -21,96 +21,105 @@ namespace Keswa.Pages.Reports
         }
 
         [BindProperty(SupportsGet = true)]
+        public int WorkOrderId { get; set; }
+
+        [BindProperty(SupportsGet = true)]
         public CostingMethod SelectedCostingMethod { get; set; } = CostingMethod.Average;
 
         public WorkOrder WorkOrder { get; set; }
         public SalesOrder SalesOrder { get; set; }
         public CostingSummaryViewModel CostSummary { get; set; }
 
-        // --- تمت إضافة هذه الخاصية ---
+        // خاصية مساعدة لعرض الاسم العربي في الواجهة
         public string SelectedCostingMethodDisplayName { get; set; }
 
-        public async Task<IActionResult> OnGetAsync(int workOrderId)
+        public async Task<IActionResult> OnGetAsync()
         {
-            WorkOrder = await _context.WorkOrders.Include(wo => wo.Product).FirstOrDefaultAsync(wo => wo.Id == workOrderId);
+            if (WorkOrderId == 0) return Page();
+
+            WorkOrder = await _context.WorkOrders.Include(wo => wo.Product).FirstOrDefaultAsync(wo => wo.Id == WorkOrderId);
             if (WorkOrder == null) return NotFound();
 
-            // --- تمت إضافة هذا السطر لجلب الاسم العربي ---
-            SelectedCostingMethodDisplayName = SelectedCostingMethod.GetDisplayName();
+            // جلب الاسم العربي لطريقة الحساب المحددة
+            SelectedCostingMethodDisplayName = SelectedCostingMethod.GetType()
+                .GetMember(SelectedCostingMethod.ToString()).First()
+                .GetCustomAttribute<DisplayAttribute>()?.GetName() ?? SelectedCostingMethod.ToString();
 
-            var salesOrderDetail = await _context.SalesOrderDetails
-                .Include(sod => sod.SalesOrder.Customer)
-                .FirstOrDefaultAsync(sod => sod.WorkOrderId == workOrderId);
-
-            if (salesOrderDetail != null)
+            // محاولة جلب أمر البيع والعميل
+            var firstCuttingStatement = await _context.CuttingStatements
+                .Include(cs => cs.Customer)
+                .Where(cs => cs.WorkOrderId == WorkOrderId)
+                .FirstOrDefaultAsync();
+            if (firstCuttingStatement != null)
             {
-                SalesOrder = salesOrderDetail.SalesOrder;
+                // بما أن أمر البيع غير مرتبط مباشرة بأمر الشغل، سنكتفي بالعميل من بيان القص
+                // SalesOrder = ...
+                // Customer = firstCuttingStatement.Customer;
             }
 
+
+            // 1. حساب تكلفة الخامات بالطريقة المختارة
+            var cuttingStatements = await _context.CuttingStatements
+                .Where(cs => cs.WorkOrderId == WorkOrderId).ToListAsync();
+
             decimal totalMaterialCost = 0;
-            var issuedMaterials = await _context.MaterialIssuanceNoteDetails
-                .Where(d => d.MaterialIssuanceNote.WorkOrderId == workOrderId)
-                .Include(d => d.Material)
-                .ToListAsync();
-
-            foreach (var issuedMaterial in issuedMaterials)
+            foreach (var statement in cuttingStatements)
             {
-                var materialId = issuedMaterial.MaterialId;
-                var issuedQuantity = issuedMaterial.Quantity;
+                var materialPricesQuery = _context.GoodsReceiptNoteDetails
+                    .Where(d => d.MaterialId == statement.MaterialId && d.UnitPrice > 0);
 
-                var purchasePrices = await _context.GoodsReceiptNoteDetails
-                    .Where(d => d.MaterialId == materialId && d.UnitPrice > 0)
-                    .Select(d => d.UnitPrice)
-                    .ToListAsync();
-
-                if (purchasePrices.Any())
+                decimal unitCost = 0;
+                if (await materialPricesQuery.AnyAsync())
                 {
-                    decimal unitCost = 0;
                     switch (SelectedCostingMethod)
                     {
-                        case CostingMethod.Average:
-                            unitCost = purchasePrices.Average();
+                        case CostingMethod.Highest: // أعلى سعر
+                            unitCost = await materialPricesQuery.MaxAsync(d => d.UnitPrice);
                             break;
-                        case CostingMethod.Min:
-                            unitCost = purchasePrices.Min();
-                            break;
-                        case CostingMethod.Max:
-                            unitCost = purchasePrices.Max();
-                            break;
-                        case CostingMethod.Last:
-                            var lastReceipt = await _context.GoodsReceiptNoteDetails
-                                .Where(d => d.MaterialId == materialId && d.UnitPrice > 0)
+                        case CostingMethod.Last: // آخر سعر
+                            var lastReceipt = await materialPricesQuery
+                                .Include(d => d.GoodsReceiptNote)
                                 .OrderByDescending(d => d.GoodsReceiptNote.ReceiptDate)
                                 .FirstOrDefaultAsync();
                             unitCost = lastReceipt?.UnitPrice ?? 0;
                             break;
+                        case CostingMethod.Average: // متوسط السعر
+                        default:
+                            unitCost = await materialPricesQuery.AverageAsync(d => d.UnitPrice);
+                            break;
                     }
-                    totalMaterialCost += unitCost * (decimal)issuedQuantity;
                 }
+                totalMaterialCost += (decimal)statement.IssuedQuantity * unitCost;
             }
 
-            var laborCost = await _context.WorkerAssignments.Where(wa => wa.SewingBatch.CuttingStatement.WorkOrderId == workOrderId).SumAsync(wa => wa.Earnings);
-            decimal revenue = 0;
+            // 2. حساب تكلفة الخياطة والتشطيب (إجمالي الفيات)
+            var sewingCost = await _context.SewingProductionLogs
+                .Where(spl => spl.WorkerAssignment.SewingBatch.CuttingStatement.WorkOrderId == WorkOrderId)
+                .SumAsync(spl => spl.TotalPay);
 
+            var finishingCost = await _context.FinishingProductionLogs
+                .Where(fpl => fpl.FinishingAssignment.FinishingBatch.WorkOrderId == WorkOrderId)
+                .SumAsync(fpl => fpl.TotalPay);
+
+            // 3. تجميع النتائج في ViewModel
             CostSummary = new CostingSummaryViewModel
             {
                 MaterialCost = totalMaterialCost,
-                LaborCost = laborCost,
-                Revenue = revenue
+                LaborCost = sewingCost + finishingCost, // دمج تكلفة الخياطة والتشطيب
+                Revenue = 0 // يمكنك حساب الإيرادات من أمر البيع إذا كان مرتبطاً
             };
 
             return Page();
         }
     }
 
+    // يمكنك نقل هذه التعريفات إلى ملف منفصل لاحقاً
     public enum CostingMethod
     {
         [Display(Name = "متوسط التكلفة")]
         Average,
-        [Display(Name = "أقل سعر شراء")]
-        Min,
         [Display(Name = "أعلى سعر شراء")]
-        Max,
+        Highest,
         [Display(Name = "آخر سعر شراء")]
         Last
     }
@@ -123,18 +132,5 @@ namespace Keswa.Pages.Reports
         public decimal Revenue { get; set; }
         public decimal GrossProfit => Revenue - TotalDirectCost;
         public decimal GrossProfitMargin => Revenue > 0 ? (GrossProfit / Revenue) * 100 : 0;
-    }
-
-    // --- تمت إضافة هذه الفئة المساعدة ---
-    public static class EnumExtensions
-    {
-        public static string GetDisplayName(this System.Enum enumValue)
-        {
-            return enumValue.GetType()
-                .GetMember(enumValue.ToString())
-                .First()
-                .GetCustomAttribute<DisplayAttribute>()
-                ?.GetName() ?? enumValue.ToString();
-        }
     }
 }

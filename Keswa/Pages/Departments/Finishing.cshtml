@@ -1,12 +1,12 @@
 ﻿@page
-@model Keswa.Pages.Departments.SewingModel
+@model Keswa.Pages.Departments.FinishingModel
 @{
-    ViewData["Title"] = "شاشة قسم الخياطة";
+    ViewData["Title"] = "شاشة قسم التشطيب";
 }
 
 <div class="mb-4">
     <h1 class="h2 fw-bold">@ViewData["Title"]</h1>
-    <p class="text-muted">متابعة تشغيلات الخياطة وتوزيعها على العمال وتسجيل الإنتاج.</p>
+    <p class="text-muted">متابعة تشغيلات التشطيب وتوزيعها على العمال وتسجيل الإنتاج.</p>
 </div>
 
 <div class="row g-4">
@@ -33,11 +33,11 @@
                         @foreach (var batch in Model.PendingBatches)
                         {
                             <tr>
-                                <td><strong>@batch.SewingBatchNumber</strong></td>
+                                <td><strong>@batch.FinishingBatchNumber</strong></td>
                                 <td>@batch.ProductName</td>
                                 <td class="text-center">@batch.Quantity</td>
                                 <td class="text-end">
-                                    <a asp-page="./AssignBatch" asp-route-sewingBatchId="@batch.SewingBatchId" class="btn btn-sm btn-primary">
+                                    <a asp-page="./AssignFinishingBatch" asp-route-finishingBatchId="@batch.FinishingBatchId" class="btn btn-sm btn-primary">
                                         <i class="bi bi-person-plus-fill me-1"></i> تسليم لعامل
                                     </a>
                                 </td>
@@ -57,7 +57,8 @@
                     <thead class="table-light">
                         <tr>
                             <th>العامل</th>
-                            <th>رقم التشغيلة الداخلية</th>
+                            <th>رقم التشغيلة</th>
+                            <th>نوع التسليم</th>
                             <th class="text-center">متبقي لديه</th>
                             <th></th>
                         </tr>
@@ -65,18 +66,30 @@
                     <tbody>
                         @if (!Model.AssignmentsInProgress.Any())
                         {
-                            <tr><td colspan="4" class="text-center text-muted">لا توجد تشغيلات قيد التنفيذ لدى العمال.</td></tr>
+                            <tr><td colspan="5" class="text-center text-muted">لا توجد تشغيلات قيد التنفيذ.</td></tr>
                         }
                         @foreach (var assignment in Model.AssignmentsInProgress)
                         {
                             <tr>
                                 <td><strong>@assignment.WorkerName</strong></td>
-                                <td>@assignment.SewingBatchNumber</td>
+                                <td>@assignment.FinishingBatchNumber</td>
+                                <td>
+                                    @if (assignment.AssignmentType == Keswa.Enums.AssignmentType.External)
+                                    {
+                                        <span class="badge bg-warning text-dark">خارجي</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-info text-dark">داخلي</span>
+                                    }
+                                </td>
                                 <td class="text-center text-danger fw-bold">@assignment.RemainingQuantity</td>
                                 <td class="text-end">
-                                    <a asp-page="./ReceiveProduction" asp-route-assignmentId="@assignment.AssignmentId" class="btn btn-sm btn-success">
+                                    @* -- BEGIN MODIFICATION -- *@
+                                    <a asp-page="./ReceiveFinishingProduction" asp-route-assignmentId="@assignment.AssignmentId" class="btn btn-sm btn-success">
                                         <i class="bi bi-clipboard-check-fill me-1"></i> استلام إنتاج
                                     </a>
+                                    @* -- END MODIFICATION -- *@
                                 </td>
                             </tr>
                         }
@@ -87,46 +100,36 @@
     </div>
 
     <div class="col-lg-5">
+        @* -- BEGIN MODIFICATION -- *@
         <div class="card shadow-sm border-0">
             <div class="card-header bg-light">
-                <h5 class="mb-0 fw-bold"><i class="bi bi-send-check-fill me-2"></i>إنتاج جاهز للتحويل</h5>
+                <h5 class="mb-0 fw-bold"><i class="bi bi-box-arrow-up-right me-2"></i>إنتاج جاهز للتحويل للمخزن</h5>
             </div>
             <div class="card-body">
                 <table class="table table-sm table-hover">
                     <thead class="table-light">
                         <tr>
-                            <th>التشغيلة</th>
+                            <th>رقم التشغيلة</th>
                             <th>الموديل</th>
-                            <th>العامل</th>
-                            <th class="text-center">الكمية</th>
-                            @*<th>التاريخ</th>*@
+                            <th class="text-center">الكمية الجاهزة</th>
                             <th></th>
                         </tr>
                     </thead>
                     <tbody>
                         @if (!Model.ReadyBatches.Any())
                         {
-                            <tr>
-                                <td colspan="5" class="text-center text-muted">لا يوجد إنتاج جاهز للتحويل.</td>
-                            </tr>
+                            <tr><td colspan="4" class="text-center text-muted">لا يوجد إنتاج جاهز للتحويل.</td></tr>
                         }
                         @foreach (var batch in Model.ReadyBatches)
                         {
                             <tr>
-                                <td><strong>@batch.SewingBatchNumber</strong></td>
+                                <td><strong>@batch.FinishingBatchNumber</strong></td>
                                 <td>@batch.ProductName</td>
-                                <td>@batch.WorkerNames</td>
                                 <td class="text-center text-success fw-bold">@batch.ReadyQuantity</td>
-                                @*<td>@(batch.CompletionDate.HasValue ? batch.CompletionDate.Value.ToString("yyyy/MM/dd") : "N/A")</td>*@
                                 <td class="text-end">
-                                    @* -- BEGIN MODIFICATION -- *@
-                                    <form method="post" asp-page-handler="Transfer" class="d-inline">
-                                        <input type="hidden" name="sewingBatchId" value="@batch.SewingBatchId" />
-                                        <button type="submit" class="btn btn-sm btn-warning" title="تحويل مباشر">
-                                            <i class="bi bi-box-arrow-up-right"></i>
-                                        </button>
-                                    </form>
-                                    @* -- END MODIFICATION -- *@
+                                    <a href="#" class="btn btn-sm btn-warning disabled">
+                                        <i class="bi bi-box-arrow-up-right me-1"></i> تحويل
+                                    </a>
                                 </td>
                             </tr>
                         }
@@ -134,5 +137,6 @@
                 </table>
             </div>
         </div>
+        @* -- END MODIFICATION -- *@
     </div>
 </div>

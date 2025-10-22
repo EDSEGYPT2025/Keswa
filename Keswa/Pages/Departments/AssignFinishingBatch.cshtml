@@ -1,0 +1,84 @@
+﻿@page "{finishingBatchId:int}"
+@model Keswa.Pages.Departments.AssignFinishingBatchModel
+@{
+    ViewData["Title"] = "تسليم تشغيلة تشطيب";
+}
+
+<div class="mb-4">
+    <h1 class="h2 fw-bold">@ViewData["Title"]</h1>
+    <p class="text-muted">تسليم تشغيلة إلى عامل مع تحديد نوع التسليم.</p>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-7">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-light">
+                <h5 class="mb-0 fw-bold"><i class="bi bi-box-seam me-2"></i> تفاصيل التشغيلة</h5>
+            </div>
+            <div class="card-body p-4">
+                <dl class="row mb-4">
+                    <dt class="col-sm-4">رقم التشغيلة</dt>
+                    <dd class="col-sm-8"><strong>@Model.BatchToAssign.FinishingBatchNumber</strong></dd>
+
+                    <dt class="col-sm-4">الموديل</dt>
+                    <dd class="col-sm-8">@Model.BatchToAssign.WorkOrder.Product.Name</dd>
+
+                    @* -- BEGIN MODIFICATION -- *@
+                    <dt class="col-sm-4">الكمية (كاملة)</dt>
+                    <dd class="col-sm-8"><span class="fw-bold text-primary fs-5">@Model.BatchToAssign.Quantity</span> قطعة</dd>
+                    @* -- END MODIFICATION -- *@
+                </dl>
+
+                <hr />
+
+                <form method="post">
+                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                    <input type="hidden" asp-for="Input.FinishingBatchId" />
+
+                    @* -- BEGIN MODIFICATION -- *@
+                    <input type="hidden" asp-for="Input.AssignedQuantity" />
+                    @* -- END MODIFICATION -- *@
+
+                    <div class="mb-3">
+                        <label asp-for="Input.WorkerId" class="form-label"></label>
+                        <select asp-for="Input.WorkerId" class="form-select" asp-items="Model.Workers">
+                            <option value="">-- اختر عامل --</option>
+                        </select>
+                        <span asp-validation-for="Input.WorkerId" class="text-danger"></span>
+                    </div>
+
+                    @* -- BEGIN MODIFICATION -- *@
+                    @* -- END MODIFICATION -- *@
+
+                    <div class="mb-3">
+                        <label asp-for="Input.AssignmentType" class="form-label"></label>
+                        <div class="form-control" style="height: auto;">
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" asp-for="Input.AssignmentType" value="@Keswa.Enums.AssignmentType.Internal" id="internalRadio" />
+                                <label class="form-check-label" for="internalRadio">
+                                    داخلي (داخل المصنع) <small class="text-muted">- بدون احتساب أجرة تشطيب</small>
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" asp-for="Input.AssignmentType" value="@Keswa.Enums.AssignmentType.External" id="externalRadio" />
+                                <label class="form-check-label" for="externalRadio">
+                                    خارجي (خارج المصنع) <small class="text-muted">- سيتم احتساب أجرة التشطيب</small>
+                                </label>
+                            </div>
+                        </div>
+                        <span asp-validation-for="Input.AssignmentType" class="text-danger"></span>
+                    </div>
+
+                    <div class="d-grid gap-2 mt-4">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="bi bi-check-circle-fill me-2"></i> تأكيد التسليم
+                        </button>
+                        <a asp-page="./Finishing" class="btn btn-secondary">
+                            <i class="bi bi-x-circle me-2"></i> إلغاء
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

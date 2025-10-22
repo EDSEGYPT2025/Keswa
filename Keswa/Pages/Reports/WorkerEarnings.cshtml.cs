@@ -1,4 +1,4 @@
-using Keswa.Data;
+﻿using Keswa.Data;
 using Keswa.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -39,7 +39,8 @@ namespace Keswa.Pages.Reports
 
             var query = _context.WorkerAssignments
                 .Include(wa => wa.Worker)
-                .Where(wa => wa.Status == Enums.AssignmentStatus.Completed);
+                .Include(wa => wa.SewingProductionLogs) // <-- إضافة ضرورية لحساب Earnings
+                .Where(wa => wa.Status == Enums.AssignmentStatus.Completed); // يمكنك تعديل هذا الشرط إذا أردت عرض العهد غير المكتملة أيضاً
 
             if (WorkerId.HasValue)
             {
@@ -47,14 +48,19 @@ namespace Keswa.Pages.Reports
             }
             if (FromDate.HasValue)
             {
+                // استخدام AssignedDate بالاسم الصحيح
                 query = query.Where(wa => wa.AssignedDate.Date >= FromDate.Value.Date);
             }
             if (ToDate.HasValue)
             {
+                // استخدام AssignedDate بالاسم الصحيح
                 query = query.Where(wa => wa.AssignedDate.Date <= ToDate.Value.Date);
             }
 
+            // استخدام AssignedDate بالاسم الصحيح للترتيب
             Assignments = await query.OrderByDescending(wa => wa.AssignedDate).ToListAsync();
+
+            // استخدام Earnings المحسوبة بالاسم الصحيح
             TotalEarnings = Assignments.Sum(a => a.Earnings);
         }
     }
