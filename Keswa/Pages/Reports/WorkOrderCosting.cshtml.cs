@@ -57,40 +57,58 @@ namespace Keswa.Pages.Reports
                 // Customer = firstCuttingStatement.Customer;
             }
 
+            // --- بداية التعديل لتحسين الأداء ---
 
-            // 1. حساب تكلفة الخامات بالطريقة المختارة
-            var cuttingStatements = await _context.CuttingStatements
-                .Where(cs => cs.WorkOrderId == WorkOrderId).ToListAsync();
+            // 1. حساب تكلفة الخامات بالطريقة المختارة (نسخة محسنة)
+
+            // الخطوة 1: تجميع كل الخامات المطلوبة وكمياتها الإجمالية في استعلام واحد
+            var materialGroups = await _context.CuttingStatements
+                .Where(cs => cs.WorkOrderId == WorkOrderId) // فلترة حسب أمر الشغل
+                .GroupBy(cs => cs.MaterialId) // تجميع حسب كود المادة
+                .Select(g => new
+                {
+                    MaterialId = g.Key, // كود المادة
+                    TotalIssuedQuantity = g.Sum(cs => cs.IssuedQuantity) // مجموع الكميات المصروفة لهذه المادة
+                })
+                .ToListAsync(); // تنفيذ الاستعلام مرة واحدة
 
             decimal totalMaterialCost = 0;
-            foreach (var statement in cuttingStatements)
+
+            // الخطوة 2: المرور على الخامات الفريدة فقط (وليس كل بيانات القص)
+            foreach (var group in materialGroups)
             {
+                // بناء استعلام الأسعار لهذه المادة
                 var materialPricesQuery = _context.GoodsReceiptNoteDetails
-                    .Where(d => d.MaterialId == statement.MaterialId && d.UnitPrice > 0);
+                    .Where(d => d.MaterialId == group.MaterialId && d.UnitPrice > 0);
 
                 decimal unitCost = 0;
-                if (await materialPricesQuery.AnyAsync())
+                if (await materialPricesQuery.AnyAsync()) // استعلام واحد للتحقق
                 {
                     switch (SelectedCostingMethod)
                     {
                         case CostingMethod.Highest: // أعلى سعر
-                            unitCost = await materialPricesQuery.MaxAsync(d => d.UnitPrice);
+                            unitCost = await materialPricesQuery.MaxAsync(d => d.UnitPrice); // استعلام لجلب الأغلى
                             break;
                         case CostingMethod.Last: // آخر سعر
                             var lastReceipt = await materialPricesQuery
                                 .Include(d => d.GoodsReceiptNote)
                                 .OrderByDescending(d => d.GoodsReceiptNote.ReceiptDate)
-                                .FirstOrDefaultAsync();
+                                .FirstOrDefaultAsync(); // استعلام لجلب الأخير
                             unitCost = lastReceipt?.UnitPrice ?? 0;
                             break;
                         case CostingMethod.Average: // متوسط السعر
                         default:
-                            unitCost = await materialPricesQuery.AverageAsync(d => d.UnitPrice);
+                            unitCost = await materialPricesQuery.AverageAsync(d => d.UnitPrice); // استعلام لجلب المتوسط
                             break;
                     }
                 }
-                totalMaterialCost += (decimal)statement.IssuedQuantity * unitCost;
+
+                // إضافة التكلفة الإجمالية لهذه المادة (الكمية الإجمالية * سعر الوحدة)
+                totalMaterialCost += (decimal)group.TotalIssuedQuantity * unitCost;
             }
+
+            // --- نهاية التعديل ---
+
 
             // 2. حساب تكلفة الخياطة والتشطيب (إجمالي الفيات)
             var sewingCost = await _context.SewingProductionLogs
