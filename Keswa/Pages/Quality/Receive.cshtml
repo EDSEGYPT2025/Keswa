@@ -1,0 +1,36 @@
+@page
+@model Keswa.Pages.Quality.ReceiveModel
+@{
+    ViewData["Title"] = "استلام الشغل";
+}
+
+<h1>@ViewData["Title"]</h1>
+
+<h4>المهمة: @Model.Inspection.Product.Name</h4>
+<p>الكمية المحولة: @Model.Inspection.TransferredQuantity</p>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <input type="hidden" asp-for="Inspection.Id" />
+            <div class="form-group">
+                <label asp-for="QuantityGradeA" class="control-label"></label>
+                <input asp-for="QuantityGradeA" class="form-control" />
+                <span asp-validation-for="QuantityGradeA" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="QuantityGradeB" class="control-label"></label>
+                <input asp-for="QuantityGradeB" class="form-control" />
+                <span asp-validation-for="QuantityGradeB" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="استلام" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-page="./Index">العودة إلى القائمة</a>
+</div>
