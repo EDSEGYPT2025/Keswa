@@ -32,5 +32,7 @@ namespace Keswa.Models
         [Column(TypeName = "decimal(18, 2)")]
         public decimal FinishingFee { get; set; } = 0;
 
+        [Display(Name = "القسم الحالي")]
+        public string? CurrentDepartment { get; set; } // e.g., "Finishing", "Quality"
     }
 }
