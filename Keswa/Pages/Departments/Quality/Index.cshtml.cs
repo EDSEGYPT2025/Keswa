@@ -1,11 +1,7 @@
 using Keswa.Data;
 using Keswa.Enums;
-using Keswa.Models;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Keswa.Pages.Departments.Quality
 {
