@@ -84,15 +84,4 @@ namespace Keswa.Pages.Departments.Quality
         public string ProductName { get; set; }
         public int Quantity { get; set; }
     }
-
-    public class QualityAssignmentViewModel
-    {
-        [Required]
-        public int WorkerId { get; set; }
-
-        [Required]
-        [Range(1, int.MaxValue)]
-        [Display(Name = "الكمية المسلمة")]
-        public int AssignedQuantity { get; set; }
-    }
 }
