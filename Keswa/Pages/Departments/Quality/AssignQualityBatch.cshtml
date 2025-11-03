@@ -1,0 +1,26 @@
+@page
+@model Keswa.Pages.Departments.Quality.AssignQualityBatchModel
+@{
+    ViewData["Title"] = "تسليم تشغيلة جودة";
+}
+
+<h1>@ViewData["Title"]</h1>
+
+<h4>@Model.BatchVM.ProductName</h4>
+<p>الكمية: @Model.BatchVM.Quantity</p>
+<hr />
+
+<form method="post">
+    <input type="hidden" asp-for="BatchVM.BatchId" />
+    <div class="form-group">
+        <label>العامل</label>
+        <select asp-for="AssignmentVM.WorkerId" class="form-control" asp-items="Model.WorkerList"></select>
+        <span asp-validation-for="AssignmentVM.WorkerId" class="text-danger"></span>
+    </div>
+    <div class="form-group">
+        <label asp-for="AssignmentVM.AssignedQuantity"></label>
+        <input asp-for="AssignmentVM.AssignedQuantity" class="form-control" />
+        <span asp-validation-for="AssignmentVM.AssignedQuantity" class="text-danger"></span>
+    </div>
+    <button type="submit" class="btn btn-primary">تسليم</button>
+</form>

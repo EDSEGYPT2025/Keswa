@@ -1,0 +1,27 @@
+@page
+@model Keswa.Pages.Departments.Quality.ReceiveQualityProductionModel
+@{
+    ViewData["Title"] = "استلام شغل جودة";
+}
+
+<h1>@ViewData["Title"]</h1>
+
+<h4>@Model.AssignmentVM.ProductName</h4>
+<p>العامل: @Model.AssignmentVM.WorkerName</p>
+<p>الكمية المسلمة: @Model.AssignmentVM.AssignedQuantity</p>
+<hr />
+
+<form method="post">
+    <input type="hidden" asp-for="AssignmentVM.AssignmentId" />
+    <div class="form-group">
+        <label asp-for="ReceiveVM.ReceivedQuantityGradeA"></label>
+        <input asp-for="ReceiveVM.ReceivedQuantityGradeA" class="form-control" />
+        <span asp-validation-for="ReceiveVM.ReceivedQuantityGradeA" class="text-danger"></span>
+    </div>
+    <div class="form-group">
+        <label asp-for="ReceiveVM.ReceivedQuantityGradeB"></label>
+        <input asp-for="ReceiveVM.ReceivedQuantityGradeB" class="form-control" />
+        <span asp-validation-for="ReceiveVM.ReceivedQuantityGradeB" class="text-danger"></span>
+    </div>
+    <button type="submit" class="btn btn-primary">استلام</button>
+</form>

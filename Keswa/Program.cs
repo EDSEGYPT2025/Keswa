@@ -33,7 +33,6 @@ builder.Services.AddRazorPages();
 
 // 4. تسجيل خدمة تهيئة قاعدة البيانات (لإنشاء الصلاحيات والمستخدم الافتراضي)
 builder.Services.AddScoped<IDbInitializer, DbInitializer>();
-builder.Services.AddScoped<IQualityService, QualityService>();
 
 
 
