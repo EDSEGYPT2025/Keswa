@@ -56,8 +56,8 @@ namespace Keswa.Pages.Departments
                 .Where(b => b.Status == BatchStatus.Completed)
                 .Select(b => new ReadyForTransferViewModel
                 {
-                    SewingBatchId = b.Id,
-                    SewingBatchNumber = b.SewingBatchNumber,
+                    BatchId = b.Id,
+                    BatchNumber = b.SewingBatchNumber,
                     ProductName = b.CuttingStatement.WorkOrder.Product.Name,
                     ReadyQuantity = b.WorkerAssignments.Sum(wa => wa.ReceivedQuantity),
                     WorkerNames = string.Join(", ", b.WorkerAssignments.Select(wa => wa.Worker.Name).Distinct()),
@@ -118,13 +118,4 @@ namespace Keswa.Pages.Departments
     }
     // -- END MODIFICATION --
 
-    public class ReadyForTransferViewModel
-    {
-        public int SewingBatchId { get; set; }
-        public string SewingBatchNumber { get; set; }
-        public string ProductName { get; set; }
-        public int ReadyQuantity { get; set; }
-        public string WorkerNames { get; set; }
-        public DateTime? CompletionDate { get; set; }
-    }
 }
