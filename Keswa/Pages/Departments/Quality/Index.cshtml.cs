@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Keswa.Pages.Quality
+namespace Keswa.Pages.Departments.Quality
 {
     public class IndexModel : PageModel
     {

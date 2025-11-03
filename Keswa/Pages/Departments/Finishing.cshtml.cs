@@ -52,7 +52,7 @@ namespace Keswa.Pages.Departments
                     BatchId = b.Id,
                     BatchNumber = b.FinishingBatchNumber,
                     ProductName = b.WorkOrder.Product.Name,
-                    ReadyQuantity = b.FinishingAssignments.Sum(fa => fa.FinishingProductionLogs.Sum(fpl => fpl.Quantity))
+                    ReadyQuantity = b.FinishingAssignments.Sum(fa => fa.FinishingProductionLogs.Sum(fpl => fpl.QuantityProduced))
                 }).ToListAsync();
         }
 
@@ -71,7 +71,7 @@ namespace Keswa.Pages.Departments
                 QualityBatchNumber = $"QUAL-{finishingBatch.FinishingBatchNumber}",
                 FinishingBatchId = finishingBatch.Id,
                 WorkOrderId = finishingBatch.WorkOrderId,
-                Quantity = finishingBatch.FinishingAssignments.Sum(fa => fa.FinishingProductionLogs.Sum(fpl => fpl.Quantity)),
+                Quantity = finishingBatch.FinishingAssignments.Sum(fa => fa.FinishingProductionLogs.Sum(fpl => fpl.QuantityProduced)),
                 Status = QualityBatchStatus.Pending,
                 CreatedAt = System.DateTime.Now
             };
@@ -98,14 +98,5 @@ namespace Keswa.Pages.Departments
         public string WorkerName { get; set; }
         public string BatchNumber { get; set; }
         public int RemainingQuantity { get; set; }
-    }
-
-    // Using a generic view model for ready batches
-    public class ReadyForTransferViewModel
-    {
-        public int BatchId { get; set; }
-        public string BatchNumber { get; set; }
-        public string ProductName { get; set; }
-        public int ReadyQuantity { get; set; }
     }
 }
