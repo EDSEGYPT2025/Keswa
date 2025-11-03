@@ -93,9 +93,7 @@ namespace Keswa.Pages.Departments
                 return RedirectToPage("./Finishing");
             }
 
-            // -- BEGIN MODIFICATION --
-            // تم حذف التحقق من الكمية لأنها أصبحت تلقائية
-            // -- END MODIFICATION --
+           
 
             var assignment = new FinishingAssignment
             {
@@ -116,8 +114,7 @@ namespace Keswa.Pages.Departments
             return RedirectToPage("./Finishing");
         }
 
-        // -- BEGIN MODIFICATION --
-        // دالة مساعدة لإعادة تحميل البيانات عند فشل الحفظ
+        
         private async Task LoadGetPrerequisites(int finishingBatchId)
         {
             BatchToAssign = await _context.FinishingBatches

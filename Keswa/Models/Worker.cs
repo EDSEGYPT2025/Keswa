@@ -5,6 +5,8 @@ namespace Keswa.Models
 {
     public class Worker
     {
+       
+        [Display(Name = "#")]
         public int Id { get; set; }
 
         [Required(ErrorMessage = "كود العامل مطلوب")]

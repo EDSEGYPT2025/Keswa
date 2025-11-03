@@ -351,16 +351,23 @@
                         <span>الإدارة</span>
                         <i class="bi bi-chevron-down ms-auto arrow-icon"></i>
                     </a>
-                    <div class="collapse" id="adminMenu">
-                        <ul class="list-unstyled nested-menu">
-                            <li><a asp-page="/Administration/AuditLog" class="nav-link"><span>سجل المراجعة</span></a></li>
-                            <li>
-                                <a class="nav-link text-dark" asp-area="" asp-page="/Administration/DeleteAllData">
-                                    <span>حذف كل البيانات</span>
-                                </a>
-                            </li>
-                        </ul>
-                    </div>
+
+                <li class="nav-item">
+                    <a class="nav-link text-dark" asp-area="" asp-page="/Tools/QrGenerator">
+                        <i class="fas fa-qrcode"></i> مولد QR
+                    </a>
+                </li>
+
+                <div class="collapse" id="adminMenu">
+                    <ul class="list-unstyled nested-menu">
+                        <li><a asp-page="/Administration/AuditLog" class="nav-link"><span>سجل المراجعة</span></a></li>
+                        <li>
+                            <a class="nav-link text-dark" asp-area="" asp-page="/Administration/DeleteAllData">
+                                <span>حذف كل البيانات</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
                 </li>
             </ul>
         </aside>

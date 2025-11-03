@@ -61,6 +61,8 @@ await SeedDatabaseAsync(app);
 
 app.UseRouting();
 
+app.UseStaticFiles();
+
 app.UseAuthentication(); // تفعيل المصادقة
 app.UseAuthorization(); // تفعيل الصلاحيات
 

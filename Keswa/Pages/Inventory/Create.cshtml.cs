@@ -23,7 +23,6 @@ namespace Keswa.Pages.Inventory
         [BindProperty]
         public Warehouse Warehouse { get; set; }
 
-        // To protect from overposting attacks, see https://aka.ms/RazorPagesCRUD
         public async Task<IActionResult> OnPostAsync()
         {
             if (!ModelState.IsValid)
