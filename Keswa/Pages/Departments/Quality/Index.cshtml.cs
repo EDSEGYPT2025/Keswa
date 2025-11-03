@@ -64,14 +64,6 @@ namespace Keswa.Pages.Departments.Quality
         public int Quantity { get; set; }
     }
 
-    public class QualityAssignmentViewModel
-    {
-        public int AssignmentId { get; set; }
-        public string WorkerName { get; set; }
-        public string BatchNumber { get; set; }
-        public int RemainingQuantity { get; set; }
-    }
-
     public class CompletedBatchViewModel
     {
         public int BatchId { get; set; }
