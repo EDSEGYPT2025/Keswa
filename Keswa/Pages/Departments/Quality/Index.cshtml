@@ -1,7 +1,7 @@
 @page
-@model Keswa.Pages.Departments.FinishingModel
+@model Keswa.Pages.Quality.IndexModel
 @{
-    ViewData["Title"] = "قسم التشطيب";
+    ViewData["Title"] = "قسم الجودة";
 }
 
 <h1>@ViewData["Title"]</h1>
@@ -27,7 +27,7 @@
                         <td>@item.ProductName</td>
                         <td>@item.Quantity</td>
                         <td>
-                            <a asp-page="AssignFinishingBatch" asp-route-id="@item.BatchId">تسليم لشغالة</a>
+                            <a asp-page="AssignQualityBatch" asp-route-id="@item.BatchId">تسليم لشغالة</a>
                         </td>
                     </tr>
                 }
@@ -55,7 +55,7 @@
                         <td>@item.BatchNumber</td>
                         <td>@item.RemainingQuantity</td>
                         <td>
-                            <a asp-page="ReceiveFinishingProduction" asp-route-id="@item.AssignmentId">استلام شغل</a>
+                            <a asp-page="ReceiveQualityProduction" asp-route-id="@item.AssignmentId">استلام شغل</a>
                         </td>
                     </tr>
                 }
@@ -63,35 +63,27 @@
         </table>
     </div>
 
-    <!-- Ready for Transfer -->
+    <!-- Completed Batches -->
     <div class="col-md-4">
-        <h2>جاهز للنقل للجودة</h2>
-        <form method="post">
-            <table class="table">
-                <thead>
+        <h2>تشغيلات مكتملة</h2>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>رقم التشغيلة</th>
+                    <th>المنتج</th>
+                    <th>الكمية النهائية</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model.CompletedBatches)
+                {
                     <tr>
-                        <th>رقم التشغيلة</th>
-                        <th>المنتج</th>
-                        <th>الكمية الجاهزة</th>
-                        <th></th>
+                        <td>@item.BatchNumber</td>
+                        <td>@item.ProductName</td>
+                        <td>@item.FinalQuantity</td>
                     </tr>
-                </thead>
-                <tbody>
-                    @foreach (var item in Model.ReadyBatches)
-                    {
-                        <tr>
-                            <td>@item.BatchNumber</td>
-                            <td>@item.ProductName</td>
-                            <td>@item.ReadyQuantity</td>
-                            <td>
-                                <button type="submit" asp-page-handler="Transfer" asp-route-batchId="@item.BatchId" class="btn btn-primary">
-                                    نقل للجودة
-                                </button>
-                            </td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
-        </form>
+                }
+            </tbody>
+        </table>
     </div>
 </div>
