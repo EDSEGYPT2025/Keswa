@@ -52,7 +52,8 @@ namespace Keswa.Pages.Departments
                     BatchId = b.Id,
                     BatchNumber = b.FinishingBatchNumber,
                     ProductName = b.WorkOrder.Product.Name,
-                    ReadyQuantity = b.FinishingAssignments.Sum(fa => fa.FinishingProductionLogs.Sum(fpl => fpl.QuantityProduced))
+                    ReadyQuantity = b.FinishingAssignments.Sum(fa => fa.FinishingProductionLogs.Sum(fpl => fpl.QuantityProduced)),
+                    WorkerNames = string.Join(", ", b.FinishingAssignments.Select(fa => fa.Worker.Name).Distinct())
                 }).ToListAsync();
         }
 

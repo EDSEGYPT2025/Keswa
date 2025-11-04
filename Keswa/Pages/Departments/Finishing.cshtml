@@ -1,97 +1,133 @@
 @page
 @model Keswa.Pages.Departments.FinishingModel
 @{
-    ViewData["Title"] = "قسم التشطيب";
+    ViewData["Title"] = "شاشة قسم التشطيب";
 }
 
-<h1>@ViewData["Title"]</h1>
+<div class="mb-4">
+    <h1 class="h2 fw-bold">@ViewData["Title"]</h1>
+    <p class="text-muted">متابعة تشغيلات التشطيب وتوزيعها على العمال وتسجيل الإنتاج.</p>
+</div>
 
-<div class="row">
-    <!-- Pending Batches -->
-    <div class="col-md-4">
-        <h2>تشغيلات قيد الانتظار</h2>
-        <table class="table">
-            <thead>
-                <tr>
-                    <th>رقم التشغيلة</th>
-                    <th>المنتج</th>
-                    <th>الكمية</th>
-                    <th></th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var item in Model.PendingBatches)
-                {
-                    <tr>
-                        <td>@item.BatchNumber</td>
-                        <td>@item.ProductName</td>
-                        <td>@item.Quantity</td>
-                        <td>
-                            <a asp-page="/Departments/AssignFinishingBatch" asp-route-id="@item.BatchId">تسليم لشغالة</a>
-                        </td>
-                    </tr>
-                }
-            </tbody>
-        </table>
-    </div>
-
-    <!-- Assignments In Progress -->
-    <div class="col-md-4">
-        <h2>مهام قيد التنفيذ</h2>
-        <table class="table">
-            <thead>
-                <tr>
-                    <th>العامل</th>
-                    <th>رقم التشغيلة</th>
-                    <th>الكمية المتبقية</th>
-                    <th></th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var item in Model.AssignmentsInProgress)
-                {
-                    <tr>
-                        <td>@item.WorkerName</td>
-                        <td>@item.BatchNumber</td>
-                        <td>@item.RemainingQuantity</td>
-                        <td>
-                            <a asp-page="ReceiveFinishingProduction" asp-route-id="@item.AssignmentId">استلام شغل</a>
-                        </td>
-                    </tr>
-                }
-            </tbody>
-        </table>
-    </div>
-
-    <!-- Ready for Transfer -->
-    <div class="col-md-4">
-        <h2>جاهز للنقل للجودة</h2>
-        <form method="post">
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th>رقم التشغيلة</th>
-                        <th>المنتج</th>
-                        <th>الكمية الجاهزة</th>
-                        <th></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var item in Model.ReadyBatches)
-                    {
+<div class="row g-4">
+    <div class="col-lg-7">
+        <div class="card shadow-sm border-0 mb-4">
+            <div class="card-header bg-light">
+                <h5 class="mb-0 fw-bold"><i class="bi bi-box-arrow-in-down me-2"></i>تشغيلات مستلمة (جاهزة للتوزيع)</h5>
+            </div>
+            <div class="card-body">
+                <table class="table table-sm table-hover">
+                    <thead class="table-light">
                         <tr>
-                            <td>@item.BatchNumber</td>
-                            <td>@item.ProductName</td>
-                            <td>@item.ReadyQuantity</td>
-                            <td>
-                                <button type="submit" asp-page-handler="Transfer" asp-route-batchId="@item.BatchId" class="btn btn-primary">
-                                    نقل للجودة
-                                </button>
-                            </td>
+                            <th>رقم التشغيلة</th>
+                            <th>الموديل</th>
+                            <th class="text-center">الكمية</th>
+                            <th></th>
                         </tr>
-                    }
-                </tbody>
-            </table>
-        </form>
+                    </thead>
+                    <tbody>
+                        @if (!Model.PendingBatches.Any())
+                        {
+                            <tr><td colspan="4" class="text-center text-muted">لا توجد تشغيلات جاهزة للتوزيع.</td></tr>
+                        }
+                        @foreach (var batch in Model.PendingBatches)
+                        {
+                            <tr>
+                                <td><strong>@batch.BatchNumber</strong></td>
+                                <td>@batch.ProductName</td>
+                                <td class="text-center">@batch.Quantity</td>
+                                <td class="text-end">
+                                    <a asp-page="/Departments/AssignFinishingBatch" asp-route-id="@batch.BatchId" class="btn btn-sm btn-primary">
+                                        <i class="bi bi-person-plus-fill me-1"></i> تسليم لعامل
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-light">
+                <h5 class="mb-0 fw-bold"><i class="bi bi-people-fill me-2"></i>تشغيلات قيد التنفيذ لدى العمال</h5>
+            </div>
+            <div class="card-body">
+                <table class="table table-sm table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>العامل</th>
+                            <th>رقم التشغيلة</th>
+                            <th class="text-center">متبقي لديه</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (!Model.AssignmentsInProgress.Any())
+                        {
+                            <tr><td colspan="4" class="text-center text-muted">لا توجد تشغيلات قيد التنفيذ لدى العمال.</td></tr>
+                        }
+                        @foreach (var assignment in Model.AssignmentsInProgress)
+                        {
+                            <tr>
+                                <td><strong>@assignment.WorkerName</strong></td>
+                                <td>@assignment.BatchNumber</td>
+                                <td class="text-center text-danger fw-bold">@assignment.RemainingQuantity</td>
+                                <td class="text-end">
+                                    <a asp-page="./ReceiveFinishingProduction" asp-route-id="@assignment.AssignmentId" class="btn btn-sm btn-success">
+                                        <i class="bi bi-clipboard-check-fill me-1"></i> استلام إنتاج
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-5">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-light">
+                <h5 class="mb-0 fw-bold"><i class="bi bi-send-check-fill me-2"></i>إنتاج جاهز للتحويل</h5>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    <table class="table table-sm table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>التشغيلة</th>
+                                <th>الموديل</th>
+                                <th>العامل</th>
+                                <th class="text-center">الكمية</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (!Model.ReadyBatches.Any())
+                            {
+                                <tr>
+                                    <td colspan="5" class="text-center text-muted">لا يوجد إنتاج جاهز للتحويل.</td>
+                                </tr>
+                            }
+                            @foreach (var batch in Model.ReadyBatches)
+                            {
+                                <tr>
+                                    <td><strong>@batch.BatchNumber</strong></td>
+                                    <td>@batch.ProductName</td>
+                                    <td>@batch.WorkerNames</td>
+                                    <td class="text-center text-success fw-bold">@batch.ReadyQuantity</td>
+                                    <td class="text-end">
+                                        <button type="submit" asp-page-handler="Transfer" asp-route-batchId="@batch.BatchId" class="btn btn-sm btn-warning" title="تحويل مباشر">
+                                            <i class="bi bi-box-arrow-up-right"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </form>
+            </div>
+        </div>
     </div>
 </div>
