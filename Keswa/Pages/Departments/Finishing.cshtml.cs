@@ -60,6 +60,8 @@ namespace Keswa.Pages.Departments
         {
             var finishingBatch = await _context.FinishingBatches
                                         .Include(b => b.WorkOrder)
+                                        .Include(b => b.FinishingAssignments)
+                                            .ThenInclude(fa => fa.FinishingProductionLogs)
                                         .FirstOrDefaultAsync(b => b.Id == batchId);
 
             if (finishingBatch == null) return NotFound();
