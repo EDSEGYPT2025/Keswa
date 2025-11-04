@@ -97,7 +97,7 @@ namespace Keswa.Pages.Departments
                 {
                     WorkerAssignmentId = Assignment.Id,
                     WorkerId = Assignment.WorkerId,
-                    ProductId = Assignment.SewingBatch.CuttingStatement.WorkOrderId,
+                    ProductId = Assignment.SewingBatch.CuttingStatement.WorkOrder.ProductId,
                     QuantityProduced = Input.QuantityProduced,
                     Rate = rate,
                     TotalPay = Input.QuantityProduced * rate
