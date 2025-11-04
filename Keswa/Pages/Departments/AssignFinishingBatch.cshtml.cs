@@ -46,11 +46,11 @@ namespace Keswa.Pages.Departments
             public AssignmentType AssignmentType { get; set; }
         }
 
-        public async Task<IActionResult> OnGetAsync(int finishingBatchId)
+        public async Task<IActionResult> OnGetAsync(int id)
         {
             BatchToAssign = await _context.FinishingBatches
                 .Include(b => b.WorkOrder).ThenInclude(wo => wo.Product)
-                .FirstOrDefaultAsync(b => b.Id == finishingBatchId);
+                .FirstOrDefaultAsync(b => b.Id == id);
 
             if (BatchToAssign == null || BatchToAssign.Status != FinishingBatchStatus.Pending)
             {
@@ -64,7 +64,7 @@ namespace Keswa.Pages.Departments
             // تعيين الكمية الكاملة تلقائيًا
             Input = new AssignmentInputModel
             {
-                FinishingBatchId = finishingBatchId,
+                FinishingBatchId = id,
                 AssignedQuantity = BatchToAssign.Quantity
             };
             // -- END MODIFICATION --
@@ -118,11 +118,11 @@ namespace Keswa.Pages.Departments
 
         // -- BEGIN MODIFICATION --
         // دالة مساعدة لإعادة تحميل البيانات عند فشل الحفظ
-        private async Task LoadGetPrerequisites(int finishingBatchId)
+        private async Task LoadGetPrerequisites(int id)
         {
             BatchToAssign = await _context.FinishingBatches
                 .Include(b => b.WorkOrder).ThenInclude(wo => wo.Product)
-                .FirstOrDefaultAsync(b => b.Id == finishingBatchId);
+                .FirstOrDefaultAsync(b => b.Id == id);
 
             Workers = new SelectList(await _context.Workers.OrderBy(w => w.Name).ToListAsync(), "Id", "Name");
         }
