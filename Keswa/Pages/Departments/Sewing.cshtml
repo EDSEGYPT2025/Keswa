@@ -113,7 +113,7 @@
                         @foreach (var batch in Model.ReadyBatches)
                         {
                             <tr>
-                                <td><strong>@batch.SewingBatchNumber</strong></td>
+                                <td><strong>@batch.BatchNumber</strong></td>
                                 <td>@batch.ProductName</td>
                                 <td>@batch.WorkerNames</td>
                                 <td class="text-center text-success fw-bold">@batch.ReadyQuantity</td>
@@ -121,7 +121,7 @@
                                 <td class="text-end">
                                     @* -- BEGIN MODIFICATION -- *@
                                     <form method="post" asp-page-handler="Transfer" class="d-inline">
-                                        <input type="hidden" name="sewingBatchId" value="@batch.SewingBatchId" />
+                                        <input type="hidden" name="sewingBatchId" value="@batch.BatchId" />
                                         <button type="submit" class="btn btn-sm btn-warning" title="تحويل مباشر">
                                             <i class="bi bi-box-arrow-up-right"></i>
                                         </button>
