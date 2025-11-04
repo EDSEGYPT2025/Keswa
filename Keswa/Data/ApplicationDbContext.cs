@@ -1,4 +1,4 @@
-﻿using Keswa.Models;
+using Keswa.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -66,6 +66,10 @@ namespace Keswa.Data
         public DbSet<FinishingAssignment> FinishingAssignments { get; set; }
 
         public DbSet<FinishingProductionLog> FinishingProductionLogs { get; set; }
+
+        public DbSet<QualityBatch> QualityBatches { get; set; }
+        public DbSet<QualityAssignment> QualityAssignments { get; set; }
+
 
         // *** تم إضافة هذه الوظيفة لحل مشكلة الحذف المتعدد ***
         protected override void OnModelCreating(ModelBuilder builder)

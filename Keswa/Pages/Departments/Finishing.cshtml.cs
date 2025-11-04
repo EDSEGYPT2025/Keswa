@@ -1,6 +1,7 @@
-﻿using Keswa.Data;
+using Keswa.Data;
 using Keswa.Enums;
 using Keswa.Models;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
@@ -20,59 +21,75 @@ namespace Keswa.Pages.Departments
 
         public List<FinishingBatchViewModel> PendingBatches { get; set; }
         public List<FinishingAssignmentViewModel> AssignmentsInProgress { get; set; }
-        public List<ReadyForWarehouseViewModel> ReadyBatches { get; set; }
-
+        public List<ReadyForTransferViewModel> ReadyBatches { get; set; }
 
         public async Task OnGetAsync()
         {
-            // 1. جلب التشغيلات المستلمة
             PendingBatches = await _context.FinishingBatches
                 .Where(b => b.Status == FinishingBatchStatus.Pending)
-                .Include(b => b.WorkOrder)
-                .ThenInclude(wo => wo.Product)
                 .Select(b => new FinishingBatchViewModel
                 {
-                    FinishingBatchId = b.Id,
-                    FinishingBatchNumber = b.FinishingBatchNumber,
+                    BatchId = b.Id,
+                    BatchNumber = b.FinishingBatchNumber,
                     ProductName = b.WorkOrder.Product.Name,
                     Quantity = b.Quantity
                 }).ToListAsync();
 
-            // 2. جلب التشغيلات قيد التنفيذ
             AssignmentsInProgress = await _context.FinishingAssignments
                 .Where(a => a.Status == FinishingAssignmentStatus.InProgress)
-                .Include(a => a.FinishingBatch)
                 .Select(a => new FinishingAssignmentViewModel
                 {
                     AssignmentId = a.Id,
                     WorkerName = a.Worker.Name,
-                    FinishingBatchNumber = a.FinishingBatch.FinishingBatchNumber,
-                    RemainingQuantity = a.RemainingQuantity,
-                    AssignmentType = a.AssignmentType
+                    BatchNumber = a.FinishingBatch.FinishingBatchNumber,
+                    RemainingQuantity = a.RemainingQuantity
                 }).ToListAsync();
 
-            // 3. جلب التشغيلات المكتملة
             ReadyBatches = await _context.FinishingBatches
                 .Where(b => b.Status == FinishingBatchStatus.Completed)
-                .Include(b => b.WorkOrder).ThenInclude(wo => wo.Product)
-                .Include(b => b.FinishingAssignments).ThenInclude(fa => fa.FinishingProductionLogs) // <-- هذا السطر يعمل الآن
-                .Select(b => new ReadyForWarehouseViewModel
+                .Select(b => new ReadyForTransferViewModel
                 {
-                    FinishingBatchId = b.Id,
-                    FinishingBatchNumber = b.FinishingBatchNumber,
+                    BatchId = b.Id,
+                    BatchNumber = b.FinishingBatchNumber,
                     ProductName = b.WorkOrder.Product.Name,
-                    // جمع كل الكميات المنتجة من كل العهد لهذه التشغيلة
-                    ReadyQuantity = b.FinishingAssignments
-                                     .SelectMany(fa => fa.FinishingProductionLogs) // <-- وهذا السطر يعمل الآن
-                                     .Sum(fpl => fpl.QuantityProduced)
+                    ReadyQuantity = b.FinishingAssignments.Sum(fa => fa.FinishingProductionLogs.Sum(fpl => fpl.QuantityProduced))
                 }).ToListAsync();
+        }
+
+        public async Task<IActionResult> OnPostTransferAsync(int batchId)
+        {
+            var finishingBatch = await _context.FinishingBatches
+                                        .Include(b => b.WorkOrder)
+                                        .Include(b => b.FinishingAssignments)
+                                            .ThenInclude(fa => fa.FinishingProductionLogs)
+                                        .FirstOrDefaultAsync(b => b.Id == batchId);
+
+            if (finishingBatch == null) return NotFound();
+
+            finishingBatch.Status = FinishingBatchStatus.Transferred;
+
+            var qualityBatch = new QualityBatch
+            {
+                QualityBatchNumber = $"QUAL-{finishingBatch.FinishingBatchNumber}",
+                FinishingBatchId = finishingBatch.Id,
+                WorkOrderId = finishingBatch.WorkOrderId,
+                Quantity = finishingBatch.FinishingAssignments.Sum(fa => fa.FinishingProductionLogs.Sum(fpl => fpl.QuantityProduced)),
+                Status = QualityBatchStatus.Pending,
+                CreatedAt = System.DateTime.Now
+            };
+
+            _context.QualityBatches.Add(qualityBatch);
+            await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = "تم تحويل التشغيلة إلى قسم الجودة بنجاح.";
+            return RedirectToPage();
         }
     }
 
     public class FinishingBatchViewModel
     {
-        public int FinishingBatchId { get; set; }
-        public string FinishingBatchNumber { get; set; }
+        public int BatchId { get; set; }
+        public string BatchNumber { get; set; }
         public string ProductName { get; set; }
         public int Quantity { get; set; }
     }
@@ -81,16 +98,7 @@ namespace Keswa.Pages.Departments
     {
         public int AssignmentId { get; set; }
         public string WorkerName { get; set; }
-        public string FinishingBatchNumber { get; set; }
+        public string BatchNumber { get; set; }
         public int RemainingQuantity { get; set; }
-        public AssignmentType AssignmentType { get; set; }
-    }
-
-    public class ReadyForWarehouseViewModel
-    {
-        public int FinishingBatchId { get; set; }
-        public string FinishingBatchNumber { get; set; }
-        public string ProductName { get; set; }
-        public int ReadyQuantity { get; set; }
     }
 }
