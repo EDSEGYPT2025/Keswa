@@ -148,12 +148,17 @@ namespace Keswa.Pages.Departments
 
             if (batch == null) return;
 
-            bool allAssignmentsCompleted = batch.WorkerAssignments
-                                                .All(a => a.Status == AssignmentStatus.Completed);
+            // New logic: Check if the total received and scrapped quantity equals the original batch quantity
+            int totalProcessed = batch.WorkerAssignments.Sum(a => a.ReceivedQuantity + a.TotalScrapped);
 
-            if (allAssignmentsCompleted)
+            if (totalProcessed >= batch.Quantity)
             {
                 batch.Status = BatchStatus.Completed;
+                // Mark all assignments as completed for consistency
+                foreach (var assignment in batch.WorkerAssignments)
+                {
+                    assignment.Status = AssignmentStatus.Completed;
+                }
                 await _context.SaveChangesAsync();
             }
         }
