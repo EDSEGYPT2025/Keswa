@@ -1,9 +1,10 @@
-﻿using Keswa.Enums;
+using Keswa.Enums;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using System;
-using System.Collections.Generic; // <-- تأكد من إضافة هذا
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Linq;
 
 namespace Keswa.Models
 {
@@ -23,14 +24,18 @@ namespace Keswa.Models
         [ValidateNever]
         public Worker Worker { get; set; }
 
-        [Display(Name = "نوع التسليم")]
-        public AssignmentType AssignmentType { get; set; }
-
         [Display(Name = "الكمية المسلمة")]
         public int AssignedQuantity { get; set; }
 
+        [Display(Name = "الكمية المستلمة (سليمة)")]
+        public int ReceivedQuantity { get; set; }
+
+        [Display(Name = "إجمالي الهالك")]
+        public int TotalScrapped { get; set; }
+
+        [NotMapped]
         [Display(Name = "الكمية المتبقية")]
-        public int RemainingQuantity { get; set; }
+        public int RemainingQuantity => AssignedQuantity - (ReceivedQuantity + TotalScrapped);
 
         [Display(Name = "سعر القطعة")]
         [Column(TypeName = "decimal(18, 2)")]
@@ -42,9 +47,7 @@ namespace Keswa.Models
         [Display(Name = "تاريخ التسليم")]
         public DateTime AssignmentDate { get; set; } = DateTime.Now;
 
-        // -- BEGIN CORRECTION --
         [ValidateNever]
-        public ICollection<FinishingProductionLog> FinishingProductionLogs { get; set; }
-        // -- END CORRECTION --
+        public ICollection<FinishingProductionLog> FinishingProductionLogs { get; set; } = new List<FinishingProductionLog>();
     }
 }
