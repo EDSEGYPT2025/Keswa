@@ -86,9 +86,8 @@ namespace Keswa.Pages.Tracking
                 {
                     WorkerName = fa.Worker.Name,
                     AssignedQuantity = fa.AssignedQuantity,
-                    ReceivedQuantity = fa.FinishingProductionLogs.Sum(log => log.QuantityProduced),
+                    ReceivedQuantity = fa.ReceivedQuantity,
                     RemainingQuantity = fa.RemainingQuantity,
-                    AssignmentType = fa.AssignmentType.ToString(),
                     Status = fa.Status.ToString(),
                     AssignmentDate = fa.AssignmentDate
                 }).ToList();
@@ -122,7 +121,6 @@ namespace Keswa.Pages.Tracking
             public int AssignedQuantity { get; set; }
             public int ReceivedQuantity { get; set; }
             public int RemainingQuantity { get; set; }
-            public string AssignmentType { get; set; }
             public string Status { get; set; }
             public DateTime AssignmentDate { get; set; }
         }
