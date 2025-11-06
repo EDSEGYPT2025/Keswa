@@ -1,4 +1,4 @@
-﻿@page "{assignmentId:int}"
+@page "{assignmentId:int}"
 @model Keswa.Pages.Departments.ReceiveFinishingProductionModel
 @{
     ViewData["Title"] = "استلام إنتاج تشطيب";
@@ -33,7 +33,6 @@
                     <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
                     <input type="hidden" asp-for="Input.FinishingAssignmentId" />
 
-                    @* -- BEGIN MODIFICATION -- *@
                     <div class="row g-3">
                         <div class="col-md-6">
                             <label asp-for="Input.QuantityProduced" class="form-label"></label>
@@ -51,8 +50,6 @@
                         <textarea asp-for="Input.ScrapReason" class="form-control"></textarea>
                         <span asp-validation-for="Input.ScrapReason" class="text-danger"></span>
                     </div>
-                    @* -- END MODIFICATION -- *@
-
 
                     <div class="d-grid gap-2 mt-4">
                         <button type="submit" class="btn btn-success btn-lg">

@@ -75,7 +75,7 @@ namespace Keswa.Pages.Departments
                 return Page();
             }
 
-            var finishingBatch = await _context.FinishingBatches.FindAsync(Input.FinishingBatchId);
+            var finishingBatch = await _context.FinishingBatches.Include(fb => fb.WorkOrder.Product).FirstOrDefaultAsync(fb => fb.Id == Input.FinishingBatchId);
             if (finishingBatch == null) return NotFound();
 
             var totalAssigned = await _context.FinishingAssignments
@@ -109,7 +109,7 @@ namespace Keswa.Pages.Departments
             await _context.SaveChangesAsync();
 
             TempData["SuccessMessage"] = $"تم تسليم {Input.AssignedQuantity} قطعة للعامل بنجاح.";
-            return RedirectToPage();
+            return RedirectToPage("./AssignFinishingBatch", new { finishingBatchId = Input.FinishingBatchId });
         }
     }
 }

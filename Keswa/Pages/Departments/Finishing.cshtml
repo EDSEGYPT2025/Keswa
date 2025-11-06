@@ -73,8 +73,6 @@
                         <th>رقم التشغيلة</th>
                         <th>المنتج</th>
                         <th>الكمية الجاهزة</th>
-                        <th>أسماء العمال</th>
-                        <th>تاريخ الإنتهاء</th>
                         <th></th>
                     </tr>
                 </thead>
@@ -85,8 +83,6 @@
                             <td>@item.BatchNumber</td>
                             <td>@item.ProductName</td>
                             <td>@item.ReadyQuantity</td>
-                            <td>@item.WorkerNames</td>
-                            <td>@item.CompletionDate?.ToString("yyyy-MM-dd")</td>
                             <td>
                                 <button type="submit" asp-page-handler="Transfer" asp-route-batchId="@item.BatchId" class="btn btn-primary">
                                     نقل للجودة

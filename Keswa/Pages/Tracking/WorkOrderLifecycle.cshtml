@@ -1,9 +1,7 @@
-﻿@page "{workOrderId:int}"
+@page "{workOrderId:int}"
 @model Keswa.Pages.Tracking.WorkOrderLifecycleModel
 @{
-    // -- BEGIN CORRECTION: Correct property name --
     ViewData["Title"] = $"دورة حياة أمر الشغل - {Model.WorkOrder?.WorkOrderNumber}";
-    // -- END CORRECTION --
 }
 
 <div class="mb-4">
@@ -20,41 +18,25 @@
             <div class="card-body">
                 <dl class="row">
                     <dt class="col-sm-4">رقم أمر الشغل</dt>
-                    @* -- BEGIN CORRECTION: Correct property name -- *@
                     <dd class="col-sm-8"><strong>@Model.WorkOrder.WorkOrderNumber</strong></dd>
-                    @* -- END CORRECTION -- *@
 
                     <dt class="col-sm-4">الموديل</dt>
-                    <dd class="col-sm-8">@Model.WorkOrder.Product?.Name</dd> @* Added null check *@
+                    <dd class="col-sm-8">@Model.WorkOrder.Product?.Name</dd>
 
                     <dt class="col-sm-4">الكمية المطلوبة</dt>
-                    @* -- BEGIN CORRECTION: Correct property name -- *@
                     <dd class="col-sm-8">@Model.WorkOrder.QuantityToProduce قطعة</dd>
-                    @* -- END CORRECTION -- *@
 
                     <dt class="col-sm-4">الحالة</dt>
                     <dd class="col-sm-8"><span class="badge bg-secondary">@Model.WorkOrder.Status</span></dd>
 
                     <dt class="col-sm-4">تاريخ الأمر</dt>
-                    @* -- BEGIN CORRECTION: Correct property name -- *@
                     <dd class="col-sm-8">@Model.WorkOrder.CreationDate.ToString("yyyy-MM-dd")</dd>
-                    @* -- END CORRECTION -- *@
-
-                    @* -- CORRECTION: Removed SalesOrder details as it's not directly linked -- *@
-                    @*
-                        <dt class="col-sm-4">أمر البيع المرتبط</dt>
-                        <dd class="col-sm-8">@Model.WorkOrder.SalesOrderDetail?.SalesOrder?.OrderNumber</dd>
-
-                        <dt class="col-sm-4">العميل</dt>
-                        <dd class="col-sm-8">@Model.WorkOrder.SalesOrderDetail?.SalesOrder?.Customer?.Name</dd>
-                    *@
                 </dl>
             </div>
         </div>
     </div>
 </div>
 
-@* ... (باقي الكود الخاص بالـ Timeline يبقى كما هو) ... *@
 <div class="timeline">
     <div class="timeline-item">
         <div class="timeline-marker"></div>
@@ -196,7 +178,6 @@
     </div>
 </div>
 <style>
-    /* Style remains unchanged */
     .timeline {
         position: relative;
         padding: 20px 0;
@@ -209,44 +190,40 @@
             bottom: 0;
             width: 4px;
             background: #e9ecef;
-            left: 30px; /* Adjust based on marker size */
+            left: 30px;
             margin-left: -2px;
         }
 
     .timeline-item {
         position: relative;
         margin-bottom: 30px;
-        padding-left: 60px; /* Space for marker and line */
+        padding-left: 60px;
     }
 
     .timeline-marker {
         position: absolute;
-        left: 30px; /* Align with the line */
+        left: 30px;
         top: 5px;
         width: 15px;
         height: 15px;
         background: #adb5bd;
         border-radius: 50%;
-        margin-left: -7.5px; /* Center the marker */
+        margin-left: -7.5px;
         z-index: 1;
     }
 
     .timeline-item:first-child .timeline-marker {
         background: #0dcaf0;
     }
-    /* Info */
     .timeline-item:nth-child(2) .timeline-marker {
         background: #ffc107;
     }
-    /* Warning */
     .timeline-item:nth-child(3) .timeline-marker {
         background: #198754;
     }
-    /* Success */
     .timeline-item:nth-child(4) .timeline-marker {
         background: #6c757d;
     }
-    /* Secondary */
 
     .timeline-content {
         position: relative;
