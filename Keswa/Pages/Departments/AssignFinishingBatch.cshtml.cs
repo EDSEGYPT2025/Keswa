@@ -1,11 +1,10 @@
-﻿using Keswa.Data;
+using Keswa.Data;
 using Keswa.Enums;
 using Keswa.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
@@ -21,108 +20,96 @@ namespace Keswa.Pages.Departments
             _context = context;
         }
 
+        [BindProperty]
+        public InputModel Input { get; set; } = new();
+
         public FinishingBatch BatchToAssign { get; set; }
         public SelectList Workers { get; set; }
+        public int RemainingQuantityInBatch { get; set; }
 
-        [BindProperty]
-        public AssignmentInputModel Input { get; set; }
-
-        public class AssignmentInputModel
+        public class InputModel
         {
             public int FinishingBatchId { get; set; }
 
-            [Required(ErrorMessage = "الرجاء اختيار عامل")]
             [Display(Name = "العامل")]
+            [Required(ErrorMessage = "يجب اختيار عامل.")]
             public int WorkerId { get; set; }
 
-            // -- BEGIN MODIFICATION --
-            // سنقوم بتعيين هذه القيمة تلقائيًا
-            [Required]
+            [Display(Name = "الكمية المسلمة")]
+            [Required(ErrorMessage = "حقل الكمية مطلوب.")]
+            [Range(1, int.MaxValue, ErrorMessage = "يجب أن تكون الكمية أكبر من صفر.")]
             public int AssignedQuantity { get; set; }
-            // -- END MODIFICATION --
-
-            [Required(ErrorMessage = "الرجاء تحديد نوع التسليم")]
-            [Display(Name = "نوع التسليم")]
-            public AssignmentType AssignmentType { get; set; }
         }
 
         public async Task<IActionResult> OnGetAsync(int finishingBatchId)
         {
             BatchToAssign = await _context.FinishingBatches
-                .Include(b => b.WorkOrder).ThenInclude(wo => wo.Product)
+                .Include(b => b.WorkOrder.Product)
                 .FirstOrDefaultAsync(b => b.Id == finishingBatchId);
 
-            if (BatchToAssign == null || BatchToAssign.Status != FinishingBatchStatus.Pending)
-            {
-                TempData["ErrorMessage"] = "التشغيلة غير صالحة للتسليم.";
-                return RedirectToPage("./Finishing");
-            }
+            if (BatchToAssign == null) return NotFound();
 
-            Workers = new SelectList(await _context.Workers.OrderBy(w => w.Name).ToListAsync(), "Id", "Name");
+            var totalAssigned = await _context.FinishingAssignments
+                .Where(wa => wa.FinishingBatchId == finishingBatchId)
+                .SumAsync(wa => wa.AssignedQuantity);
 
-            // -- BEGIN MODIFICATION --
-            // تعيين الكمية الكاملة تلقائيًا
-            Input = new AssignmentInputModel
-            {
-                FinishingBatchId = finishingBatchId,
-                AssignedQuantity = BatchToAssign.Quantity
-            };
-            // -- END MODIFICATION --
+            RemainingQuantityInBatch = BatchToAssign.Quantity - totalAssigned;
+
+            var workers = await _context.Workers
+                .OrderBy(w => w.Name)
+                .ToListAsync();
+
+            Workers = new SelectList(workers, "Id", "Name");
+
+            Input.FinishingBatchId = finishingBatchId;
+            Input.AssignedQuantity = RemainingQuantityInBatch;
 
             return Page();
         }
 
         public async Task<IActionResult> OnPostAsync()
         {
-            // -- BEGIN MODIFICATION --
-            // جلب بيانات الصفحة مرة أخرى في حال حدوث خطأ
             if (!ModelState.IsValid)
             {
-                await LoadGetPrerequisites(Input.FinishingBatchId);
+                await OnGetAsync(Input.FinishingBatchId);
                 return Page();
             }
-            // -- END MODIFICATION --
 
-            var batch = await _context.FinishingBatches
-                .Include(b => b.WorkOrder).ThenInclude(wo => wo.Product)
-                .FirstOrDefaultAsync(b => b.Id == Input.FinishingBatchId);
+            var finishingBatch = await _context.FinishingBatches.FindAsync(Input.FinishingBatchId);
+            if (finishingBatch == null) return NotFound();
 
-            if (batch == null || batch.Status != FinishingBatchStatus.Pending)
+            var isAlreadyAssigned = await _context.FinishingAssignments
+                .AnyAsync(wa => wa.FinishingBatchId == Input.FinishingBatchId);
+
+            if (isAlreadyAssigned)
             {
-                TempData["ErrorMessage"] = "لا يمكن تسليم هذه التشغيلة.";
-                return RedirectToPage("./Finishing");
+                ModelState.AddModelError("", "خطأ: هذه التشغيلة تم تسليمها بالفعل.");
+                await OnGetAsync(Input.FinishingBatchId);
+                return Page();
             }
 
-           
-
-            var assignment = new FinishingAssignment
+            if (Input.AssignedQuantity != finishingBatch.Quantity)
             {
-                FinishingBatchId = batch.Id,
+                ModelState.AddModelError("Input.AssignedQuantity", "خطأ! يجب تسليم كامل كمية التشغيلة.");
+                await OnGetAsync(Input.FinishingBatchId);
+                return Page();
+            }
+
+            var newAssignment = new FinishingAssignment
+            {
+                FinishingBatchId = Input.FinishingBatchId,
                 WorkerId = Input.WorkerId,
-                AssignedQuantity = Input.AssignedQuantity, // القيمة الكاملة من الحقل المخفي
-                RemainingQuantity = Input.AssignedQuantity,
-                AssignmentType = Input.AssignmentType,
-                Rate = (Input.AssignmentType == AssignmentType.External) ? batch.WorkOrder.Product.FinishingFee : 0
+                AssignedQuantity = Input.AssignedQuantity,
+                Status = FinishingAssignmentStatus.InProgress,
+                Rate = finishingBatch.WorkOrder.Product.FinishingFee
             };
+            _context.FinishingAssignments.Add(newAssignment);
 
-            _context.FinishingAssignments.Add(assignment);
-            batch.Status = FinishingBatchStatus.InProgress;
-
+            finishingBatch.Status = FinishingBatchStatus.InProgress;
             await _context.SaveChangesAsync();
 
-            TempData["SuccessMessage"] = $"تم تسليم كامل الكمية {Input.AssignedQuantity} إلى العامل بنجاح.";
-            return RedirectToPage("./Finishing");
+            TempData["SuccessMessage"] = "تم تسليم كامل التشغيلة للعامل بنجاح.";
+            return RedirectToPage("/Departments/Finishing");
         }
-
-        
-        private async Task LoadGetPrerequisites(int finishingBatchId)
-        {
-            BatchToAssign = await _context.FinishingBatches
-                .Include(b => b.WorkOrder).ThenInclude(wo => wo.Product)
-                .FirstOrDefaultAsync(b => b.Id == finishingBatchId);
-
-            Workers = new SelectList(await _context.Workers.OrderBy(w => w.Name).ToListAsync(), "Id", "Name");
-        }
-        // -- END MODIFICATION --
     }
 }
