@@ -1,4 +1,4 @@
-﻿using Keswa.Data;
+using Keswa.Data;
 using Keswa.Enums;
 using Keswa.Models;
 using Microsoft.AspNetCore.Mvc;
@@ -27,8 +27,9 @@ namespace Keswa.Pages.Departments
         public class InputModel
         {
             public int FinishingAssignmentId { get; set; }
+
             [Required]
-            [Display(Name = "الكمية السليمة")]
+            [Display(Name = "الكمية المستلمة (سليمة)")]
             [Range(0, int.MaxValue, ErrorMessage = "الكمية يجب أن تكون 0 أو أكبر")]
             public int QuantityProduced { get; set; } = 0;
 
@@ -36,6 +37,9 @@ namespace Keswa.Pages.Departments
             [Display(Name = "كمية الهالك")]
             [Range(0, int.MaxValue, ErrorMessage = "الكمية يجب أن تكون 0 أو أكبر")]
             public int QuantityScrapped { get; set; } = 0;
+
+            [Display(Name = "سبب الهالك")]
+            public string ScrapReason { get; set; }
         }
 
         public async Task<IActionResult> OnGetAsync(int assignmentId)
@@ -59,7 +63,9 @@ namespace Keswa.Pages.Departments
         {
             Assignment = await _context.FinishingAssignments
                 .Include(a => a.Worker)
-                .Include(a => a.FinishingBatch).ThenInclude(fb => fb.WorkOrder)
+                .Include(a => a.FinishingBatch)
+                    .ThenInclude(sb => sb.WorkOrder)
+                    .ThenInclude(wo => wo.Product)
                 .FirstOrDefaultAsync(a => a.Id == Input.FinishingAssignmentId);
 
             if (Assignment == null) return NotFound();
@@ -70,7 +76,6 @@ namespace Keswa.Pages.Departments
             }
 
             int totalReceived = Input.QuantityProduced + Input.QuantityScrapped;
-
             if (totalReceived > Assignment.RemainingQuantity)
             {
                 ModelState.AddModelError(string.Empty, "إجمالي الكمية (السليمة + الهالك) لا يمكن أن يكون أكبر من المتبقي مع العامل.");
@@ -91,25 +96,22 @@ namespace Keswa.Pages.Departments
                     TotalPay = Input.QuantityProduced * Assignment.Rate
                 };
                 _context.FinishingProductionLogs.Add(productionLog);
+                Assignment.ReceivedQuantity += Input.QuantityProduced;
             }
 
-            // -- BEGIN CORRECTION --
-            // الكود الآن سيتطابق مع الموديل الجديد
             if (Input.QuantityScrapped > 0)
             {
                 var scrapLog = new ScrapLog
                 {
                     WorkOrderId = Assignment.FinishingBatch.WorkOrderId,
-                    Quantity = Input.QuantityScrapped, // (تم تغيير الاسم)
-                    Department = Department.Finishing, // (أصبح الحقل موجوداً)
-                    Reason = "هالك تشطيب",
-                    WorkerId = Assignment.WorkerId // (أصبح الحقل موجوداً)
+                    Quantity = Input.QuantityScrapped,
+                    Department = Department.Finishing,
+                    Reason = Input.ScrapReason,
+                    WorkerId = Assignment.WorkerId
                 };
                 _context.ScrapLogs.Add(scrapLog);
+                Assignment.TotalScrapped += Input.QuantityScrapped;
             }
-            // -- END CORRECTION --
-
-            Assignment.RemainingQuantity -= totalReceived;
 
             if (Assignment.RemainingQuantity == 0)
             {
@@ -132,12 +134,15 @@ namespace Keswa.Pages.Departments
 
             if (batch == null) return;
 
-            bool allAssignmentsCompleted = batch.FinishingAssignments
-                                                .All(a => a.Status == FinishingAssignmentStatus.Completed);
+            int totalProcessed = batch.FinishingAssignments.Sum(a => a.ReceivedQuantity + a.TotalScrapped);
 
-            if (allAssignmentsCompleted)
+            if (totalProcessed >= batch.Quantity)
             {
                 batch.Status = FinishingBatchStatus.Completed;
+                foreach (var assignment in batch.FinishingAssignments)
+                {
+                    assignment.Status = FinishingAssignmentStatus.Completed;
+                }
                 await _context.SaveChangesAsync();
             }
         }
