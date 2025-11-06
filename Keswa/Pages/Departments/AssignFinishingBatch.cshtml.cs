@@ -78,19 +78,15 @@ namespace Keswa.Pages.Departments
             var finishingBatch = await _context.FinishingBatches.FindAsync(Input.FinishingBatchId);
             if (finishingBatch == null) return NotFound();
 
-            var isAlreadyAssigned = await _context.FinishingAssignments
-                .AnyAsync(wa => wa.FinishingBatchId == Input.FinishingBatchId);
+            var totalAssigned = await _context.FinishingAssignments
+                .Where(wa => wa.FinishingBatchId == Input.FinishingBatchId)
+                .SumAsync(wa => wa.AssignedQuantity);
 
-            if (isAlreadyAssigned)
-            {
-                ModelState.AddModelError("", "خطأ: هذه التشغيلة تم تسليمها بالفعل.");
-                await OnGetAsync(Input.FinishingBatchId);
-                return Page();
-            }
+            var remainingQuantity = finishingBatch.Quantity - totalAssigned;
 
-            if (Input.AssignedQuantity != finishingBatch.Quantity)
+            if (Input.AssignedQuantity > remainingQuantity)
             {
-                ModelState.AddModelError("Input.AssignedQuantity", "خطأ! يجب تسليم كامل كمية التشغيلة.");
+                ModelState.AddModelError("Input.AssignedQuantity", "الكمية المسلمة لا يمكن أن تكون أكبر من الكمية المتبقية في التشغيلة.");
                 await OnGetAsync(Input.FinishingBatchId);
                 return Page();
             }
@@ -105,11 +101,15 @@ namespace Keswa.Pages.Departments
             };
             _context.FinishingAssignments.Add(newAssignment);
 
-            finishingBatch.Status = FinishingBatchStatus.InProgress;
+            if (totalAssigned + Input.AssignedQuantity == finishingBatch.Quantity)
+            {
+                finishingBatch.Status = FinishingBatchStatus.InProgress;
+            }
+
             await _context.SaveChangesAsync();
 
-            TempData["SuccessMessage"] = "تم تسليم كامل التشغيلة للعامل بنجاح.";
-            return RedirectToPage("/Departments/Finishing");
+            TempData["SuccessMessage"] = $"تم تسليم {Input.AssignedQuantity} قطعة للعامل بنجاح.";
+            return RedirectToPage();
         }
     }
 }
