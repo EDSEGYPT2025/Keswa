@@ -1,4 +1,4 @@
-﻿using Keswa.Data;
+using Keswa.Data;
 using Keswa.Enums;
 using Keswa.Models;
 using Microsoft.AspNetCore.Mvc;
@@ -29,10 +29,6 @@ namespace Keswa.Pages.Tracking
         {
             WorkOrder = await _context.WorkOrders
                 .Include(wo => wo.Product)
-                // -- CORRECTION: Removed Include for SalesOrderDetail as it doesn't exist directly on WorkOrder --
-                // .Include(wo => wo.SalesOrderDetail)
-                //     .ThenInclude(sod => sod.SalesOrder)
-                //     .ThenInclude(so => so.Customer)
                 .FirstOrDefaultAsync(wo => wo.Id == workOrderId);
 
             if (WorkOrder == null)
@@ -40,20 +36,16 @@ namespace Keswa.Pages.Tracking
                 return NotFound();
             }
 
-            // جلب بيانات القص
             CuttingStatements = await _context.CuttingStatements
                 .Where(cs => cs.WorkOrderId == workOrderId)
                 .Select(cs => new CuttingStatementViewModel
                 {
-                    // -- BEGIN CORRECTION: Correct property names from CuttingStatement model --
-                    StatementNumber = cs.RunNumber,         // Correct name
-                    Quantity = cs.Count,                // Correct name
+                    StatementNumber = cs.RunNumber,
+                    Quantity = cs.Count,
                     Status = cs.Status.ToString(),
-                    CreationDate = cs.StatementDate     // Correct name
-                    // -- END CORRECTION --
+                    CreationDate = cs.StatementDate
                 }).ToListAsync();
 
-            // جلب بيانات الخياطة (الكود هنا صحيح)
             var sewingBatches = await _context.SewingBatches
                 .Include(sb => sb.WorkerAssignments)
                 .ThenInclude(wa => wa.Worker)
@@ -72,12 +64,9 @@ namespace Keswa.Pages.Tracking
                     AssignmentDate = wa.AssignedDate
                 }).ToList();
 
-            // جلب بيانات التشطيب (الكود هنا صحيح)
             var finishingBatches = await _context.FinishingBatches
                 .Include(fb => fb.FinishingAssignments)
                 .ThenInclude(fa => fa.Worker)
-                .Include(fb => fb.FinishingAssignments)
-                .ThenInclude(fa => fa.FinishingProductionLogs)
                 .Where(fb => fb.WorkOrderId == workOrderId)
                 .ToListAsync();
 
@@ -86,9 +75,8 @@ namespace Keswa.Pages.Tracking
                 {
                     WorkerName = fa.Worker.Name,
                     AssignedQuantity = fa.AssignedQuantity,
-                    ReceivedQuantity = fa.FinishingProductionLogs.Sum(log => log.QuantityProduced),
+                    ReceivedQuantity = fa.ReceivedQuantity,
                     RemainingQuantity = fa.RemainingQuantity,
-                    AssignmentType = fa.AssignmentType.ToString(),
                     Status = fa.Status.ToString(),
                     AssignmentDate = fa.AssignmentDate
                 }).ToList();
@@ -96,7 +84,6 @@ namespace Keswa.Pages.Tracking
             return Page();
         }
 
-        // ViewModels
         public class CuttingStatementViewModel
         {
             public string StatementNumber { get; set; }
@@ -122,7 +109,6 @@ namespace Keswa.Pages.Tracking
             public int AssignedQuantity { get; set; }
             public int ReceivedQuantity { get; set; }
             public int RemainingQuantity { get; set; }
-            public string AssignmentType { get; set; }
             public string Status { get; set; }
             public DateTime AssignmentDate { get; set; }
         }
