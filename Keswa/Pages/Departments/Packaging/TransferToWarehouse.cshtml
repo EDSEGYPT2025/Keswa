@@ -1,0 +1,42 @@
+﻿@page "{id:int}"
+@model Keswa.Pages.Departments.Packaging.TransferToWarehouseModel
+@{
+    ViewData["Title"] = "توريد للمخازن";
+}
+
+<div class="row justify-content-center mt-5">
+    <div class="col-md-6">
+        <div class="card shadow-lg border-0">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0 fw-bold"><i class="bi bi-building-up me-2"></i> تأكيد التوريد النهائي</h5>
+            </div>
+            <div class="card-body p-4">
+                <div class="text-center mb-4">
+                    <h4 class="text-primary fw-bold">@Model.Batch.WorkOrder.Product.Name</h4>
+                    <p class="text-muted">رقم التشغيلة: @Model.Batch.PackagingBatchNumber</p>
+                    <div class="display-6 fw-bold">@Model.Input.Quantity <small class="fs-6">قطعة</small></div>
+                </div>
+
+                <form method="post">
+                    <input type="hidden" asp-for="Input.BatchId" />
+                    <input type="hidden" asp-for="Input.Quantity" />
+
+                    <div class="mb-4">
+                        <label asp-for="Input.WarehouseId" class="form-label fw-bold"></label>
+                        <select asp-for="Input.WarehouseId" class="form-select form-select-lg border-success" asp-items="Model.FinishedGoodsWarehouses">
+                            <option value="">-- اختر مخزن الإنتاج التام --</option>
+                        </select>
+                        <span asp-validation-for="Input.WarehouseId" class="text-danger"></span>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-success btn-lg fw-bold">
+                            <i class="bi bi-check-circle-fill me-2"></i> إتمام عملية التوريد
+                        </button>
+                        <a asp-page="./Index" class="btn btn-outline-secondary text-dark">إلغاء</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

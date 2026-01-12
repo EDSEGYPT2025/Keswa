@@ -1,0 +1,127 @@
+﻿@page
+@model Keswa.Pages.Departments.Packaging.IndexModel
+@{
+    ViewData["Title"] = "قسم التعبئة والتغليف";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3 fw-bold text-dark"><i class="bi bi-box-seam-fill me-2 text-warning"></i> @ViewData["Title"]</h1>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-4">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-light border-0 py-3">
+                <h5 class="mb-0 fw-bold text-secondary">تشغيلات قيد الانتظار</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>التشغيلة</th>
+                                <th>الكمية</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model.PendingBatches)
+                            {
+                                <tr>
+                                    <td>
+                                        <div class="fw-bold">@item.BatchNumber</div>
+                                        <small class="text-muted">@item.ProductName</small>
+                                    </td>
+                                    <td><span class="badge bg-primary">@item.Quantity</span></td>
+                                    <td>
+                                        <a asp-page="AssignPackagingBatch" asp-route-id="@item.BatchId" class="btn btn-sm btn-outline-warning">
+                                            توزيع <i class="bi bi-person-plus"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-light border-0 py-3">
+                <h5 class="mb-0 fw-bold text-info">مهام قيد التعبئة</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>الموظف</th>
+                                <th>المتبقي</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model.AssignmentsInProgress)
+                            {
+                                <tr>
+                                    <td>
+                                        <div class="fw-bold">@item.WorkerName</div>
+                                        <small class="text-muted">@item.BatchNumber</small>
+                                    </td>
+                                    <td><span class="text-danger fw-bold">@item.RemainingQuantity</span></td>
+                                    <td>
+                                        <a asp-page="ReceivePackagingProduction" asp-route-assignmentId="@item.AssignmentId" class="btn btn-sm btn-info text-white">
+                                            استلام <i class="bi bi-download"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-light border-0 py-3">
+                <h5 class="mb-0 fw-bold text-success">جاهز للتوريد للمخزن</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <form method="post">
+                        <table class="table table-hover align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>التشغيلة</th>
+                                    <th>الكمية</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in Model.ReadyBatches)
+                                {
+                                    <tr>
+                                        <td>
+                                            <div class="fw-bold">@item.BatchNumber</div>
+                                            <small class="text-muted">@item.ProductName</small>
+                                        </td>
+                                        <td class="text-success fw-bold">@item.ReadyQuantity</td>
+                                        <td>
+                                            <a asp-page="TransferToWarehouse" asp-route-id="@item.BatchId" class="btn btn-sm btn-success">
+                                                توريد للمخزن <i class="bi bi-box-arrow-in-down"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -39,7 +39,7 @@ namespace Keswa.Pages.Departments
             public int QuantityScrapped { get; set; } = 0;
 
             [Display(Name = "سبب الهالك")]
-            public string ScrapReason { get; set; }
+            public string? ScrapReason { get; set; }
         }
 
         public async Task<IActionResult> OnGetAsync(int assignmentId)

@@ -70,6 +70,10 @@ namespace Keswa.Data
         public DbSet<QualityBatch> QualityBatches { get; set; }
         public DbSet<QualityAssignment> QualityAssignments { get; set; }
 
+        // أضف هذه السطور داخل كلاس ApplicationDbContext
+        public DbSet<Keswa.Models.PackagingBatch> PackagingBatches { get; set; }
+        public DbSet<Keswa.Models.PackagingAssignment> PackagingAssignments { get; set; }
+
 
         // *** تم إضافة هذه الوظيفة لحل مشكلة الحذف المتعدد ***
         protected override void OnModelCreating(ModelBuilder builder)

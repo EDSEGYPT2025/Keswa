@@ -1,27 +1,51 @@
-@page
+@page "{assignmentId:int}"
 @model Keswa.Pages.Departments.Quality.ReceiveQualityProductionModel
 @{
     ViewData["Title"] = "استلام شغل جودة";
 }
 
-<h1>@ViewData["Title"]</h1>
+<div class="container mt-4">
+    <h1 class="h2 fw-bold">@ViewData["Title"]</h1>
 
-<h4>@Model.AssignmentVM.ProductName</h4>
-<p>العامل: @Model.AssignmentVM.WorkerName</p>
-<p>الكمية المسلمة: @Model.AssignmentVM.AssignedQuantity</p>
-<hr />
+    <div class="card shadow-sm border-0 mt-4">
+        <div class="card-header bg-light">
+            <h5 class="mb-0 fw-bold">تفاصيل المهمة</h5>
+        </div>
+        <div class="card-body p-4">
+            <h4 class="text-primary">@Model.AssignmentVM.ProductName</h4>
+            <p class="mb-1"><strong>العامل:</strong> @Model.AssignmentVM.WorkerName</p>
+            <p><strong>الكمية المسلمة:</strong> <span class="badge bg-info text-dark">@Model.AssignmentVM.AssignedQuantity قطعة</span></p>
+            <hr />
 
-<form method="post">
-    <input type="hidden" asp-for="AssignmentVM.AssignmentId" />
-    <div class="form-group">
-        <label asp-for="ReceiveVM.ReceivedQuantityGradeA"></label>
-        <input asp-for="ReceiveVM.ReceivedQuantityGradeA" class="form-control" />
-        <span asp-validation-for="ReceiveVM.ReceivedQuantityGradeA" class="text-danger"></span>
+            <form method="post">
+                <input type="hidden" asp-for="AssignmentVM.AssignmentId" />
+
+                <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                <div class="row g-3">
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="ReceiveVM.ReceivedQuantityGradeA" class="form-label">كمية الدرجة الأولى</label>
+                        <input asp-for="ReceiveVM.ReceivedQuantityGradeA" class="form-control form-control-lg" />
+                        <span asp-validation-for="ReceiveVM.ReceivedQuantityGradeA" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="ReceiveVM.ReceivedQuantityGradeB" class="form-label">كمية الدرجة الثانية</label>
+                        <input asp-for="ReceiveVM.ReceivedQuantityGradeB" class="form-control form-control-lg" />
+                        <span asp-validation-for="ReceiveVM.ReceivedQuantityGradeB" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="d-grid gap-2 mt-4">
+                    <button type="submit" class="btn btn-primary btn-lg">
+                        <i class="bi bi-check-circle-fill me-2"></i> تأكيد الاستلام وحفظ النتائج
+                    </button>
+
+                    <a asp-page="./Index" class="btn btn-secondary">
+                        <i class="bi bi-x-circle me-2"></i> إلغاء والعودة
+                    </a>
+                </div>
+            </form>
+        </div>
     </div>
-    <div class="form-group">
-        <label asp-for="ReceiveVM.ReceivedQuantityGradeB"></label>
-        <input asp-for="ReceiveVM.ReceivedQuantityGradeB" class="form-control" />
-        <span asp-validation-for="ReceiveVM.ReceivedQuantityGradeB" class="text-danger"></span>
-    </div>
-    <button type="submit" class="btn btn-primary">استلام</button>
-</form>
+</div>

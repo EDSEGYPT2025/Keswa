@@ -39,7 +39,8 @@ namespace Keswa.Pages.Departments
             public int QuantityScrapped { get; set; } = 0;
 
             [Display(Name = "سبب الهالك")]
-            public string ScrapReason { get; set; }
+            // --- التعديل هنا: جعل الحقل يقبل قيم فارغة لمنع خطأ ModelState ---
+            public string? ScrapReason { get; set; }
         }
 
         public async Task<IActionResult> OnGetAsync(int assignmentId)
@@ -86,6 +87,7 @@ namespace Keswa.Pages.Departments
                 return Page();
             }
 
+            // 1. تسجيل الإنتاج السليم في سجلات التشطيب
             if (Input.QuantityProduced > 0)
             {
                 var productionLog = new FinishingProductionLog
@@ -99,6 +101,7 @@ namespace Keswa.Pages.Departments
                 Assignment.ReceivedQuantity += Input.QuantityProduced;
             }
 
+            // 2. تسجيل الهالك في قسم التشطيب
             if (Input.QuantityScrapped > 0)
             {
                 var scrapLog = new ScrapLog
@@ -113,6 +116,7 @@ namespace Keswa.Pages.Departments
                 Assignment.TotalScrapped += Input.QuantityScrapped;
             }
 
+            // 3. تحديث حالة العهدة عند الاكتمال
             if (Assignment.RemainingQuantity == 0)
             {
                 Assignment.Status = FinishingAssignmentStatus.Completed;
@@ -120,6 +124,7 @@ namespace Keswa.Pages.Departments
 
             await _context.SaveChangesAsync();
 
+            // 4. تحديث حالة التشغيلة الرئيسية للتشطيب
             await CheckIfFinishingBatchIsComplete(Assignment.FinishingBatchId);
 
             TempData["SuccessMessage"] = $"تم استلام (سليم: {Input.QuantityProduced}, هالك: {Input.QuantityScrapped}) من العامل {Assignment.Worker.Name} بنجاح.";

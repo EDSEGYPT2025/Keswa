@@ -27,7 +27,11 @@
                         <td>@item.ProductName</td>
                         <td>@item.Quantity</td>
                         <td>
-                            <a asp-page="AssignQualityBatch" asp-route-id="@item.BatchId">تسليم لشغالة</a>
+                            @*<a asp-page="AssignQualityBatch" asp-route-id="@item.BatchId">تسليم لشغالة</a>*@
+                            <a asp-page="AssignQualityBatch" asp-route-id="@item.BatchId" class="btn btn-sm btn-primary">
+                                تسليم للفحص
+                            </a>
+
                         </td>
                     </tr>
                 }
@@ -55,7 +59,9 @@
                         <td>@item.BatchNumber</td>
                         <td>@item.RemainingQuantity</td>
                         <td>
-                            <a asp-page="ReceiveQualityProduction" asp-route-id="@item.AssignmentId">استلام شغل</a>
+                            <a asp-page="ReceiveQualityProduction" asp-route-assignmentId="@item.AssignmentId" class="btn btn-sm btn-success">
+                                استلام شغل
+                            </a>
                         </td>
                     </tr>
                 }
@@ -81,6 +87,13 @@
                         <td>@item.BatchNumber</td>
                         <td>@item.ProductName</td>
                         <td>@item.FinalQuantity</td>
+                        <td>
+                            <form method="post" asp-page-handler="TransferToPackaging" asp-route-batchId="@item.BatchId">
+                                <button type="submit" class="btn btn-sm btn-warning">
+                                    <i class="bi bi-box-arrow-right"></i> تحويل للتعبئة
+                                </button>
+                            </form>
+                        </td>
                     </tr>
                 }
             </tbody>

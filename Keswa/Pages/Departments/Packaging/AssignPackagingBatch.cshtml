@@ -1,32 +1,32 @@
-@page "{id:int}"
-@model Keswa.Pages.Departments.Quality.AssignQualityBatchModel
+﻿@page "{id:int}"
+@model Keswa.Pages.Departments.Packaging.AssignPackagingBatchModel
 @{
-    ViewData["Title"] = "تسليم عهدة جودة";
+    ViewData["Title"] = "تسليم عهدة تعبئة وتغليف";
 }
 
 <div class="mb-4">
     <h1 class="h2 fw-bold">@ViewData["Title"]</h1>
-    <p class="text-muted">توزيع كميات التشغيلة على موظفي فحص الجودة.</p>
+    <p class="text-muted">توزيع كميات الإنتاج المكتملة على موظفي التعبئة والتغليف.</p>
 </div>
 
 <div class="row justify-content-center">
     <div class="col-md-8 col-lg-7">
         <div class="card shadow-sm border-0">
-            <div class="card-header bg-light">
-                <h5 class="mb-0 fw-bold"><i class="bi bi-shield-check me-2"></i> تفاصيل تشغيلة الجودة</h5>
+            <div class="card-header bg-warning text-dark">
+                <h5 class="mb-0 fw-bold"><i class="bi bi-box-seam me-2"></i> تفاصيل تشغيلة التعبئة</h5>
             </div>
             <div class="card-body p-4">
                 <dl class="row mb-4">
                     <dt class="col-sm-4">رقم التشغيلة</dt>
-                    <dd class="col-sm-8"><strong>@Model.BatchToAssign.QualityBatchNumber</strong></dd>
+                    <dd class="col-sm-8"><strong>@Model.BatchToAssign.PackagingBatchNumber</strong></dd>
 
                     <dt class="col-sm-4">الموديل</dt>
                     <dd class="col-sm-8">@Model.BatchToAssign.WorkOrder.Product.Name</dd>
 
-                    <dt class="col-sm-4">الكمية الإجمالية</dt>
+                    <dt class="col-sm-4">الكمية المحولة</dt>
                     <dd class="col-sm-8"><span class="fw-bold text-primary fs-5">@Model.BatchToAssign.Quantity</span> قطعة</dd>
 
-                    <dt class="col-sm-4">الكمية المتبقية</dt>
+                    <dt class="col-sm-4">الكمية المتبقية للتوزيع</dt>
                     <dd class="col-sm-8"><span class="fw-bold text-danger fs-5">@Model.RemainingQuantityInBatch</span> قطعة</dd>
                 </dl>
 
@@ -36,41 +36,43 @@
                 {
                     <form method="post">
                         <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-                        <input type="hidden" asp-for="Input.QualityBatchId" />
+                        <input type="hidden" asp-for="Input.PackagingBatchId" />
 
                         <div class="mb-3">
                             <label asp-for="Input.WorkerId" class="form-label"></label>
-                            <select asp-for="Input.WorkerId" class="form-select" asp-items="Model.Workers">
-                                <option value="">-- اختر موظف جودة --</option>
+                            <select asp-for="Input.WorkerId" class="form-select form-select-lg" asp-items="Model.Workers">
+                                <option value="">-- اختر موظف التعبئة --</option>
                             </select>
                             <span asp-validation-for="Input.WorkerId" class="text-danger"></span>
                         </div>
 
                         <div class="mb-3">
                             <label asp-for="Input.AssignedQuantity" class="form-label"></label>
-                            <input asp-for="Input.AssignedQuantity" class="form-control" />
+                            <input asp-for="Input.AssignedQuantity" class="form-control form-control-lg" />
                             <span asp-validation-for="Input.AssignedQuantity" class="text-danger"></span>
                         </div>
 
                         <div class="d-grid gap-2 mt-4">
-                            <button type="submit" class="btn btn-primary btn-lg">
-                                <i class="bi bi-check-circle-fill me-2"></i> تأكيد التسليم للجودة
+                            <button type="submit" class="btn btn-warning btn-lg fw-bold">
+                                <i class="bi bi-check-circle-fill me-2"></i> تأكيد التسليم للتعبئة
                             </button>
                             <a asp-page="./Index" class="btn btn-secondary">
-                                <i class="bi bi-x-circle me-2"></i> العودة
+                                <i class="bi bi-x-circle me-2"></i> العودة لقسم التعبئة
                             </a>
                         </div>
                     </form>
                 }
                 else
                 {
-                    <div class="alert alert-success">
+                    <div class="alert alert-success border-0 shadow-sm">
                         <i class="bi bi-check-circle-fill me-2"></i>
-                        تم توزيع كامل كمية هذه التشغيلة على موظفي الجودة.
+                        تم توزيع كامل كمية هذه التشغيلة على موظفي التعبئة والتغليف بنجاح.
                     </div>
-                    <a asp-page="./Index" class="btn btn-secondary">
-                        <i class="bi bi-x-circle me-2"></i> العودة
-                    </a>
+                    <div class="d-grid">
+                        <a asp-page="./Index" class="btn btn-secondary btn-lg">
+                            <i class="bi bi-arrow-left-circle me-2"></i> العودة لقائمة التشغيلات
+                        </a>
+                    </div>
                 }
             </div>
         </div>

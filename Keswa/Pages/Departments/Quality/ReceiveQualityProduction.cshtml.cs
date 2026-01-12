@@ -25,15 +25,16 @@ namespace Keswa.Pages.Departments.Quality
         [BindProperty]
         public ReceiveViewModel ReceiveVM { get; set; }
 
-        public async Task<IActionResult> OnGetAsync(int id)
+        public async Task<IActionResult> OnGetAsync(int assignmentId) // تم تغيير id إلى assignmentId
         {
             var assignment = await _context.QualityAssignments
                 .Include(a => a.Worker)
                 .Include(a => a.QualityBatch.WorkOrder.Product)
-                .FirstOrDefaultAsync(a => a.Id == id);
+                .FirstOrDefaultAsync(a => a.Id == assignmentId);
 
             if (assignment == null) return NotFound();
 
+            // تعبئة الـ ViewModel لعرض البيانات
             AssignmentVM = new AssignmentViewModel
             {
                 AssignmentId = assignment.Id,
@@ -47,9 +48,14 @@ namespace Keswa.Pages.Departments.Quality
 
         public async Task<IActionResult> OnPostAsync()
         {
-            var assignment = await _context.QualityAssignments.FindAsync(AssignmentVM.AssignmentId);
+            var assignment = await _context.QualityAssignments
+                .Include(a => a.Worker)
+                .Include(a => a.QualityBatch.WorkOrder.Product)
+                .FirstOrDefaultAsync(a => a.Id == AssignmentVM.AssignmentId);
+
             if (assignment == null) return NotFound();
 
+            // التحقق من الكميات
             if (ReceiveVM.ReceivedQuantityGradeA + ReceiveVM.ReceivedQuantityGradeB > assignment.AssignedQuantity)
             {
                 ModelState.AddModelError("", "مجموع الكميات المستلمة لا يمكن أن يكون أكبر من الكمية المسلمة.");
@@ -57,6 +63,10 @@ namespace Keswa.Pages.Departments.Quality
 
             if (!ModelState.IsValid)
             {
+                // هــــام: يجب إعادة تعبئة بيانات العرض قبل العودة للصفحة
+                AssignmentVM.WorkerName = assignment.Worker.Name;
+                AssignmentVM.ProductName = assignment.QualityBatch.WorkOrder.Product.Name;
+                AssignmentVM.AssignedQuantity = assignment.AssignedQuantity;
                 return Page();
             }
 
@@ -64,7 +74,7 @@ namespace Keswa.Pages.Departments.Quality
             assignment.ReceivedQuantityGradeB = ReceiveVM.ReceivedQuantityGradeB;
             assignment.Status = QualityAssignmentStatus.Completed;
 
-            // Check if all assignments for the batch are completed
+            // تحديث حالة التشغيلة الرئيسية
             var batch = await _context.QualityBatches
                 .Include(b => b.QualityAssignments)
                 .FirstOrDefaultAsync(b => b.Id == assignment.QualityBatchId);
@@ -75,6 +85,7 @@ namespace Keswa.Pages.Departments.Quality
             }
 
             await _context.SaveChangesAsync();
+            TempData["SuccessMessage"] = "تم استلام نتائج الفحص بنجاح.";
             return RedirectToPage("./Index");
         }
     }
@@ -82,8 +93,8 @@ namespace Keswa.Pages.Departments.Quality
     public class AssignmentViewModel
     {
         public int AssignmentId { get; set; }
-        public string WorkerName { get; set; }
-        public string ProductName { get; set; }
+        public string? WorkerName { get; set; }
+        public string? ProductName { get; set; }
         public int AssignedQuantity { get; set; }
     }
 

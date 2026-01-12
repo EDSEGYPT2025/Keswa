@@ -27,7 +27,11 @@
                         <td>@item.ProductName</td>
                         <td>@item.Quantity</td>
                         <td>
-                            <a asp-page="AssignFinishingBatch" asp-route-id="@item.BatchId">تسليم لشغالة</a>
+                            @*<a asp-page="AssignFinishingBatch" asp-route-id="@item.BatchId">تسليم لشغالة</a>*@
+
+                            <a asp-page="AssignFinishingBatch" asp-route-finishingBatchId="@item.BatchId" class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-person-plus-fill me-1"></i> تسليم لشغالة
+                            </a>
                         </td>
                     </tr>
                 }
@@ -55,7 +59,12 @@
                         <td>@item.BatchNumber</td>
                         <td>@item.RemainingQuantity</td>
                         <td>
-                            <a asp-page="ReceiveFinishingProduction" asp-route-id="@item.AssignmentId">استلام شغل</a>
+                            @*<a asp-page="ReceiveFinishingProduction" asp-route-id="@item.AssignmentId">استلام شغل</a>*@
+
+                            <a asp-page="ReceiveFinishingProduction" asp-route-assignmentId="@item.AssignmentId" class="btn btn-sm btn-success">
+                                <i class="bi bi-arrow-down-circle-fill me-1"></i> استلام شغل
+                            </a>
+
                         </td>
                     </tr>
                 }
